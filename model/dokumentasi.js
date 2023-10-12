@@ -1,16 +1,25 @@
-const { Sequelize } = require('sequelize');
-const db = require('../config/database.js');
+const { Sequelize } = require("sequelize");
+const db = require("../config/database.js");
+const Observasi = require('./observasi.js')
 
 const { DataTypes } = Sequelize;
 
-const User = db.define(
-  "user",
+const Dokumentasi = db.define(
+  "dokumentasi",
   {
-    user_id: {
+    dokumentasi_id: {
       type: DataTypes.STRING,
-      defaultValue: Sequelize.literal('gen_random_uuid()'),
+      defaultValue: Sequelize.literal("gen_random_uuid()"),
       allowNull: false,
       primaryKey: true,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    observation_id: {
+      type: DataTypes.STRING,
+      defaultValue: undefined,
+      allowNull: false,
       validate: {
         notEmpty: true,
       },
@@ -22,28 +31,7 @@ const User = db.define(
         notEmpty: true,
       },
     },
-    instansi: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    username: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    password: {
+    type: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
@@ -57,4 +45,11 @@ const User = db.define(
   }
 );
 
-module.exports = User;
+Observasi.hasMany(Dokumentasi, {
+  foreignKey: "observation_id",
+});
+Dokumentasi.belongsTo(Observasi, {
+  foreignKey: "observation_id",
+});
+
+module.exports = Dokumentasi;

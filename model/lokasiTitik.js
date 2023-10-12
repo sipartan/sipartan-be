@@ -1,49 +1,37 @@
-const { Sequelize } = require('sequelize');
-const db = require('../config/database.js');
+const { Sequelize } = require("sequelize");
+const db = require("../config/database.js");
+const DataUmumLahan = require('./dataUmum.js')
 
 const { DataTypes } = Sequelize;
 
-const User = db.define(
-  "user",
+const LokasiTitik = db.define(
+  "lokasi_titik",
   {
-    user_id: {
+    point_location_id: {
       type: DataTypes.STRING,
-      defaultValue: Sequelize.literal('gen_random_uuid()'),
+      defaultValue: Sequelize.literal("gen_random_uuid()"),
       allowNull: false,
       primaryKey: true,
       validate: {
         notEmpty: true,
       },
     },
-    nama: {
+    data_lahan_id: {
+      type: DataTypes.STRING,
+      defaultValue: undefined,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    latitude: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    instansi: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    username: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    password: {
+    longitude: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
@@ -57,4 +45,11 @@ const User = db.define(
   }
 );
 
-module.exports = User;
+DataUmumLahan.hasOne(LokasiTitik, {
+  foreignKey: "data_lahan_id",
+});
+LokasiTitik.belongsTo(DataUmumLahan, {
+  foreignKey: "data_lahan_id",
+});
+
+module.exports = LokasiTitik;

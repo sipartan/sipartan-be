@@ -1,50 +1,43 @@
-const { Sequelize } = require('sequelize');
-const db = require('../config/database.js');
+const { Sequelize } = require("sequelize");
+const db = require("../config/database.js");
 
 const { DataTypes } = Sequelize;
 
-const User = db.define(
-  "user",
+const Penilaian = db.define(
+  "penilaian",
   {
-    user_id: {
+    penilaian_id: {
       type: DataTypes.STRING,
-      defaultValue: Sequelize.literal('gen_random_uuid()'),
+      defaultValue: Sequelize.literal("gen_random_uuid()"),
       allowNull: false,
       primaryKey: true,
       validate: {
         notEmpty: true,
       },
     },
-    nama: {
+    variable: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    instansi: {
+    type: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    email: {
-      type: DataTypes.STRING,
+    bobot: {
+      type: DataTypes.FLOAT,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    username: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    password: {
-      type: DataTypes.STRING,
+    nilai: {
+      type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
         notEmpty: true,
@@ -57,4 +50,4 @@ const User = db.define(
   }
 );
 
-module.exports = User;
+module.exports = Penilaian;

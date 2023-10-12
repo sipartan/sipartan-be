@@ -1,49 +1,42 @@
-const { Sequelize } = require('sequelize');
-const db = require('../config/database.js');
+const { Sequelize } = require("sequelize");
+const db = require("../config/database.js");
 
 const { DataTypes } = Sequelize;
 
-const User = db.define(
-  "user",
+const LokasiRegion = db.define(
+  "lokasi_region",
   {
-    user_id: {
+    region_location_id: {
       type: DataTypes.STRING,
-      defaultValue: Sequelize.literal('gen_random_uuid()'),
+      defaultValue: Sequelize.literal("gen_random_uuid()"),
       allowNull: false,
       primaryKey: true,
       validate: {
         notEmpty: true,
       },
     },
-    nama: {
+    provinsi: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    instansi: {
+    kabupaten: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    email: {
+    kecamatan: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    username: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    password: {
+    desa: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
@@ -57,4 +50,4 @@ const User = db.define(
   }
 );
 
-module.exports = User;
+module.exports = LokasiRegion;
