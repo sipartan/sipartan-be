@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const dbGenerate = require('./config/dbGenerator')
+const UserRoute = require("./routes/userRoute")
+const LahanRoute = require("./routes/lahanRoute")
 
 require('dotenv').config()
 
@@ -11,6 +13,10 @@ app.use(bodyParser.json());
 app.use(cors()); 
 
 // dbGenerate()
+
+// routes
+app.use(UserRoute);
+app.use(LahanRoute);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
