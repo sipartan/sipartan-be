@@ -8,7 +8,8 @@ const Observasi = require("../model/observasi");
 const PenilaianObservasi = require("../model/penilaianObservasi");
 const Penilaian = require("../model/penilaian");
 const Hasil = require("../model/hasil");
-const Dokumentasi = require("../model//dokumentasi");
+const Dokumentasi = require("../model/dokumentasi");
+const Plot = require("../model/plot");
 
 const dbGenerate = async () => {
   try {

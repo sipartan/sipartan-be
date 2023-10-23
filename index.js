@@ -4,6 +4,7 @@ const cors = require('cors');
 const dbGenerate = require('./config/dbGenerator')
 const UserRoute = require("./routes/userRoute")
 const LahanRoute = require("./routes/lahanRoute")
+const ObservasiRoute = require("./routes/observasiRoute")
 
 require('dotenv').config()
 
@@ -17,6 +18,7 @@ app.use(cors());
 // routes
 app.use(UserRoute);
 app.use(LahanRoute);
+app.use(ObservasiRoute);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

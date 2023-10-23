@@ -1,13 +1,13 @@
 const { Sequelize } = require("sequelize");
 const db = require("../config/database.js");
-const DataUmumLahan = require('./dataUmum.js')
+const Observasi = require('./observasi.js')
 
 const { DataTypes } = Sequelize;
 
-const Observasi = db.define(
-  "observasi",
+const Plot = db.define(
+  "plot",
   {
-    observation_id: {
+    plot_id: {
       type: DataTypes.STRING,
       defaultValue: Sequelize.literal("gen_random_uuid()"),
       allowNull: false,
@@ -16,7 +16,7 @@ const Observasi = db.define(
         notEmpty: true,
       },
     },
-    data_lahan_id: {
+    observation_id: {
       type: DataTypes.STRING,
       defaultValue: undefined,
       allowNull: false,
@@ -24,23 +24,9 @@ const Observasi = db.define(
         notEmpty: true,
       },
     },
-    tanggal_kejadian: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    tanggal_penilaian: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    skor: {
+    luasan_plot: {
       type: DataTypes.FLOAT,
-      allowNull: true,
+      allowNull: false,
       validate: {
         notEmpty: true,
       },
@@ -52,11 +38,11 @@ const Observasi = db.define(
   }
 );
 
-DataUmumLahan.hasMany(Observasi, {
-  foreignKey: "data_lahan_id",
+Observasi.hasMany(Plot, {
+  foreignKey: "observation_id",
 });
-Observasi.belongsTo(DataUmumLahan, {
-  foreignKey: "data_lahan_id",
+Plot.belongsTo(Observasi, {
+  foreignKey: "observation_id",
 });
 
-module.exports = Observasi;
+module.exports = Plot;
