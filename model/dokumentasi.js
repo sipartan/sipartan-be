@@ -1,6 +1,6 @@
 const { Sequelize } = require("sequelize");
 const db = require("../config/database.js");
-const Observasi = require('./observasi.js')
+const Plot = require('./plot.js')
 
 const { DataTypes } = Sequelize;
 
@@ -16,7 +16,7 @@ const Dokumentasi = db.define(
         notEmpty: true,
       },
     },
-    observation_id: {
+    plot_id: {
       type: DataTypes.STRING,
       defaultValue: undefined,
       allowNull: false,
@@ -45,11 +45,11 @@ const Dokumentasi = db.define(
   }
 );
 
-Observasi.hasMany(Dokumentasi, {
-  foreignKey: "observation_id",
+Plot.hasMany(Dokumentasi, {
+  foreignKey: "plot_id",
 });
-Dokumentasi.belongsTo(Observasi, {
-  foreignKey: "observation_id",
+Dokumentasi.belongsTo(Plot, {
+  foreignKey: "plot_id",
 });
 
 module.exports = Dokumentasi;

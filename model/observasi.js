@@ -38,7 +38,7 @@ const Observasi = db.define(
         notEmpty: true,
       },
     },
-    skor: {
+    skor_akhir: {
       type: DataTypes.FLOAT,
       allowNull: true,
       validate: {

@@ -38,6 +38,13 @@ const Hasil = db.define(
         notEmpty: true,
       },
     },
+    skor: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        notEmpty: true,
+      },
+    },
   },
   {
     freezeTableName: true,
