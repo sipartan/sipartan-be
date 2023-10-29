@@ -98,7 +98,6 @@ const calculateScore = async (plot_id) => {
   const penilaianIds = foundPenilaianPlot.map(
     (result) => result.dataValues.penilaian_id
   );
-  // console.log(penilaianIds);
 
   const foundNilaiVegetasi = await Penilaian.findAll({
     attributes: ["bobot"],
@@ -112,7 +111,6 @@ const calculateScore = async (plot_id) => {
   const nilaiVegetasi = foundNilaiVegetasi.map(
     (result) => result.dataValues.bobot
   );
-  // console.log(nilaiVegetasi);
 
   const foundNilaiTanah = await Penilaian.findAll({
     attributes: ["bobot"],
@@ -124,14 +122,11 @@ const calculateScore = async (plot_id) => {
     },
   });
   const nilaiTanah = foundNilaiTanah.map((result) => result.dataValues.bobot);
-  // console.log(nilaiTanah);
 
   let resultNilaiVegetasi = 0;
   for (let i = 0; i < nilaiVegetasi.length; i++) {
     resultNilaiVegetasi += nilaiVegetasi[i];
   }
-  // console.log(resultNilaiVegetasi);
-  // console.log(resultNilaiVegetasi+nilaiTanah[0]);
 
   const makeHasil = await createHasilData(
     plot_id,
@@ -149,7 +144,7 @@ const createKarhutlaData = async (data) => {
     tanggal_kejadian,
     tanggal_penilaian,
     dataPlot,
-  } = data.data;
+  } = data;
 
   const makeObservation = await createObservationData(
     data_lahan_id,
@@ -168,14 +163,16 @@ const createKarhutlaData = async (data) => {
     finalScoreBeforeMean += scoreResult[i]
   }
   const finalScore = finalScoreBeforeMean / scoreResult.length;
-  // console.log(finalScoreBeforeMean)
-  // console.log(finalScore)
 
   makeObservation.skor_akhir = finalScore;
   await makeObservation.save();
 
   return makeObservation; // ntr kalo mau ubah sabi
 };
+
+const getPenilaianData = async () => {
+  return await Penilaian.findAll()
+}
 
 module.exports = {
   createObservationData,
@@ -185,4 +182,5 @@ module.exports = {
   createHasilData,
   createDokumentasiData,
   createKarhutlaData,
+  getPenilaianData,
 };

@@ -6,6 +6,7 @@ const {
   createHasilData,
   createDokumentasiData,
   createKarhutlaData,
+  getPenilaianData,
 } = require("../service/observasiService");
 
 const createObservation = async (req, res) => {
@@ -102,15 +103,23 @@ const createKarhutla = async (req, res) => {
     const { data } = req.body;
     // console.log(data)
 
-    const result = await createKarhutlaData({
-      data,
-    });
+    const result = await createKarhutlaData(data);
 
     res.status(200).json({ msg: "berhasil create hasil", result });
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }
 };
+
+const getPenilaian = async (req, res) => {
+  try {
+    const result = await getPenilaianData()
+
+    res.status(200).json({ msg: "berhasil get penilaian", result });
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
+  }
+}
 
 module.exports = {
   createObservation,
@@ -120,4 +129,5 @@ module.exports = {
   createHasil,
   createDokumentasi,
   createKarhutla,
+  getPenilaian,
 };

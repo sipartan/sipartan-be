@@ -63,7 +63,7 @@ const DataUmumLahan = db.define(
     },
     tinggi_muka_air_gambut: {
       type: DataTypes.FLOAT,
-      allowNull: false,
+      allowNull: true,
       validate: {
         notEmpty: true,
       },

@@ -9,9 +9,9 @@ const verifyToken = (req, res, next) => {
 
   if (token == null) return res.sendStatus(401);
 
-  jwt.verify(token, secretKey, (err, decoded) => {
+  jwt.verify(token, secretKey, (err, user) => {
     if (err) return res.sendStatus(403);
-    req.email = decoded.email;
+    req.user = user;
     next();
   });
 };
