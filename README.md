@@ -9,7 +9,7 @@ Base URL :
 - [Create Penilaian](#create-penilaian)
 - [Create Lahan Karhutla](#create-lahan-karhutla)
 - [Create Karhutla](#create-karhutla)
-- [Get Karhutla](#get-karhutla)
+- [Get Penilaian](#get-penilaian)
 - [Get Single Result](#get-single-result)
 - [Get Result](#get-result)
 
@@ -184,7 +184,7 @@ Base URL :
 }
 ```
 
-## `Get Karhutla`
+## `Get Penilaian`
 
 ### GET /get-penilaian
 
