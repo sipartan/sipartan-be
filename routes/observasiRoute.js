@@ -21,6 +21,7 @@ router.post("/penilaian-observasi", verifyToken, createPenilaianObservasi);
 router.post("/hasil", verifyToken, createHasil);
 router.post("/dokumentasi", verifyToken, setMulter("nama"), createDokumentasi);
 router.post("/karhutla", verifyToken, createKarhutla);
+
 router.get("/get-penilaian", verifyToken, getPenilaian);
 
 module.exports = router;
