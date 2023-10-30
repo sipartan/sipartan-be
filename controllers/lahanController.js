@@ -103,6 +103,7 @@ const createLahanKarhutla = async (req, res) => {
       kabupaten,
       kecamatan,
       desa,
+      user_id,
       tutupan_lahan,
       jenis_vegetasi,
       luasan_karhutla,
@@ -117,7 +118,8 @@ const createLahanKarhutla = async (req, res) => {
       kelembaban_udara,
     } = req.body;
 
-    const user_id = req.user.id;
+    // ntr ubah lagi kalo dh aktifin auth
+    // const user_id = req.user.id;
 
     const dataKarhutla = await createLahanKarhutlaData(
       provinsi,
