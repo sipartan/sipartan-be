@@ -200,6 +200,8 @@ const getSingleResultData = async (id, obsId) => {
   });
 
   const skor = foundObservasi.dataValues.skor_akhir;
+  const tanggalKejadian = foundObservasi.dataValues.tanggal_kejadian;
+  const tanggalPenilaian = foundObservasi.dataValues.tanggal_penilaian;
   let hasilPenilaian = "";
   switch (true) {
     case skor > 0 && skor <= 20:
@@ -235,6 +237,8 @@ const getSingleResultData = async (id, obsId) => {
     temperatur: foundCuaca.dataValues.temperatur,
     cuaca_hujan: foundCuaca.dataValues.cuaca_hujan,
     kelembaban_udara: foundCuaca.dataValues.kelembaban_udara,
+    tanggalKejadian: tanggalKejadian,
+    tanggalPenilaian: tanggalPenilaian,
     skor: skor,
     hasil_penilaian: hasilPenilaian,
   };
@@ -288,6 +292,8 @@ const getResultsData = async () => {
     });
 
     const skor = foundObservasi[0].dataValues.skor_akhir;
+    const tanggalKejadian = foundObservasi[0].dataValues.tanggal_kejadian;
+    const tanggalPenilaian = foundObservasi[0].dataValues.tanggal_penilaian;
     let hasilPenilaian = "";
     switch (true) {
       case skor > 0 && skor <= 20:
@@ -323,6 +329,8 @@ const getResultsData = async () => {
       temperatur: foundCuaca.dataValues.temperatur,
       cuaca_hujan: foundCuaca.dataValues.cuaca_hujan,
       kelembaban_udara: foundCuaca.dataValues.kelembaban_udara,
+      tanggalKejadian: tanggalKejadian,
+      tanggalPenilaian: tanggalPenilaian,
       skor: skor,
       hasil_penilaian: hasilPenilaian,
     };
