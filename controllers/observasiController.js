@@ -41,9 +41,9 @@ const createPlot = async (req, res) => {
 
 const createPenilaian = async (req, res) => {
   try {
-    const { variable, type, bobot, nilai } = req.body;
+    const { variable, type, bobot, nilai, deskripsi, kategori } = req.body;
 
-    const penilaian = await createPenilaianData(variable, type, bobot, nilai);
+    const penilaian = await createPenilaianData(variable, type, bobot, nilai, deskripsi, kategori);
 
     res.status(200).json({ msg: "berhasil create penilaian", penilaian });
   } catch (error) {

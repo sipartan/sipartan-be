@@ -44,12 +44,14 @@ const createPlotData = async (observation_id, dataPlot) => {
   return result;
 };
 
-const createPenilaianData = async (variable, type, bobot, nilai) => {
+const createPenilaianData = async (variable, type, bobot, nilai, deskripsi, kategori) => {
   return await Penilaian.create({
     variable: variable,
     type: type,
     bobot: bobot,
     nilai: nilai,
+    deskripsi: deskripsi,
+    kategori: kategori,
   });
 };
 

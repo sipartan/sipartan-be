@@ -29,6 +29,20 @@ const Penilaian = db.define(
         notEmpty: true,
       },
     },
+    deskripsi: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    kategori: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
     bobot: {
       type: DataTypes.FLOAT,
       allowNull: false,
