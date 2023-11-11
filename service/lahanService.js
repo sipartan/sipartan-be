@@ -4,6 +4,9 @@ const LokasiTitik = require("../model/lokasiTitik");
 const KeadaanCuaca = require("../model/keadaanCuaca");
 const { Op } = require("sequelize");
 const Observasi = require("../model/observasi");
+const Plot = require("../model/plot");
+const Hasil = require("../model/hasil");
+const { NotFound } = require("../utils/response")
 
 const createLokasiRegionData = async (provinsi, kabupaten, kecamatan, desa) => {
   return await LokasiRegion.create({
@@ -199,6 +202,29 @@ const getSingleResultData = async (id, obsId) => {
     },
   });
 
+  const foundPlot = await Plot.findAll({
+    attributes: ["plot_id"],
+    where: {
+      observation_id: obsId,
+    },
+  });
+  const plotIds = foundPlot.map(
+    (result) => result.dataValues.plot_id
+  );
+
+  const foundHasilPlot = await Hasil.findAll({
+    attributes: ["skor"],
+    where: {
+      plot_id: {
+        [Op.in]: plotIds,
+      },
+    },
+  });
+  const skorHasil = foundHasilPlot.map(
+    (result) => result.dataValues.skor
+  );
+  console.log(skorHasil)
+
   const skor = foundObservasi.dataValues.skor_akhir;
   const tanggalKejadian = foundObservasi.dataValues.tanggal_kejadian;
   const tanggalPenilaian = foundObservasi.dataValues.tanggal_penilaian;
@@ -239,6 +265,7 @@ const getSingleResultData = async (id, obsId) => {
     kelembaban_udara: foundCuaca.dataValues.kelembaban_udara,
     tanggalKejadian: tanggalKejadian,
     tanggalPenilaian: tanggalPenilaian,
+    skor_plot: skorHasil,
     skor: skor,
     hasil_penilaian: hasilPenilaian,
   };
@@ -275,6 +302,9 @@ const getResultsData = async () => {
         data_lahan_id: lahan[i].data_lahan_id,
       },
     });
+    if (foundTitik) {
+      throw new NotFound("Terdapat lahan yang tidak memiliki titik");
+    }
 
     const foundCuaca = await KeadaanCuaca.findOne({
       attributes: ["temperatur", "cuaca_hujan", "kelembaban_udara"],
