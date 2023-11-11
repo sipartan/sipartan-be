@@ -302,9 +302,6 @@ const getResultsData = async () => {
         data_lahan_id: lahan[i].data_lahan_id,
       },
     });
-    if (foundTitik) {
-      throw new NotFound("Terdapat lahan yang tidak memiliki titik");
-    }
 
     const foundCuaca = await KeadaanCuaca.findOne({
       attributes: ["temperatur", "cuaca_hujan", "kelembaban_udara"],
@@ -320,6 +317,9 @@ const getResultsData = async () => {
       },
       order: [["createdAt", "DESC"]],
     });
+    if (!foundObservasi) {
+      throw new NotFound("Terdapat lahan yang tidak memiliki observasi");
+    }
 
     const skor = foundObservasi[0].dataValues.skor_akhir;
     const tanggalKejadian = foundObservasi[0].dataValues.tanggal_kejadian;
