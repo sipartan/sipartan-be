@@ -204,7 +204,7 @@ class LahanService {
     });
   
     const foundPlot = await Plot.findAll({
-      attributes: ["plot_id"],
+      attributes: ["plot_id", "luasan_plot"],
       where: {
         observation_id: obsId,
       },
@@ -212,18 +212,23 @@ class LahanService {
     const plotIds = foundPlot.map(
       (result) => result.dataValues.plot_id
     );
-  
-    const foundHasilPlot = await Hasil.findAll({
-      attributes: ["skor"],
-      where: {
-        plot_id: {
-          [Op.in]: plotIds,
+    
+    const resultSinglePlot = [];
+    for (let i = 0; i < foundPlot.length; i++) {
+      const foundHasilPlot = await Hasil.findOne({
+        attributes: ["skor"],
+        where: {
+          plot_id: foundPlot[i].dataValues.plot_id,
         },
-      },
-    });
-    const skorHasil = foundHasilPlot.map(
-      (result) => result.dataValues.skor
-    );
+      });
+      
+      const singlePlot = {
+        luas_plot: foundPlot[i].dataValues.luasan_plot,
+        skor_plot: foundHasilPlot.dataValues.skor
+      }
+
+      resultSinglePlot.push(singlePlot)
+    }
   
     const skor = foundObservasi.dataValues.skor_akhir;
     const tanggalKejadian = foundObservasi.dataValues.tanggal_kejadian;
@@ -265,7 +270,7 @@ class LahanService {
       kelembaban_udara: foundCuaca.dataValues.kelembaban_udara,
       tanggalKejadian: tanggalKejadian,
       tanggalPenilaian: tanggalPenilaian,
-      skor_plot: skorHasil,
+      single_plot: resultSinglePlot,
       skor: skor,
       hasil_penilaian: hasilPenilaian,
     };
