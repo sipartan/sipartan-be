@@ -1,11 +1,12 @@
 const express = require("express");
-const { createUser, login } = require("../controllers/userController");
 const { verifyToken } = require("../middleware/authMiddleware")
+const UserController = require("../controllers/userController");
 
 const router = express.Router();
+const userController = new UserController();
 
-router.post("/user", createUser);
-router.post("/login", login);
+router.post("/user", userController.createUser);
+router.post("/login", userController.login);
 
 // fungsi selanjutnya pakein verifyToken
 
