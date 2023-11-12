@@ -236,13 +236,25 @@ Base URL :
         "jenis_karhutla": "Sedang",
         "provinsi": "Jawa Tengah",
         "kabupaten": "Pati",
-        "kecamatan": "Tlogowungu",
-        "desa": "Sumbermulyo",
+        "kecamatan": "Trangkil",
+        "desa": "Kertomulyo",
         "latitude": "-6.671529037509255",
         "longitude": "111.00579212756656",
         "temperatur": 7.5,
         "cuaca_hujan": 3.4,
         "kelembaban_udara": 2.9,
+        "tanggalKejadian": "2023-10-04T03:00:00.000Z",
+        "tanggalPenilaian": "2023-10-05T03:00:00.000Z",
+        "single_plot": [
+            {
+                "luas_plot": 12.5,
+                "skor_plot": 58
+            },
+            {
+                "luas_plot": 15.9,
+                "skor_plot": 58
+            }
+        ],
         "skor": 58,
         "hasil_penilaian": "Sedang"
     }
