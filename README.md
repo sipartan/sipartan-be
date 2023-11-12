@@ -12,6 +12,7 @@ Base URL :
 - [Get Penilaian](#get-penilaian)
 - [Get Single Result](#get-single-result)
 - [Get Result](#get-result)
+- [Delete Karhutla](#delete-karhutla)
 
 ## `Create User`
 
@@ -293,5 +294,20 @@ Base URL :
             "hasil_penilaian": "Sedang"
         }
     ]
+}
+```
+
+## `Delete Karhutla`
+
+### GET /delete-karhutla/:id
+
+### https://poised-bot-403511.et.r.appspot.com/delete-karhutla/:id
+
+### Sample success response
+
+```json
+{
+    "msg": "berhasil delete karhutla",
+    "result": 1
 }
 ```
