@@ -352,6 +352,7 @@ class LahanService {
       }
   
       const singleData = {
+        data_lahan_id: lahan[i].data_lahan_id,
         tutupan_lahan: lahan[i].tutupan_lahan,
         luasan_karhutla: lahan[i].luasan_karhutla,
         jenis_karhutla: lahan[i].jenis_karhutla,
