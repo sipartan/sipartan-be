@@ -1,7 +1,7 @@
 const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
-// const db = new Sequelize("test", "postgres", "postgres", {
+// const db = new Sequelize("sipartan_db", "postgres", "postgres", {
 //   host: "localhost",
 //   dialect: "postgres",
 // });

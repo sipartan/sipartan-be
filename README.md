@@ -84,6 +84,8 @@ Base URL :
 | type      | `string`  | **required** |      |
 | bobot     | `float`   | **required** |      |
 | nilai     | `integer` | **required** |      |
+| deskripsi | `string`  | **required** |      |
+| kategori  | `string`  | **required** |      |
 
 ### Sample success response
 
@@ -195,27 +197,27 @@ Base URL :
 
 ```json
 {
-    "msg": "berhasil get penilaian",
-    "result": [
-        {
-            "penilaian_id": "e67a075f-68e1-4aa6-a49c-633209680174",
-            "variable": "Pohon Mati",
-            "type": "Kondisi Vegetasi",
-            "bobot": 8,
-            "nilai": 1,
-            "createdAt": "2023-10-29T16:11:12.994Z",
-            "updatedAt": "2023-10-29T16:11:12.994Z"
-        },
-        {
-            "penilaian_id": "c130b351-fde6-4310-8690-054f6fb7d851",
-            "variable": "Pohon Hidup",
-            "type": "Kondisi Vegetasi",
-            "bobot": 0,
-            "nilai": 0,
-            "createdAt": "2023-10-29T16:11:37.889Z",
-            "updatedAt": "2023-10-29T16:11:37.889Z"
-        },
-    ]
+  "msg": "berhasil get penilaian",
+  "result": [
+    {
+      "penilaian_id": "e67a075f-68e1-4aa6-a49c-633209680174",
+      "variable": "Pohon Mati",
+      "type": "Kondisi Vegetasi",
+      "bobot": 8,
+      "nilai": 1,
+      "createdAt": "2023-10-29T16:11:12.994Z",
+      "updatedAt": "2023-10-29T16:11:12.994Z"
+    },
+    {
+      "penilaian_id": "c130b351-fde6-4310-8690-054f6fb7d851",
+      "variable": "Pohon Hidup",
+      "type": "Kondisi Vegetasi",
+      "bobot": 0,
+      "nilai": 0,
+      "createdAt": "2023-10-29T16:11:37.889Z",
+      "updatedAt": "2023-10-29T16:11:37.889Z"
+    }
+  ]
 }
 ```
 
@@ -229,35 +231,35 @@ Base URL :
 
 ```json
 {
-    "msg": "berhasil get single result",
-    "result": {
-        "tutupan_lahan": "Hutan",
-        "luasan_karhutla": 17.2,
-        "jenis_karhutla": "Sedang",
-        "provinsi": "Jawa Tengah",
-        "kabupaten": "Pati",
-        "kecamatan": "Trangkil",
-        "desa": "Kertomulyo",
-        "latitude": "-6.671529037509255",
-        "longitude": "111.00579212756656",
-        "temperatur": 7.5,
-        "cuaca_hujan": 3.4,
-        "kelembaban_udara": 2.9,
-        "tanggalKejadian": "2023-10-04T03:00:00.000Z",
-        "tanggalPenilaian": "2023-10-05T03:00:00.000Z",
-        "single_plot": [
-            {
-                "luas_plot": 12.5,
-                "skor_plot": 58
-            },
-            {
-                "luas_plot": 15.9,
-                "skor_plot": 58
-            }
-        ],
-        "skor": 58,
-        "hasil_penilaian": "Sedang"
-    }
+  "msg": "berhasil get single result",
+  "result": {
+    "tutupan_lahan": "Hutan",
+    "luasan_karhutla": 17.2,
+    "jenis_karhutla": "Sedang",
+    "provinsi": "Jawa Tengah",
+    "kabupaten": "Pati",
+    "kecamatan": "Trangkil",
+    "desa": "Kertomulyo",
+    "latitude": "-6.671529037509255",
+    "longitude": "111.00579212756656",
+    "temperatur": 7.5,
+    "cuaca_hujan": 3.4,
+    "kelembaban_udara": 2.9,
+    "tanggalKejadian": "2023-10-04T03:00:00.000Z",
+    "tanggalPenilaian": "2023-10-05T03:00:00.000Z",
+    "single_plot": [
+      {
+        "luas_plot": 12.5,
+        "skor_plot": 58
+      },
+      {
+        "luas_plot": 15.9,
+        "skor_plot": 58
+      }
+    ],
+    "skor": 58,
+    "hasil_penilaian": "Sedang"
+  }
 }
 ```
 
@@ -271,41 +273,41 @@ Base URL :
 
 ```json
 {
-    "msg": "berhasil get results",
-    "result": [
-        {
-            "tutupan_lahan": "Hutan",
-            "luasan_karhutla": 17.2,
-            "jenis_karhutla": "Sedang",
-            "provinsi": "Jawa Tengah",
-            "kabupaten": "Pati",
-            "kecamatan": "Tlogowungu",
-            "desa": "Sumbermulyo",
-            "latitude": "-6.671529037509255",
-            "longitude": "111.00579212756656",
-            "temperatur": 7.5,
-            "cuaca_hujan": 3.4,
-            "kelembaban_udara": 2.9,
-            "skor": 58,
-            "hasil_penilaian": "Sedang"
-        },
-        {
-            "tutupan_lahan": "Hutan",
-            "luasan_karhutla": 17.2,
-            "jenis_karhutla": "Sedang",
-            "provinsi": "Jawa Tengah",
-            "kabupaten": "Pati",
-            "kecamatan": "Trangkil",
-            "desa": "Kertomulyo",
-            "latitude": "-6.671529037509255",
-            "longitude": "111.00579212756656",
-            "temperatur": 7.5,
-            "cuaca_hujan": 3.4,
-            "kelembaban_udara": 2.9,
-            "skor": 58,
-            "hasil_penilaian": "Sedang"
-        }
-    ]
+  "msg": "berhasil get results",
+  "result": [
+    {
+      "tutupan_lahan": "Hutan",
+      "luasan_karhutla": 17.2,
+      "jenis_karhutla": "Sedang",
+      "provinsi": "Jawa Tengah",
+      "kabupaten": "Pati",
+      "kecamatan": "Tlogowungu",
+      "desa": "Sumbermulyo",
+      "latitude": "-6.671529037509255",
+      "longitude": "111.00579212756656",
+      "temperatur": 7.5,
+      "cuaca_hujan": 3.4,
+      "kelembaban_udara": 2.9,
+      "skor": 58,
+      "hasil_penilaian": "Sedang"
+    },
+    {
+      "tutupan_lahan": "Hutan",
+      "luasan_karhutla": 17.2,
+      "jenis_karhutla": "Sedang",
+      "provinsi": "Jawa Tengah",
+      "kabupaten": "Pati",
+      "kecamatan": "Trangkil",
+      "desa": "Kertomulyo",
+      "latitude": "-6.671529037509255",
+      "longitude": "111.00579212756656",
+      "temperatur": 7.5,
+      "cuaca_hujan": 3.4,
+      "kelembaban_udara": 2.9,
+      "skor": 58,
+      "hasil_penilaian": "Sedang"
+    }
+  ]
 }
 ```
 
@@ -319,7 +321,7 @@ Base URL :
 
 ```json
 {
-    "msg": "berhasil delete karhutla",
-    "result": 1
+  "msg": "berhasil delete karhutla",
+  "result": 1
 }
 ```
