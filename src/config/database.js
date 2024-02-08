@@ -7,7 +7,7 @@ require("dotenv").config();
 // });
 
 const db = new Sequelize("sipartan-db", "postgres", "sipartan", {
-  host: "34.101.244.80",
+  host: "34.101.174.205",
   dialect: "postgres",
 });
 
