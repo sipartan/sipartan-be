@@ -6,15 +6,15 @@ const router = express.Router();
 const lahanController = new LahanController();
 
 // ntr masukin verifyToken kalo udh mau di aktifin lagi authnya
-router.post("/lokasi-region", lahanController.createLokasiRegion);
-router.post("/data-lahan", lahanController.createDataUmumLahan);
-router.post("/lokasi-titik", lahanController.createLokasiTitik);
-router.post("/keadaan-cuaca", lahanController.createKeadaanCuaca);
-router.post("/lahan-karhutla", lahanController.createLahanKarhutla);
+router.post("/lokasi-region", verifyToken, lahanController.createLokasiRegion);
+router.post("/data-lahan", verifyToken, lahanController.createDataUmumLahan);
+router.post("/lokasi-titik", verifyToken, lahanController.createLokasiTitik);
+router.post("/keadaan-cuaca", verifyToken, lahanController.createKeadaanCuaca);
+router.post("/lahan-karhutla", verifyToken, lahanController.createLahanKarhutla);
 
-router.get("/single-result/:id/:obsId", lahanController.getSingleResult);
-router.get("/results", lahanController.getResults);
+router.get("/single-result/:id/:obsId", verifyToken, lahanController.getSingleResult);
+router.get("/results", verifyToken, lahanController.getResults);
 
-router.delete("/delete-karhutla/:id", lahanController.deleteKarhutla);
+router.delete("/delete-karhutla/:id", verifyToken, lahanController.deleteKarhutla);
 
 module.exports = router;
