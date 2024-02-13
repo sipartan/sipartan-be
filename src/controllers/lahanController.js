@@ -27,7 +27,6 @@ class LahanController {
   createDataUmumLahan = async (req, res) => {
     try {
       const {
-        user_id,
         region_location_id,
         tutupan_lahan,
         jenis_vegetasi,
@@ -39,7 +38,7 @@ class LahanController {
       } = req.body;
       
       // ntr ubah lagi kalo dh aktifin auth
-      // const user_id = req.user.id;
+      const user_id = req.user.id;
   
       const dataUmumLahan = await this.lahanService.createDataUmumLahanData(
         user_id,
@@ -102,7 +101,6 @@ class LahanController {
         kabupaten,
         kecamatan,
         desa,
-        user_id,
         tutupan_lahan,
         jenis_vegetasi,
         luasan_karhutla,
@@ -118,7 +116,7 @@ class LahanController {
       } = req.body;
   
       // ntr ubah lagi kalo dh aktifin auth
-      // const user_id = req.user.id;
+      const user_id = req.user.id;
   
       const dataKarhutla = await this.lahanService.createLahanKarhutlaData(
         provinsi,
