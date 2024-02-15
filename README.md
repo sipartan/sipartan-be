@@ -18,7 +18,7 @@ Base URL :
 
 ### POST /patient
 
-### https://sipartan.et.r.appspot.com/patient
+### https://sipartan.et.r.appspot.com/user
 
 ### Request body
 
