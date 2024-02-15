@@ -16,7 +16,7 @@ Base URL :
 
 ## `Create User`
 
-### POST /patient
+### POST /user
 
 ### https://sipartan.et.r.appspot.com/user
 
