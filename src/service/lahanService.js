@@ -7,6 +7,7 @@ const Observasi = require("../model/observasi");
 const Plot = require("../model/plot");
 const Hasil = require("../model/hasil");
 const { NotFound } = require("../utils/response")
+const downloadPDFReport = require('../utils/generateReport/index');
 
 class LahanService {
   async createLokasiRegionData (provinsi, kabupaten, kecamatan, desa) {
@@ -278,17 +279,34 @@ class LahanService {
     return data;
   };
 
-  async getResultsData () {
-    const foundLahan = await DataUmumLahan.findAll({
-      attributes: [
-        "data_lahan_id",
-        "region_location_id",
-        "tutupan_lahan",
-        "luasan_karhutla",
-        "jenis_karhutla",
-        "penggunaan_lahan",
-      ],
-    });
+  async getResultsData (userId) {
+    let foundLahan;
+    if (userId) {
+      foundLahan = await DataUmumLahan.findAll({
+        attributes: [
+          "data_lahan_id",
+          "region_location_id",
+          "tutupan_lahan",
+          "luasan_karhutla",
+          "jenis_karhutla",
+          "penggunaan_lahan",
+        ],
+        where: {
+          user_id: userId,
+        },
+      });
+    } else {
+      foundLahan = await DataUmumLahan.findAll({
+        attributes: [
+          "data_lahan_id",
+          "region_location_id",
+          "tutupan_lahan",
+          "luasan_karhutla",
+          "jenis_karhutla",
+          "penggunaan_lahan",
+        ],
+      });
+    }
   
     const lahan = foundLahan.map((result) => result.dataValues);
   
@@ -326,6 +344,7 @@ class LahanService {
         throw new NotFound("Terdapat lahan yang tidak memiliki observasi");
       }
   
+      // ini baru cuma data observasi pertama aja yang ditampilin
       const skor = foundObservasi[0].dataValues.skor_akhir;
       const tanggalKejadian = foundObservasi[0].dataValues.tanggal_kejadian;
       const tanggalPenilaian = foundObservasi[0].dataValues.tanggal_penilaian;
@@ -376,6 +395,10 @@ class LahanService {
   
     return data;
   };
+
+  async downloadPDF () {
+    return await downloadPDFReport();
+  }
 
   async deleteKarhutla (id) {
     const foundLahan = await DataUmumLahan.findOne({

@@ -12,8 +12,9 @@ router.post("/lokasi-titik", verifyToken, lahanController.createLokasiTitik);
 router.post("/keadaan-cuaca", verifyToken, lahanController.createKeadaanCuaca);
 router.post("/lahan-karhutla", verifyToken, lahanController.createLahanKarhutla);
 
-router.get("/single-result/:id/:obsId", verifyToken, lahanController.getSingleResult);
-router.get("/results", verifyToken, lahanController.getResults);
+router.get("/single-result/:id/:obsId", lahanController.getSingleResult);
+router.get("/results", lahanController.getResults);
+router.get("/downloadPDF", verifyToken, lahanController.downloadPDF);
 
 router.delete("/delete-karhutla/:id", verifyToken, lahanController.deleteKarhutla);
 

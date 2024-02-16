@@ -160,13 +160,26 @@ class LahanController {
 
   getResults = async (req, res) => {
     try {
-      const result = await this.lahanService.getResultsData();
+      const { userId } = req.query;
+
+      const result = await this.lahanService.getResultsData(userId);
   
       res.status(200).json({ msg: "berhasil get results", result });
     } catch (error) {
       res.status(500).json({ msg: error.message });
     }
   };
+
+  downloadPDF = async (req, res) => {
+    try {
+      const result = await this.lahanService.downloadPDF();
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.send(result);
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  }
 
   deleteKarhutla = async (req, res) => {
     try {

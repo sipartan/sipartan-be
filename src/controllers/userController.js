@@ -47,6 +47,21 @@ class UserController {
       res.status(500).json({ msg: error.message });
     }
   };
+
+  getUser = async (req, res) => {
+    try {
+      const foundUser = await User.findAll({
+        attributes: ["user_id", "nama", "instansi", "email", "username"],
+        where: {
+          user_id: req.user.id,
+        }
+      });
+
+      res.status(200).json({ msg: "Berhasil Get User", foundUser });
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  }
 }
 
 module.exports = UserController;
