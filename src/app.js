@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors()); 
 
-dbGenerate()
+// dbGenerate()
 
 // routes
 app.use(UserRoute);

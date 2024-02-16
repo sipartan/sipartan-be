@@ -2,10 +2,11 @@
 
 Base URL :
 
-> https://poised-bot-403511.et.r.appspot.com
+> https://sipartan.et.r.appspot.com
 
 - [Create User](#create-user)
 - [Login](#login)
+- [Get User](#get-user)
 - [Create Penilaian](#create-penilaian)
 - [Create Lahan Karhutla](#create-lahan-karhutla)
 - [Create Karhutla](#create-karhutla)
@@ -16,9 +17,9 @@ Base URL :
 
 ## `Create User`
 
-### POST /patient
+### POST /user
 
-### https://poised-bot-403511.et.r.appspot.com/patient
+### https://sipartan.et.r.appspot.com/user
 
 ### Request body
 
@@ -52,7 +53,7 @@ Base URL :
 
 ### POST /login
 
-### https://poised-bot-403511.et.r.appspot.com/login
+### https://sipartan.et.r.appspot.com/login
 
 ### Request body
 
@@ -70,11 +71,34 @@ Base URL :
 }
 ```
 
+## `Get User`
+
+### GET /getUser
+
+### https://sipartan.et.r.appspot.com/getUser
+
+### Sample success response
+
+```json
+{
+  "msg": "Berhasil Get User",
+  "foundUser": [
+    {
+      "user_id": "4048f2cf-23d2-4ed9-9588-126606a90013",
+      "nama": "rozan",
+      "instansi": "IPB",
+      "email": "rozan@gmail.com",
+      "username": "rozan123"
+    }
+  ]
+}
+```
+
 ## `Create Penilaian`
 
 ### POST /penilaian
 
-### https://poised-bot-403511.et.r.appspot.com/penilaian
+### https://sipartan.et.r.appspot.com/penilaian
 
 ### Request body
 
@@ -108,7 +132,7 @@ Base URL :
 
 ### POST /lahan-karhutla
 
-### https://poised-bot-403511.et.r.appspot.com/lahan-karhutla
+### https://sipartan.et.r.appspot.com/lahan-karhutla
 
 ### Request body
 
@@ -157,7 +181,7 @@ Base URL :
 
 ### POST /karhutla
 
-### https://poised-bot-403511.et.r.appspot.com/karhutla
+### https://sipartan.et.r.appspot.com/karhutla
 
 ### Request body
 
@@ -191,7 +215,7 @@ Base URL :
 
 ### GET /get-penilaian
 
-### https://poised-bot-403511.et.r.appspot.com/get-penilaian
+### https://sipartan.et.r.appspot.com/get-penilaian
 
 ### Sample success response
 
@@ -225,7 +249,7 @@ Base URL :
 
 ### GET /single-result/:id/:obsId
 
-### https://poised-bot-403511.et.r.appspot.com/single-result/:id/:obsId
+### https://sipartan.et.r.appspot.com/single-result/:id/:obsId
 
 ### Sample success response
 
@@ -267,7 +291,13 @@ Base URL :
 
 ### GET /results
 
-### https://poised-bot-403511.et.r.appspot.com/results
+### https://sipartan.et.r.appspot.com/results
+
+### Query
+
+| Fieldname | Type     | Necessity    | Desc |
+| --------- | -------- | ------------ | ---- |
+| userId    | `string` | **optional** |      |
 
 ### Sample success response
 
@@ -315,7 +345,7 @@ Base URL :
 
 ### GET /delete-karhutla/:id
 
-### https://poised-bot-403511.et.r.appspot.com/delete-karhutla/:id
+### https://sipartan.et.r.appspot.com/delete-karhutla/:id
 
 ### Sample success response
 
