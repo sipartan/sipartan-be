@@ -40,7 +40,7 @@ class UserController {
       const match = bcrypt.compareSync(password, foundUser.password)
       if (!match) return res.status(404).json({ msg: "Password salah" })
   
-      const token = jwt.sign({ email, id: foundUser.user_id, nama: foundUser.nama }, secretKey)
+      const token = jwt.sign({ email, id: foundUser.user_id, nama: foundUser.nama }, secretKey, { expiresIn: '1d' })
   
       res.status(200).json({ msg: "Berhasil login", token });
     } catch (error) {
