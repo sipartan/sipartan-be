@@ -2,7 +2,7 @@ version: "3.8"
 services:
   app:
     container_name: "sipartan-be"
-    image: "rozanmln/sipartan-be"
+    image: "rozanmln/sipartan-be:latest"
     environment:
       - PORT=9001
       - SECRETKEY=12345
