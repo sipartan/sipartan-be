@@ -343,8 +343,9 @@ class LahanService {
       if (!foundObservasi) {
         throw new NotFound("Terdapat lahan yang tidak memiliki observasi");
       }
-  
-      // ini baru cuma data observasi pertama aja yang ditampilin
+      
+      if (foundObservasi.length > 0) {
+        // ini baru cuma data observasi pertama aja yang ditampilin
       const skor = foundObservasi[0].dataValues.skor_akhir;
       const tanggalKejadian = foundObservasi[0].dataValues.tanggal_kejadian;
       const tanggalPenilaian = foundObservasi[0].dataValues.tanggal_penilaian;
@@ -391,6 +392,8 @@ class LahanService {
       };
   
       data.push(singleData);
+      }
+      
     }
   
     return data;
