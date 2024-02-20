@@ -6,6 +6,7 @@ const { Op } = require("sequelize");
 const Observasi = require("../model/observasi");
 const Plot = require("../model/plot");
 const Hasil = require("../model/hasil");
+const User = require("../model/user");
 const { NotFound } = require("../utils/response")
 const downloadPDFReport = require('../utils/generateReport/index');
 
@@ -160,21 +161,58 @@ class LahanService {
     return makeDataLahan;
   };
 
+  async timeAgo(date) {
+    const currentDate = new Date();
+    const timestamp = date.getTime();
+    const currentTimestamp = currentDate.getTime();
+    const difference = currentTimestamp - timestamp;
+
+    const seconds = Math.floor(difference / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const weeks = Math.floor(days / 7);
+    const months = Math.floor(days / 30);
+
+    if (months > 0) {
+        return months === 1 ? 'one month ago' : `${months} months ago`;
+    } else if (weeks > 0) {
+        return weeks === 1 ? 'one week ago' : `${weeks} weeks ago`;
+    } else if (days > 0) {
+        return days === 1 ? 'one day ago' : `${days} days ago`;
+    } else if (hours > 0) {
+        return hours === 1 ? 'one hour ago' : `${hours} hours ago`;
+    } else if (minutes > 0) {
+        return minutes === 1 ? 'one minute ago' : `${minutes} minutes ago`;
+    } else {
+        return 'just now';
+    }
+}
+
   async getSingleResultData (id, obsId) {
     const foundLahan = await DataUmumLahan.findOne({
       attributes: [
         "data_lahan_id",
         "region_location_id",
+        "user_id",
         "tutupan_lahan",
         "luasan_karhutla",
         "jenis_karhutla",
         "penggunaan_lahan",
+        "jenis_tanah",
       ],
       where: {
         data_lahan_id: id,
       },
     });
   
+    const foundUser = await User.findOne({
+      attributes: ["user_id", "nama", "instansi", "email", "username"],
+      where: {
+        user_id: foundLahan.dataValues.user_id,
+      },
+    });
+
     const foundRegion = await LokasiRegion.findOne({
       attributes: ["provinsi", "kabupaten", "kecamatan", "desa"],
       where: {
@@ -197,7 +235,7 @@ class LahanService {
     });
   
     const foundObservasi = await Observasi.findOne({
-      attributes: ["tanggal_kejadian", "tanggal_penilaian", "skor_akhir"],
+      attributes: ["tanggal_kejadian", "tanggal_penilaian", "skor_akhir", "createdAt"],
       where: {
         data_lahan_id: id,
         observation_id: obsId,
@@ -234,6 +272,9 @@ class LahanService {
     const skor = foundObservasi.dataValues.skor_akhir;
     const tanggalKejadian = foundObservasi.dataValues.tanggal_kejadian;
     const tanggalPenilaian = foundObservasi.dataValues.tanggal_penilaian;
+    const tanggalUpload = new Date(foundObservasi.dataValues.createdAt);
+    const tanggalUploadFormatted = await this.timeAgo(tanggalUpload);
+
     let hasilPenilaian = "";
     switch (true) {
       case skor > 0 && skor <= 20:
@@ -260,6 +301,11 @@ class LahanService {
       tutupan_lahan: foundLahan.dataValues.tutupan_lahan,
       luasan_karhutla: foundLahan.dataValues.luasan_karhutla,
       jenis_karhutla: foundLahan.dataValues.jenis_karhutla,
+      penggunaan_lahan: foundLahan.dataValues.penggunaan_lahan,
+      jenis_tanah: foundLahan.dataValues.jenis_tanah,
+      nama_user: foundUser.dataValues.nama,
+      instansi_user: foundUser.dataValues.instansi,
+      tanggal_upload: tanggalUploadFormatted,
       provinsi: foundRegion.dataValues.provinsi,
       kabupaten: foundRegion.dataValues.kabupaten,
       kecamatan: foundRegion.dataValues.kecamatan,
@@ -334,7 +380,7 @@ class LahanService {
       });
   
       const foundObservasi = await Observasi.findAll({
-        attributes: ["tanggal_kejadian", "tanggal_penilaian", "skor_akhir"],
+        attributes: ["observation_id", "tanggal_kejadian", "tanggal_penilaian", "skor_akhir"],
         where: {
           data_lahan_id: lahan[i].data_lahan_id,
         },
@@ -349,6 +395,7 @@ class LahanService {
       const skor = foundObservasi[0].dataValues.skor_akhir;
       const tanggalKejadian = foundObservasi[0].dataValues.tanggal_kejadian;
       const tanggalPenilaian = foundObservasi[0].dataValues.tanggal_penilaian;
+      const observationId = foundObservasi[0].dataValues.observation_id;
       let hasilPenilaian = "";
       switch (true) {
         case skor > 0 && skor <= 20:
@@ -370,9 +417,10 @@ class LahanService {
         default:
           break;
       }
-  
+
       const singleData = {
         data_lahan_id: lahan[i].data_lahan_id,
+        observation_id: observationId,
         tutupan_lahan: lahan[i].tutupan_lahan,
         luasan_karhutla: lahan[i].luasan_karhutla,
         jenis_karhutla: lahan[i].jenis_karhutla,
