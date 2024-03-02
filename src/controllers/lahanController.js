@@ -172,7 +172,9 @@ class LahanController {
 
   downloadPDF = async (req, res) => {
     try {
-      const result = await this.lahanService.downloadPDF();
+      const { id, obsId } = req.params;
+
+      const result = await this.lahanService.downloadPDF(id, obsId);
 
       res.setHeader('Content-Type', 'application/pdf');
       res.send(result);
@@ -192,6 +194,19 @@ class LahanController {
       res.status(500).json({ msg: error.message });
     }
   };
+
+  editKarhutla = async (req, res) => {
+    try {
+      const { id, obsId } = req.params;
+      const { data } = req.body;
+
+      const result = await this.lahanService.editKarhutla(id, obsId, data);
+
+      res.status(200).json({ msg: "berhasil edit karhutla", result });
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  }
 }
 
 module.exports = LahanController;

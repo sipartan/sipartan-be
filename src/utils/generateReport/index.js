@@ -1,14 +1,14 @@
 const puppeteer = require('puppeteer');
 const pdfContent = require('./pdfContent');
 
-const downloadPDFReport = async () => {
+const downloadPDFReport = async (dataPDF) => {
     const browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox'],
     });
 
     const page = await browser.newPage();
-    const content = await pdfContent();
+    const content = await pdfContent(dataPDF);
 
     await page.setContent(content);
 
