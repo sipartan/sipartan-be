@@ -14,7 +14,9 @@ router.post("/lahan-karhutla", verifyToken, lahanController.createLahanKarhutla)
 
 router.get("/single-result/:id/:obsId", lahanController.getSingleResult);
 router.get("/results", lahanController.getResults);
-router.get("/downloadPDF", verifyToken, lahanController.downloadPDF);
+router.get("/downloadPDF/:id/:obsId", verifyToken, lahanController.downloadPDF);
+
+router.put("/edit-karhutla/:id/:obsId", verifyToken, lahanController.editKarhutla);
 
 router.delete("/delete-karhutla/:id", verifyToken, lahanController.deleteKarhutla);
 
