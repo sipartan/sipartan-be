@@ -14,6 +14,8 @@ Base URL :
 - [Get Single Result](#get-single-result)
 - [Get Result](#get-result)
 - [Delete Karhutla](#delete-karhutla)
+- [Edit Karhutla](#edit-karhutla)
+- [Download PDF Karhutla](#downloadPDF-karhutla)
 
 ## `Create User`
 
@@ -343,7 +345,7 @@ Base URL :
 
 ## `Delete Karhutla`
 
-### GET /delete-karhutla/:id
+### DELETE /delete-karhutla/:id
 
 ### https://sipartan.et.r.appspot.com/delete-karhutla/:id
 
@@ -352,6 +354,62 @@ Base URL :
 ```json
 {
   "msg": "berhasil delete karhutla",
+  "result": 1
+}
+```
+
+## `Edit Karhutla`
+
+### PUT /edit-karhutla/:id/:obsId
+
+### https://sipartan.et.r.appspot.com/edit-karhutla/:id/:obsId
+
+### Request body
+
+| Fieldname                                | Type     | Necessity    | Desc                                                                            |
+| ---------------------------------------- | -------- | ------------ | ------------------------------------------------------------------------------- |
+| provinsi                                 | `string` | **opsional** |                                                                                 |
+| kabupaten                                | `string` | **opsional** |                                                                                 |
+| kecamatan                                | `string` | **opsional** |                                                                                 |
+| desa                                     | `string` | **opsional** |                                                                                 |
+| tutupan_lahan                            | `string` | **opsional** |                                                                                 |
+| jenis_vegetasi                           | `string` | **opsional** |                                                                                 |
+| luasan_karhutla                          | `float`  | **opsional** |                                                                                 |
+| jenis_tanah                              | `string` | **opsional** |                                                                                 |
+| tinggi_muka_air_gambut                   | `float`  | **opsional** |                                                                                 |
+| jenis_karhutla                           | `string` | **opsional** |                                                                                 |
+| penggunaan_lahan                         | `string` | **opsional** |                                                                                 |
+| latitude                                 | `string` | **opsional** |                                                                                 |
+| longitude                                | `string` | **opsional** |                                                                                 |
+| temperatur                               | `float`  | **opsional** |                                                                                 |
+| cuaca_hujan                              | `float`  | **opsional** |                                                                                 |
+| kelembaban_udara                         | `float`  | **opsional** |                                                                                 |
+| data_indikator                           | `array`  | **opsional** | berisi nilai-nilai yang ingin diubah                                            |
+| data_indikator[].penilaianObservation_id | `string` | **opsional** | Penilaian Observation id yang ada di setiap nilai (yang ada pada single result) |
+| data_indikator[].penilaian_id            | `string` | **opsional** | tujuan penilaian id setelah berubah                                             |
+
+### Sample success response
+
+```json
+{
+    "msg": "berhasil edit karhutla",
+    "result": [
+        1
+    ]
+}
+```
+
+## `DownloadPDF Karhutla`
+
+### DELETE /downloadPDF/:id/:obsId
+
+### https://sipartan.et.r.appspot.com/downloadPDF/:id/:obsId
+
+### Sample success response
+
+```json
+{
+  "msg": "berhasil downloadPDF karhutla",
   "result": 1
 }
 ```

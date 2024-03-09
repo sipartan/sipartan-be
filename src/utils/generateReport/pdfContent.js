@@ -39,7 +39,7 @@ const findPenilaian = async (
         attributes: ["variable", "deskripsi"],
         where: {
           kategori: kategoriPenilaian,
-          penilaian_id: penilaianIds[i],
+          penilaian_id: penilaianIds[i].penilaianIds,
         },
       });
     if (foundPenilaian) {
