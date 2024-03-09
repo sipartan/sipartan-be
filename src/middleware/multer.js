@@ -5,7 +5,7 @@ const setMulter = (fieldName) => {
     try {
       const storage = multer.diskStorage({
         destination: (req, file, cb) => {
-          cb(null, "image/upload");
+          cb(null, "src/image/upload");
         },
         filename: (req, file, cb) => {
           let splitted = file.originalname.split(".");

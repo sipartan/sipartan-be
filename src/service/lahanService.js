@@ -428,7 +428,7 @@ class LahanService {
       });
 
       const foundObservasi = await Observasi.findAll({
-        attributes: ["observation_id", "tanggal_kejadian", "tanggal_penilaian", "skor_akhir"],
+        attributes: ["observation_id", "tanggal_kejadian", "tanggal_penilaian", "skor_akhir", "createdAt"],
         where: {
           data_lahan_id: lahan[i].data_lahan_id,
         },
@@ -444,6 +444,8 @@ class LahanService {
         const tanggalKejadian = foundObservasi[0].dataValues.tanggal_kejadian;
         const tanggalPenilaian = foundObservasi[0].dataValues.tanggal_penilaian;
         const observationId = foundObservasi[0].dataValues.observation_id;
+        const tanggalDibuat = foundObservasi[0].dataValues.createdAt;
+
         let hasilPenilaian = "";
         switch (true) {
           case skor > 0 && skor <= 20:
@@ -481,6 +483,7 @@ class LahanService {
           temperatur: foundCuaca.dataValues.temperatur,
           cuaca_hujan: foundCuaca.dataValues.cuaca_hujan,
           kelembaban_udara: foundCuaca.dataValues.kelembaban_udara,
+          tanggalDibuat: tanggalDibuat,
           tanggalKejadian: tanggalKejadian,
           tanggalPenilaian: tanggalPenilaian,
           skor: skor,
