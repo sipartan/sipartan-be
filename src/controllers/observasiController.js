@@ -85,10 +85,10 @@ class ObservasiController {
 
   createDokumentasi = async (req, res) => {
     try {
-      const { plot_id, type, arr } = req.body;
-      const files = req.file;
+      const { plot_id, type } = req.body;
+      const files = req.files;
   
-      // const dokumentasi = await this.observasiService.createDokumentasiData(plot_id, nama, type);
+      const dokumentasi = await this.observasiService.createDokumentasiData(plot_id, files, type);
   
       res.status(200).json({ msg: "berhasil create dokumentasi" });
     } catch (error) {
@@ -122,7 +122,6 @@ class ObservasiController {
   getImage = async (req, res) => {
     try {
       const fileName = req.params.fileName;
-      console.log(global.__basedir)
 
       const filePath = path.join(global.__basedir, 'image', 'upload', fileName);
 
@@ -135,6 +134,17 @@ class ObservasiController {
        // Send the file content as the response
       res.send(fileContent);
 
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  }
+
+  getImageName = async (req, res) => {
+    try {
+      const { plot_id, type } = req.body;
+      const result = await this.observasiService.getImageName(plot_id, type);
+
+      res.status(200).json({ msg: "berhasil get image name", result });
     } catch (error) {
       res.status(500).json({ msg: error.message });
     }
