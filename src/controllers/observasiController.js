@@ -1,5 +1,6 @@
 const ObservasiService = require("../service/observasiService");
-const path = require("path")
+const path = require("path");
+const fs = require('fs').promises;
 
 class ObservasiController {
   constructor() {
@@ -123,21 +124,16 @@ class ObservasiController {
       const fileName = req.params.fileName;
       console.log(global.__basedir)
 
-      const options = {
-        root: path.join(
-          global.__basedir,
-          `image/upload`
-        ),
-        headers: {
-          "Content-Type": 'image/jpeg',
-        },
-      };
-      
-      res.sendFile(fileName, options, (err) => {
-        if (err) {
-          console.error('Error sending file:', err);
-        }
-      });
+      const filePath = path.join(global.__basedir, 'image', 'upload', fileName);
+
+      // Read the file asynchronously
+      const fileContent = await fs.readFile(filePath);
+
+      // Set the appropriate headers for the response
+      res.setHeader('Content-Type', 'image/jpeg');
+
+       // Send the file content as the response
+      res.send(fileContent);
 
     } catch (error) {
       res.status(500).json({ msg: error.message });

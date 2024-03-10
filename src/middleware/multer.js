@@ -17,7 +17,7 @@ const setMulter = () => {
       const upload = multer({
         storage: storage,
         limits: { fieldSize: maxSize },
-      }).array("files", 10);
+      }).array("files", 3);
 
       upload(req, res, next);
     } catch (err) {
