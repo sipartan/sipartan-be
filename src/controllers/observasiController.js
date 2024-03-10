@@ -1,4 +1,5 @@
 const ObservasiService = require("../service/observasiService");
+const path = require("path")
 
 class ObservasiController {
   constructor() {
@@ -83,12 +84,12 @@ class ObservasiController {
 
   createDokumentasi = async (req, res) => {
     try {
-      const { plot_id, type } = req.body;
-      const nama = req.file;
+      const { plot_id, type, arr } = req.body;
+      const files = req.file;
   
-      const dokumentasi = await this.observasiService.createDokumentasiData(plot_id, nama, type);
+      // const dokumentasi = await this.observasiService.createDokumentasiData(plot_id, nama, type);
   
-      res.status(200).json({ msg: "berhasil create dokumentasi", dokumentasi });
+      res.status(200).json({ msg: "berhasil create dokumentasi" });
     } catch (error) {
       res.status(500).json({ msg: error.message });
     }
@@ -112,6 +113,32 @@ class ObservasiController {
       const result = await this.observasiService.getPenilaianData()
   
       res.status(200).json({ msg: "berhasil get penilaian", result });
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  }
+
+  getImage = async (req, res) => {
+    try {
+      const fileName = req.params.fileName;
+      console.log(global.__basedir)
+
+      const options = {
+        root: path.join(
+          global.__basedir,
+          `image/upload`
+        ),
+        headers: {
+          "Content-Type": 'image/jpeg',
+        },
+      };
+      
+      res.sendFile(fileName, options, (err) => {
+        if (err) {
+          console.error('Error sending file:', err);
+        }
+      });
+
     } catch (error) {
       res.status(500).json({ msg: error.message });
     }
