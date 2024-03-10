@@ -89,12 +89,28 @@ class ObservasiService {
     });
   };
 
-  async createDokumentasiData (plot_id, nama, type) {
-    return await Dokumentasi.create({
-      plot_id: plot_id,
-      nama: nama.originalname,
-      type: type,
-    });
+  async createDokumentasiData (plot_id, files, type) {
+    for (let i = 0; i < files.length; i++) {
+      await Dokumentasi.create({
+        plot_id: plot_id,
+        nama: files[i].originalname,
+        type: type,
+      });
+    }
+    return "aa";
+  };
+
+  async getImageName (plot_id, type) {
+    const imageName = await Dokumentasi.findAll(
+      {
+        attributes: ["plot_id", "nama", "type"],
+        where: {
+          plot_id: plot_id,
+          type: type
+        },
+      }
+    )
+    return imageName;
   };
 
   async calculateScore (plot_id) {
@@ -170,8 +186,20 @@ class ObservasiService {
   
     makeObservation.skor_akhir = finalScore;
     await makeObservation.save();
+
+    const foundPlot = await Plot.findAll(
+      {
+        attributes: ["plot_id", "luasan_plot"],
+        where: {
+          observation_id: makeObservation.observation_id
+        }
+      }
+    );
+    const plotIds = foundPlot.map((res) => res.dataValues.plot_id);
+
+    const result = { ...makeObservation.dataValues, plotIds: plotIds}
   
-    return makeObservation; // ntr kalo mau ubah sabi
+    return result; // ntr kalo mau ubah sabi
   };
 
   async getPenilaianData () {
