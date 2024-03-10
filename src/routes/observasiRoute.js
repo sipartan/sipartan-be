@@ -16,5 +16,6 @@ router.post("/dokumentasi", verifyToken, setMulter("nama"), observasiController.
 router.post("/karhutla", verifyToken, observasiController.createKarhutla);
 
 router.get("/get-penilaian", verifyToken, observasiController.getPenilaian);
+router.get("/get-image", observasiController.getImage);
 
 module.exports = router;

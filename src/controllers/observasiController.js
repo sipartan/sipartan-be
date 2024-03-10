@@ -116,6 +116,34 @@ class ObservasiController {
       res.status(500).json({ msg: error.message });
     }
   }
+
+  getImage = async (req, res) => {
+    try {
+      const fileName = req.body;
+
+      const options = {
+        root: path.join(
+          global.__basedir,
+          `src/image/upload`
+        ),
+        dotfiles: "deny",
+        headers: {
+          "x-timestamp": Date.now(),
+          "x-sent": true,
+          "Content-Type": "image",
+        },
+      };
+  
+      res.sendFile(fileName, options, (err) => {
+        if (err) {
+          sendResponse(res, new NotFound("File with this path not found"));
+        }
+      });
+
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  }
 }
 
 module.exports = ObservasiController;
