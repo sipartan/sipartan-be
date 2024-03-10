@@ -12,10 +12,10 @@ router.post("/plot", verifyToken, observasiController.createPlot);
 router.post("/penilaian", verifyToken, observasiController.createPenilaian);
 router.post("/penilaian-observasi", verifyToken, observasiController.createPenilaianObservasi);
 router.post("/hasil", verifyToken, observasiController.createHasil);
-router.post("/dokumentasi", verifyToken, setMulter("nama"), observasiController.createDokumentasi);
+router.post("/dokumentasi", verifyToken, setMulter(), observasiController.createDokumentasi);
 router.post("/karhutla", verifyToken, observasiController.createKarhutla);
 
 router.get("/get-penilaian", verifyToken, observasiController.getPenilaian);
-router.get("/get-image", observasiController.getImage);
+router.get("/get-image/:fileName", observasiController.getImage);
 
 module.exports = router;

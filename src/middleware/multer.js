@@ -1,6 +1,6 @@
 const multer = require("multer");
 
-const setMulter = (fieldName) => {
+const setMulter = () => {
   return (req, res, next) => {
     try {
       const storage = multer.diskStorage({
@@ -8,12 +8,7 @@ const setMulter = (fieldName) => {
           cb(null, "src/image/upload");
         },
         filename: (req, file, cb) => {
-          let splitted = file.originalname.split(".");
-          splitted[splitted.length - 2] = `${
-            splitted[splitted.length - 2]
-          }-${Date.now()}.`;
-
-          cb(null, splitted.join(""));
+          cb(null, file.originalname);
         },
       });
 
@@ -22,7 +17,7 @@ const setMulter = (fieldName) => {
       const upload = multer({
         storage: storage,
         limits: { fieldSize: maxSize },
-      }).single(fieldName);
+      }).array("files", 10);
 
       upload(req, res, next);
     } catch (err) {
