@@ -392,16 +392,14 @@ Base URL :
 
 ```json
 {
-    "msg": "berhasil edit karhutla",
-    "result": [
-        1
-    ]
+  "msg": "berhasil edit karhutla",
+  "result": [1]
 }
 ```
 
 ## `DownloadPDF Karhutla`
 
-### DELETE /downloadPDF/:id/:obsId
+### GET /downloadPDF/:id/:obsId
 
 ### https://sipartan.et.r.appspot.com/downloadPDF/:id/:obsId
 
@@ -410,6 +408,44 @@ Base URL :
 ```json
 {
   "msg": "berhasil downloadPDF karhutla",
+  "result": 1
+}
+```
+
+## `Create Dokumentasi`
+
+### POST /dokumentasi
+
+### https://sipartan.et.r.appspot.com/dokumentasi
+
+### Request body
+
+| Fieldname | Type     | Necessity    | Desc                                                                         |
+| --------- | -------- | ------------ | ---------------------------------------------------------------------------- |
+| plot_id   | `string` | **required** | plot_id dari dokumentasi2 nya                                                |
+| type      | `string` | **required** | dokumentasi dari penilaian apa. misal: kematian pohon, kerusakan cabang, dll |
+| file      | `file`   | **required** | file nya maksimal 3                                                          |
+
+### Sample success response
+
+```json
+{
+  "msg": "berhasil create dokumentasi",
+  "result": 1
+}
+```
+
+## `Get Image`
+
+### GET /get-image/:fileName
+
+### https://sipartan.et.r.appspot.com/get-image/:fileName
+
+### Sample success response
+
+```json
+{
+  "msg": "berhasil get image",
   "result": 1
 }
 ```
