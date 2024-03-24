@@ -110,7 +110,7 @@ Base URL :
 | type      | `string`  | **required** |      |
 | bobot     | `float`   | **required** |      |
 | nilai     | `integer` | **required** |      |
-| deskripsi | `string`  | **required** |      |
+| deskripsi | `string`  | **optional** |      |
 | kategori  | `string`  | **required** |      |
 
 ### Sample success response
