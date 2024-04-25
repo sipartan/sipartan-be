@@ -205,6 +205,25 @@ class ObservasiService {
   async getPenilaianData () {
     return await Penilaian.findAll();
   };
+
+  async deletePenilaian(id) {
+    const foundPenilaian = await Penilaian.findOne({
+      where: {
+        penilaian_id: id,
+      },
+    });
+    if (!foundPenilaian) {
+      throw new NotFound("penilaian tidak ditemukan");
+    }
+
+    const penilaianDeleted = await Penilaian.destroy({
+      where: {
+        penilaian_id: id,
+      },
+    });
+
+    return penilaianDeleted;
+  };
 }
 
 module.exports = ObservasiService;

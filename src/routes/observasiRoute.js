@@ -19,4 +19,6 @@ router.get("/get-penilaian", verifyToken, observasiController.getPenilaian);
 router.get("/get-image/:fileName", verifyToken, observasiController.getImage);
 router.get("/get-imageName", verifyToken, observasiController.getImageName);
 
+router.delete("/penilaian/:id", verifyToken, observasiController.deletePenilaian);
+
 module.exports = router;
