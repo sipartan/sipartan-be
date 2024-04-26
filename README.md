@@ -110,7 +110,7 @@ Base URL :
 | type      | `string`  | **required** |      |
 | bobot     | `float`   | **required** |      |
 | nilai     | `integer` | **required** |      |
-| deskripsi | `string`  | **required** |      |
+| deskripsi | `string`  | **optional** |      |
 | kategori  | `string`  | **required** |      |
 
 ### Sample success response
@@ -243,6 +243,7 @@ Base URL :
       "createdAt": "2023-10-29T16:11:37.889Z",
       "updatedAt": "2023-10-29T16:11:37.889Z"
     }
+    //.....
   ]
 }
 ```

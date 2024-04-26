@@ -18,4 +18,6 @@ router.get("/observasi/penilaian", verifyToken, observasiController.getPenilaian
 router.get("/observasi/dokumentasi/:fileName", verifyToken, observasiController.getImage);
 router.get("/observasi/dokumentasiName", verifyToken, observasiController.getImageName);
 
+router.delete("/penilaian/:id", verifyToken, observasiController.deletePenilaian);
+
 module.exports = router;

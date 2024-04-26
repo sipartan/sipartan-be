@@ -149,6 +149,18 @@ class ObservasiController {
       res.status(500).json({ msg: error.message });
     }
   }
+
+  deletePenilaian = async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const result = await this.observasiService.deletePenilaian(id);
+  
+      res.status(200).json({ msg: "berhasil delete penilaian", result });
+    } catch (error) {
+      res.status(500).json({ msg: error.message });
+    }
+  };
 }
 
 module.exports = ObservasiController;
