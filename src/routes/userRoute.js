@@ -6,9 +6,9 @@ const router = express.Router();
 const userController = new UserController();
 
 router.post("/user", userController.createUser);
-router.post("/login", userController.login);
+router.post("/user/login", userController.login);
 
-router.get("/getUser", verifyToken, userController.getUser);
+router.get("/user", verifyToken, userController.getUser);
 
 // fungsi selanjutnya pakein verifyToken
 

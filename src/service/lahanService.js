@@ -267,15 +267,13 @@ class LahanService {
           foundPenilaianObservasi[i].dataValues.penilaian_observasi_id;
         foundPenilaianIdsObj.penilaianIds = foundPenilaianObservasi[i].dataValues.penilaian_id;
 
-        const penilaianattr = await Penilaian.findOne(
-          {
-            attributes: ["variable", "kategori", "deskripsi"],
-            where: {
-              penilaian_id: foundPenilaianObservasi[i].dataValues.penilaian_id,
-            }
-          }
-        )
-        
+        const penilaianattr = await Penilaian.findOne({
+          attributes: ["variable", "kategori", "deskripsi"],
+          where: {
+            penilaian_id: foundPenilaianObservasi[i].dataValues.penilaian_id,
+          },
+        });
+
         foundPenilaianIdsObj.penilaianName = penilaianattr.dataValues.variable;
         foundPenilaianIdsObj.penilaianKategori = penilaianattr.dataValues.kategori;
         foundPenilaianIdsObj.penilaianDeskripsi = penilaianattr.dataValues.deskripsi || "";
@@ -429,7 +427,13 @@ class LahanService {
       });
 
       const foundObservasi = await Observasi.findAll({
-        attributes: ["observation_id", "tanggal_kejadian", "tanggal_penilaian", "skor_akhir", "createdAt"],
+        attributes: [
+          "observation_id",
+          "tanggal_kejadian",
+          "tanggal_penilaian",
+          "skor_akhir",
+          "createdAt",
+        ],
         where: {
           data_lahan_id: lahan[i].data_lahan_id,
         },

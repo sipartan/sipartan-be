@@ -30,7 +30,7 @@ const Penilaian = db.define(
       },
     },
     deskripsi: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(500),
       allowNull: true,
       validate: {
         notEmpty: true,

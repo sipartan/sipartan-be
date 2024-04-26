@@ -90,7 +90,7 @@ class ObservasiController {
   
       const dokumentasi = await this.observasiService.createDokumentasiData(plot_id, files, type);
   
-      res.status(200).json({ msg: "berhasil create dokumentasi" });
+      res.status(201).json({ msg: "berhasil create dokumentasi" });
     } catch (error) {
       res.status(500).json({ msg: error.message });
     }
@@ -99,11 +99,11 @@ class ObservasiController {
   createKarhutla = async (req, res) => {
     try {
       const { data } = req.body;
-      // console.log(data)
+      // sini validasinya
   
       const result = await this.observasiService.createKarhutlaData(data);
   
-      res.status(200).json({ msg: "berhasil create hasil", result });
+      res.status(201).json({ msg: "berhasil create hasil", result });
     } catch (error) {
       res.status(500).json({ msg: error.message });
     }
