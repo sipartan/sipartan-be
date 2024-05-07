@@ -1,7 +1,5 @@
 const LokasiRegion = require("../model/lokasiRegion");
 const DataUmumLahan = require("../model/dataUmum");
-const LokasiTitik = require("../model/lokasiTitik");
-const KeadaanCuaca = require("../model/keadaanCuaca");
 const { Op, where } = require("sequelize");
 const Observasi = require("../model/observasi");
 const Plot = require("../model/plot");
@@ -31,7 +29,12 @@ class LahanService {
     jenis_tanah,
     tinggi_muka_air_gambut,
     jenis_karhutla,
-    penggunaan_lahan
+    penggunaan_lahan,
+    latitude,
+    longitude,
+    temperatur,
+    cuaca_hujan,
+    kelembaban_udara
   ) {
     return await DataUmumLahan.create({
       user_id: user_id,
@@ -43,20 +46,8 @@ class LahanService {
       tinggi_muka_air_gambut: tinggi_muka_air_gambut,
       jenis_karhutla: jenis_karhutla,
       penggunaan_lahan: penggunaan_lahan,
-    });
-  }
-
-  async createLokasiTitikData(data_lahan_id, latitude, longitude) {
-    return await LokasiTitik.create({
-      data_lahan_id: data_lahan_id,
       latitude: latitude,
       longitude: longitude,
-    });
-  }
-
-  async createKeadaanCuacaData(point_location_id, temperatur, cuaca_hujan, kelembaban_udara) {
-    return await KeadaanCuaca.create({
-      point_location_id: point_location_id,
       temperatur: temperatur,
       cuaca_hujan: cuaca_hujan,
       kelembaban_udara: kelembaban_udara,
@@ -113,7 +104,12 @@ class LahanService {
         jenis_tanah,
         tinggi_muka_air_gambut,
         jenis_karhutla,
-        penggunaan_lahan
+        penggunaan_lahan,
+        latitude,
+        longitude,
+        temperatur,
+        cuaca_hujan,
+        kelembaban_udara
       );
     } else {
       const makeLokasiRegion = await this.createLokasiRegionData(
@@ -132,22 +128,14 @@ class LahanService {
         jenis_tanah,
         tinggi_muka_air_gambut,
         jenis_karhutla,
-        penggunaan_lahan
+        penggunaan_lahan,
+        latitude,
+        longitude,
+        temperatur,
+        cuaca_hujan,
+        kelembaban_udara
       );
     }
-
-    const makeLokasiTitik = await this.createLokasiTitikData(
-      makeDataLahan.data_lahan_id,
-      latitude,
-      longitude
-    );
-
-    await this.createKeadaanCuacaData(
-      makeLokasiTitik.point_location_id,
-      temperatur,
-      cuaca_hujan,
-      kelembaban_udara
-    );
 
     return makeDataLahan;
   }
@@ -193,6 +181,11 @@ class LahanService {
         "jenis_tanah",
         "jenis_vegetasi",
         "tinggi_muka_air_gambut",
+        "latitude",
+        "longitude",
+        "temperatur",
+        "cuaca_hujan",
+        "kelembaban_udara",
       ],
       where: {
         data_lahan_id: id,
@@ -210,20 +203,6 @@ class LahanService {
       attributes: ["provinsi", "kabupaten", "kecamatan", "desa"],
       where: {
         region_location_id: foundLahan.dataValues.region_location_id,
-      },
-    });
-
-    const foundTitik = await LokasiTitik.findOne({
-      attributes: ["point_location_id", "latitude", "longitude"],
-      where: {
-        data_lahan_id: foundLahan.dataValues.data_lahan_id,
-      },
-    });
-
-    const foundCuaca = await KeadaanCuaca.findOne({
-      attributes: ["temperatur", "cuaca_hujan", "kelembaban_udara"],
-      where: {
-        point_location_id: foundTitik.dataValues.point_location_id,
       },
     });
 
@@ -305,6 +284,7 @@ class LahanService {
       }
 
       const singlePlot = {
+        plot_id: foundPlot[i].dataValues.plot_id,
         luas_plot: foundPlot[i].dataValues.luasan_plot,
         skor_plot: skorPlot,
         hasil_plot: hasilPlot,
@@ -357,11 +337,11 @@ class LahanService {
       kabupaten: foundRegion.dataValues.kabupaten,
       kecamatan: foundRegion.dataValues.kecamatan,
       desa: foundRegion.dataValues.desa,
-      latitude: foundTitik.dataValues.latitude,
-      longitude: foundTitik.dataValues.longitude,
-      temperatur: foundCuaca.dataValues.temperatur,
-      cuaca_hujan: foundCuaca.dataValues.cuaca_hujan,
-      kelembaban_udara: foundCuaca.dataValues.kelembaban_udara,
+      latitude: foundLahan.dataValues.latitude,
+      longitude: foundLahan.dataValues.longitude,
+      temperatur: foundLahan.dataValues.temperatur,
+      cuaca_hujan: foundLahan.dataValues.cuaca_hujan,
+      kelembaban_udara: foundLahan.dataValues.kelembaban_udara,
       tanggalKejadian: tanggalKejadian,
       tanggalPenilaian: tanggalPenilaian,
       single_plot: resultSinglePlot,
@@ -383,6 +363,11 @@ class LahanService {
           "luasan_karhutla",
           "jenis_karhutla",
           "penggunaan_lahan",
+          "latitude",
+          "longitude",
+          "temperatur",
+          "cuaca_hujan",
+          "kelembaban_udara",
         ],
         where: {
           user_id: userId,
@@ -397,6 +382,11 @@ class LahanService {
           "luasan_karhutla",
           "jenis_karhutla",
           "penggunaan_lahan",
+          "latitude",
+          "longitude",
+          "temperatur",
+          "cuaca_hujan",
+          "kelembaban_udara",
         ],
       });
     }
@@ -409,20 +399,6 @@ class LahanService {
         attributes: ["provinsi", "kabupaten", "kecamatan", "desa"],
         where: {
           region_location_id: lahan[i].region_location_id,
-        },
-      });
-
-      const foundTitik = await LokasiTitik.findOne({
-        attributes: ["point_location_id", "latitude", "longitude"],
-        where: {
-          data_lahan_id: lahan[i].data_lahan_id,
-        },
-      });
-
-      const foundCuaca = await KeadaanCuaca.findOne({
-        attributes: ["temperatur", "cuaca_hujan", "kelembaban_udara"],
-        where: {
-          point_location_id: foundTitik.dataValues.point_location_id,
         },
       });
 
@@ -483,11 +459,11 @@ class LahanService {
           kabupaten: foundRegion.dataValues.kabupaten,
           kecamatan: foundRegion.dataValues.kecamatan,
           desa: foundRegion.dataValues.desa,
-          latitude: foundTitik.dataValues.latitude,
-          longitude: foundTitik.dataValues.longitude,
-          temperatur: foundCuaca.dataValues.temperatur,
-          cuaca_hujan: foundCuaca.dataValues.cuaca_hujan,
-          kelembaban_udara: foundCuaca.dataValues.kelembaban_udara,
+          latitude: lahan[i].latitude,
+          longitude: lahan[i].longitude,
+          temperatur: lahan[i].temperatur,
+          cuaca_hujan: lahan[i].cuaca_hujan,
+          kelembaban_udara: lahan[i].kelembaban_udara,
           tanggalDibuat: tanggalDibuat,
           tanggalKejadian: tanggalKejadian,
           tanggalPenilaian: tanggalPenilaian,
@@ -545,7 +521,10 @@ class LahanService {
       temperatur,
       cuaca_hujan,
       kelembaban_udara,
+      tanggal_kejadian,
+      tanggal_penilaian,
       data_indikator,
+      luas_plot
     } = data;
 
     const foundLahan = await DataUmumLahan.findOne({
@@ -563,6 +542,11 @@ class LahanService {
         tinggi_muka_air_gambut: tinggi_muka_air_gambut,
         jenis_karhutla: jenis_karhutla,
         penggunaan_lahan: penggunaan_lahan,
+        latitude: latitude,
+        longitude: longitude,
+        temperatur: temperatur,
+        cuaca_hujan: cuaca_hujan,
+        kelembaban_udara: kelembaban_udara,
       },
       {
         where: {
@@ -614,36 +598,33 @@ class LahanService {
       }
     }
 
-    await LokasiTitik.update(
+    // edit luas, tanggal penilaian kejadian
+    await Observasi.update(
       {
-        latitude: latitude,
-        longitude: longitude,
+        tanggal_kejadian: tanggal_kejadian,
+        tanggal_penilaian: tanggal_penilaian
       },
       {
         where: {
-          data_lahan_id: id,
-        },
-      }
+          observation_id: obsId
+        }
+      } 
     );
 
-    const foundTitik = await LokasiTitik.findOne({
-      where: {
-        data_lahan_id: id,
-      },
-    });
-
-    await KeadaanCuaca.update(
-      {
-        temperatur: temperatur,
-        cuaca_hujan: cuaca_hujan,
-        kelembaban_udara: kelembaban_udara,
-      },
-      {
-        where: {
-          point_location_id: foundTitik.dataValues.point_location_id,
-        },
+    if (luas_plot) {
+      for (let i = 0; i < luas_plot.length; i++) {
+        await Plot.update(
+          {
+            luasan_plot: luas_plot[i].value
+          },
+          {
+            where: {
+              plot_id: luas_plot[i].plot_id
+            }
+          }
+        )
       }
-    );
+    }
 
     if (data_indikator) {
       for (let i = 0; i < data_indikator.length; i++) {

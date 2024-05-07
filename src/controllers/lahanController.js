@@ -56,39 +56,6 @@ class LahanController {
     }
   };
 
-  createLokasiTitik = async (req, res) => {
-    try {
-      const { data_lahan_id, latitude, longitude } = req.body;
-
-      const lokasiTitik = await this.lahanService.createLokasiTitikData(
-        data_lahan_id,
-        latitude,
-        longitude
-      );
-
-      res.status(200).json({ msg: "berhasil create lokasi titik", lokasiTitik });
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
-    }
-  };
-
-  createKeadaanCuaca = async (req, res) => {
-    try {
-      const { point_location_id, temperatur, cuaca_hujan, kelembaban_udara } = req.body;
-
-      const keadaanCuaca = await this.lahanService.createKeadaanCuacaData(
-        point_location_id,
-        temperatur,
-        cuaca_hujan,
-        kelembaban_udara
-      );
-
-      res.status(200).json({ msg: "berhasil create lokasi titik", keadaanCuaca });
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
-    }
-  };
-
   createLahanKarhutla = async (req, res) => {
     try {
       const {
@@ -241,6 +208,42 @@ class LahanController {
     try {
       const { id, obsId } = req.params;
       const { data } = req.body;
+
+      const fieldsToCheckString = [
+        "provinsi",
+        "kabupaten",
+        "kecamatan",
+        "desa",
+        "tutupan_lahan",
+        "jenis_vegetasi",
+        "jenis_tanah",
+        "jenis_karhutla",
+        "penggunaan_lahan",
+        "latitude",
+        "longitude",
+      ];
+
+      const fieldsToCheckNumber = [
+        "luasan_karhutla",
+        "tinggi_muka_air_gambut",
+        "temperatur",
+        "cuaca_hujan",
+        "kelembaban_udara",
+      ];
+
+      for (const field of fieldsToCheckString) {
+        if (data[field] && typeof data[field] !== "string") {
+          res.status(400).json({ msg: "jenis data tidak sesuai" });
+          return;
+        }
+      }
+
+      for (const field of fieldsToCheckNumber) {
+        if (data[field] && typeof data[field] !== "number") {
+          res.status(400).json({ msg: "jenis data tidak sesuai" });
+          return;
+        }
+      }
 
       const result = await this.lahanService.editKarhutla(id, obsId, data);
 

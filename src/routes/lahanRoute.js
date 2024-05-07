@@ -6,10 +6,8 @@ const router = express.Router();
 const lahanController = new LahanController();
 
 // ntr masukin verifyToken kalo udh mau di aktifin lagi authnya
-router.post("/lokasi-region", verifyToken, lahanController.createLokasiRegion); // mark
-router.post("/data-lahan", verifyToken, lahanController.createDataUmumLahan); // mark
-router.post("/lokasi-titik", verifyToken, lahanController.createLokasiTitik); // mark
-router.post("/keadaan-cuaca", verifyToken, lahanController.createKeadaanCuaca); // mark
+// router.post("/lokasi-region", verifyToken, lahanController.createLokasiRegion); // mark
+// router.post("/data-lahan", verifyToken, lahanController.createDataUmumLahan); // mark
 router.post("/lahan-karhutla", verifyToken, lahanController.createLahanKarhutla);
 
 router.get("/lahan-karhutla/:id/:obsId", lahanController.getSingleResult);
