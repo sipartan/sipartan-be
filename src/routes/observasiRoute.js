@@ -6,18 +6,17 @@ const ObservasiController = require("../controllers/observasiController");
 const router = express.Router();
 const observasiController = new ObservasiController();
 
-// ntr masukin verifyToken kalo udh mau di aktifin lagi authnya
-router.post("/observasi", verifyToken, observasiController.createObservation);
-router.post("/plot", verifyToken, observasiController.createPlot);
-router.post("/penilaian", verifyToken, observasiController.createPenilaian);
-router.post("/penilaian-observasi", verifyToken, observasiController.createPenilaianObservasi);
-router.post("/hasil", verifyToken, observasiController.createHasil);
-router.post("/dokumentasi", verifyToken, setMulter(), observasiController.createDokumentasi);
-router.post("/karhutla", verifyToken, observasiController.createKarhutla);
+// router.post("/observasi", verifyToken, observasiController.createObservation); // mark
+// router.post("/plot", verifyToken, observasiController.createPlot); // mark
+router.post("/observasi/penilaian", verifyToken, observasiController.createPenilaian);
+// router.post("/penilaian-observasi", verifyToken, observasiController.createPenilaianObservasi); // mark
+// router.post("/hasil", verifyToken, observasiController.createHasil); // mark
+router.post("/observasi/dokumentasi", verifyToken, setMulter(), observasiController.createDokumentasi);
+router.post("/observasi", verifyToken, observasiController.createKarhutla);
 
-router.get("/get-penilaian", verifyToken, observasiController.getPenilaian);
-router.get("/get-image/:fileName", verifyToken, observasiController.getImage);
-router.get("/get-imageName", verifyToken, observasiController.getImageName);
+router.get("/observasi/penilaian", verifyToken, observasiController.getPenilaian);
+router.get("/observasi/dokumentasi/:fileName", observasiController.getImage);
+router.get("/observasi/dokumentasiName", verifyToken, observasiController.getImageName);
 
 router.delete("/penilaian/:id", verifyToken, observasiController.deletePenilaian);
 

@@ -1,6 +1,8 @@
 const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
+// KALO MAU PUSH GIT GANTI DB NYA DULS
+
 // ===== WINDOWS =====
 // const db = new Sequelize("sipartan_db", "postgres", "postgres", {
 //   host: "localhost",
