@@ -106,48 +106,52 @@ class LahanController {
           .status(400)
           .json({ msg: `Data belum lengkap, field yang kurang: ${missingFields.join(", ")}` });
       } else {
-        if (
-          typeof provinsi !== "string" ||
-          typeof kabupaten !== "string" ||
-          typeof kecamatan !== "string" ||
-          typeof desa !== "string" ||
-          typeof tutupan_lahan !== "string" ||
-          typeof jenis_vegetasi !== "string" ||
-          typeof jenis_tanah !== "string" ||
-          typeof jenis_karhutla !== "string" ||
-          typeof penggunaan_lahan !== "string" ||
-          typeof latitude !== "string" ||
-          typeof longitude !== "string" ||
-          typeof luasan_karhutla !== "number" ||
-          typeof tinggi_muka_air_gambut !== "number" ||
-          typeof temperatur !== "number" ||
-          typeof cuaca_hujan !== "number" ||
-          typeof kelembaban_udara !== "number"
-        ) {
+        if (tinggi_muka_air_gambut && typeof tinggi_muka_air_gambut !== "number") {
           res.status(400).json({ msg: "jenis data tidak sesuai" });
         } else {
-          const dataKarhutla = await this.lahanService.createLahanKarhutlaData(
-            provinsi,
-            kabupaten,
-            kecamatan,
-            desa,
-            user_id,
-            tutupan_lahan,
-            jenis_vegetasi,
-            luasan_karhutla,
-            jenis_tanah,
-            tinggi_muka_air_gambut,
-            jenis_karhutla,
-            penggunaan_lahan,
-            latitude,
-            longitude,
-            temperatur,
-            cuaca_hujan,
-            kelembaban_udara
-          );
-
-          res.status(201).json({ msg: "berhasil create data lahan Karhutla", dataKarhutla });
+          if (
+            typeof provinsi !== "string" ||
+            typeof kabupaten !== "string" ||
+            typeof kecamatan !== "string" ||
+            typeof desa !== "string" ||
+            typeof tutupan_lahan !== "string" ||
+            typeof jenis_vegetasi !== "string" ||
+            typeof jenis_tanah !== "string" ||
+            typeof jenis_karhutla !== "string" ||
+            typeof penggunaan_lahan !== "string" ||
+            typeof latitude !== "string" ||
+            typeof longitude !== "string" ||
+            typeof luasan_karhutla !== "number" ||
+            typeof temperatur !== "number" ||
+            typeof cuaca_hujan !== "number" ||
+            typeof kelembaban_udara !== "number"
+          ) {
+            res.status(400).json({ msg: "jenis data tidak sesuai" });
+          } else {
+            const dataKarhutla = await this.lahanService.createLahanKarhutlaData(
+              provinsi,
+              kabupaten,
+              kecamatan,
+              desa,
+              user_id,
+              tutupan_lahan,
+              jenis_vegetasi,
+              luasan_karhutla,
+              jenis_tanah,
+              tinggi_muka_air_gambut,
+              jenis_karhutla,
+              penggunaan_lahan,
+              latitude,
+              longitude,
+              temperatur,
+              cuaca_hujan,
+              kelembaban_udara
+            );
+  
+            res.status(201).json({ msg: "berhasil create data lahan Karhutla", dataKarhutla });
+          }
         }
+        
       }
     } catch (error) {
       res.status(500).json({ msg: error.message });
