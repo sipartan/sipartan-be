@@ -40,16 +40,40 @@ class ObservasiController {
     try {
       const { variable, type, bobot, nilai, deskripsi, kategori } = req.body;
 
-      const penilaian = await this.observasiService.createPenilaianData(
-        variable,
-        type,
-        bobot,
-        nilai,
-        deskripsi,
-        kategori
-      );
+      const requiredFields = ["variable", "type", "kategori", "bobot", "nilai"];
 
-      res.status(200).json({ msg: "berhasil create penilaian", penilaian });
+      const missingFields = requiredFields.filter((field) => !req.body.hasOwnProperty(field));
+
+      if (missingFields.length > 0) {
+        res
+          .status(400)
+          .json({ msg: `Data belum lengkap, field yang kurang: ${missingFields.join(", ")}` });
+      } else {
+        if (deskripsi && typeof deskripsi !== "string") {
+          res.status(400).json({ msg: "jenis data tidak sesuai" });
+        } else {
+          if (
+            typeof variable !== "string" ||
+            typeof type !== "string" ||
+            typeof kategori !== "string" ||
+            typeof bobot !== "number" ||
+            typeof nilai !== "number"
+          ) {
+            res.status(400).json({ msg: "jenis data tidak sesuai" });
+          } else {
+            const penilaian = await this.observasiService.createPenilaianData(
+              variable,
+              type,
+              bobot,
+              nilai,
+              deskripsi,
+              kategori
+            );
+
+            res.status(200).json({ msg: "berhasil create penilaian", penilaian });
+          }
+        }
+      }
     } catch (error) {
       res.status(500).json({ msg: error.message });
     }

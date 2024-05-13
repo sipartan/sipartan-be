@@ -90,7 +90,6 @@ class LahanController {
         "jenis_vegetasi",
         "luasan_karhutla",
         "jenis_tanah",
-        "tinggi_muka_air_gambut",
         "jenis_karhutla",
         "penggunaan_lahan",
         "latitude",
