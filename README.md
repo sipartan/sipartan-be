@@ -385,6 +385,11 @@ Base URL :
 | temperatur                               | `float`  | **opsional** |                                                                                 |
 | cuaca_hujan                              | `float`  | **opsional** |                                                                                 |
 | kelembaban_udara                         | `float`  | **opsional** |                                                                                 |
+| tanggal_kejadian                         | `date`   | **opsional** |                                                                                 |
+| tanggal_penilaian                        | `date`   | **opsional** |                                                                                 |
+| luas_plot                                | `array`  | **opsional** |                                                                                 |
+| luas_plot[].value                        | `float`  | **opsional** |                                                                                 |
+| luas_plot[].plot_id                      | `string` | **opsional** |                                                                                 |
 | data_indikator                           | `array`  | **opsional** | berisi nilai-nilai yang ingin diubah                                            |
 | data_indikator[].penilaianObservation_id | `string` | **opsional** | Penilaian Observation id yang ada di setiap nilai (yang ada pada single result) |
 | data_indikator[].penilaian_id            | `string` | **opsional** | tujuan penilaian id setelah berubah                                             |
