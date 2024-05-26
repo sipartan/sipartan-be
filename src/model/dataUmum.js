@@ -83,14 +83,14 @@ const DataUmumLahan = db.define(
       },
     },
     latitude: {
-      type: DataTypes.STRING,
+      type: DataTypes.FLOAT,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
     longitude: {
-      type: DataTypes.STRING,
+      type: DataTypes.FLOAT,
       allowNull: false,
       validate: {
         notEmpty: true,
@@ -103,7 +103,7 @@ const DataUmumLahan = db.define(
         notEmpty: true,
       },
     },
-    cuaca_hujan: {
+    curah_hujan: {
       type: DataTypes.FLOAT,
       allowNull: false,
       validate: {

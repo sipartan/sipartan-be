@@ -36,7 +36,7 @@ class UserController {
             password: hashedPassword,
           });
 
-          res.status(200).json({ msg: "Register User Berhasil", userCreated });
+          res.status(201).json({ msg: "Register User Berhasil", userCreated });
         }
       }
     } catch (error) {
@@ -53,10 +53,10 @@ class UserController {
           email: email,
         },
       });
-      if (!foundUser) return res.status(400).json({ msg: "Email salah" });
+      if (!foundUser) return res.status(400).json({ msg: "Email atau Password salah" });
 
       const match = bcrypt.compareSync(password, foundUser.password);
-      if (!match) return res.status(400).json({ msg: "Password salah" });
+      if (!match) return res.status(400).json({ msg: "Email atau Password salah" });
 
       const token = jwt.sign({ email, id: foundUser.user_id, nama: foundUser.nama }, secretKey, {
         expiresIn: "1d",
