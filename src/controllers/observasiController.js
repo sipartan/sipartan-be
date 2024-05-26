@@ -70,7 +70,7 @@ class ObservasiController {
               kategori
             );
 
-            res.status(200).json({ msg: "berhasil create penilaian", penilaian });
+            res.status(201).json({ msg: "berhasil create penilaian", penilaian });
           }
         }
       }
@@ -172,13 +172,18 @@ class ObservasiController {
       const filePath = path.join(global.__basedir, "image", "upload", fileName);
 
       // Read the file asynchronously
-      const fileContent = await fs.readFile(filePath);
+      let fileContent = {};
+      try {
+        fileContent = await fs.readFile(filePath);
 
-      // Set the appropriate headers for the response
-      res.setHeader("Content-Type", "image/jpeg");
+        // Set the appropriate headers for the response
+        res.setHeader("Content-Type", "image/jpeg");
 
-      // Send the file content as the response
-      res.send(fileContent);
+        // Send the file content as the response
+        res.send(fileContent);
+      } catch (error) {
+        res.status(400).json({ msg: "Image tidak ditemukan" });
+      }
     } catch (error) {
       res.status(500).json({ msg: error.message });
     }
