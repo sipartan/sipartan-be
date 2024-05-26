@@ -151,10 +151,10 @@ Base URL :
 | tinggi_muka_air_gambut | `float`  | **opsional** |      |
 | jenis_karhutla         | `string` | **required** |      |
 | penggunaan_lahan       | `string` | **required** |      |
-| latitude               | `string` | **required** |      |
-| longitude              | `string` | **required** |      |
+| latitude               | `float`  | **required** |      |
+| longitude              | `float`  | **required** |      |
 | temperatur             | `float`  | **required** |      |
-| cuaca_hujan            | `float`  | **required** |      |
+| curah_hujan            | `float`  | **required** |      |
 | kelembaban_udara       | `float`  | **required** |      |
 
 ### Sample success response
