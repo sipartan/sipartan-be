@@ -53,9 +53,9 @@ Base URL :
 
 ## `Login`
 
-### POST /login
+### POST /user/login
 
-### https://sipartan.et.r.appspot.com/login
+### https://sipartan.et.r.appspot.com/user/login
 
 ### Request body
 
@@ -75,9 +75,9 @@ Base URL :
 
 ## `Get User`
 
-### GET /getUser
+### GET /user
 
-### https://sipartan.et.r.appspot.com/getUser
+### https://sipartan.et.r.appspot.com/user
 
 ### Sample success response
 
@@ -98,9 +98,9 @@ Base URL :
 
 ## `Create Penilaian`
 
-### POST /penilaian
+### POST /observasi/penilaian
 
-### https://sipartan.et.r.appspot.com/penilaian
+### https://sipartan.et.r.appspot.com/observasi/penilaian
 
 ### Request body
 
@@ -181,9 +181,9 @@ Base URL :
 
 ## `Create Karhutla`
 
-### POST /karhutla
+### POST /observasi
 
-### https://sipartan.et.r.appspot.com/karhutla
+### https://sipartan.et.r.appspot.com/observasi
 
 ### Request body
 
@@ -215,9 +215,9 @@ Base URL :
 
 ## `Get Penilaian`
 
-### GET /get-penilaian
+### GET /observasi/penilaian
 
-### https://sipartan.et.r.appspot.com/get-penilaian
+### https://sipartan.et.r.appspot.com/observasi/penilaian
 
 ### Sample success response
 
@@ -250,9 +250,9 @@ Base URL :
 
 ## `Get Single Result`
 
-### GET /single-result/:id/:obsId
+### GET /lahan-karhutla/:id/:obsId
 
-### https://sipartan.et.r.appspot.com/single-result/:id/:obsId
+### https://sipartan.et.r.appspot.com/lahan-karhutla/:id/:obsId
 
 ### Sample success response
 
@@ -292,9 +292,9 @@ Base URL :
 
 ## `Get Result`
 
-### GET /results
+### GET /lahan-karhutla
 
-### https://sipartan.et.r.appspot.com/results
+### https://sipartan.et.r.appspot.com/lahan-karhutla
 
 ### Query
 
@@ -346,9 +346,9 @@ Base URL :
 
 ## `Delete Karhutla`
 
-### DELETE /delete-karhutla/:id
+### DELETE /lahan-karhutla/:id
 
-### https://sipartan.et.r.appspot.com/delete-karhutla/:id
+### https://sipartan.et.r.appspot.com/lahan-karhutla/:id
 
 ### Sample success response
 
@@ -361,9 +361,9 @@ Base URL :
 
 ## `Edit Karhutla`
 
-### PUT /edit-karhutla/:id/:obsId
+### PUT /lahan-karhutla/:id/:obsId
 
-### https://sipartan.et.r.appspot.com/edit-karhutla/:id/:obsId
+### https://sipartan.et.r.appspot.com/lahan-karhutla/:id/:obsId
 
 ### Request body
 
@@ -405,9 +405,9 @@ Base URL :
 
 ## `DownloadPDF Karhutla`
 
-### GET /downloadPDF/:id/:obsId
+### GET /lahan-karhutla/downloadPDF/:id/:obsId
 
-### https://sipartan.et.r.appspot.com/downloadPDF/:id/:obsId
+### https://sipartan.et.r.appspot.com/lahan-karhutla/downloadPDF/:id/:obsId
 
 ### Sample success response
 
@@ -420,9 +420,9 @@ Base URL :
 
 ## `Create Dokumentasi`
 
-### POST /dokumentasi
+### POST /observasi/dokumentasi
 
-### https://sipartan.et.r.appspot.com/dokumentasi
+### https://sipartan.et.r.appspot.com/observasi/dokumentasi
 
 ### Request body
 
@@ -443,9 +443,9 @@ Base URL :
 
 ## `Get Image`
 
-### GET /get-image/:fileName
+### GET /observasi/dokumentasi/:fileName
 
-### https://sipartan.et.r.appspot.com/get-image/:fileName
+### https://sipartan.et.r.appspot.com/observasi/dokumentasi/:fileName
 
 ### Sample success response
 
