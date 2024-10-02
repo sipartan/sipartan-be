@@ -270,7 +270,7 @@ Base URL :
     "latitude": "-6.671529037509255",
     "longitude": "111.00579212756656",
     "temperatur": 7.5,
-    "cuaca_hujan": 3.4,
+    "curah_hujan": 3.4,
     "kelembaban_udara": 2.9,
     "tanggalKejadian": "2023-10-04T03:00:00.000Z",
     "tanggalPenilaian": "2023-10-05T03:00:00.000Z",
@@ -319,7 +319,7 @@ Base URL :
       "latitude": "-6.671529037509255",
       "longitude": "111.00579212756656",
       "temperatur": 7.5,
-      "cuaca_hujan": 3.4,
+      "curah_hujan": 3.4,
       "kelembaban_udara": 2.9,
       "skor": 58,
       "hasil_penilaian": "Sedang"
@@ -335,7 +335,7 @@ Base URL :
       "latitude": "-6.671529037509255",
       "longitude": "111.00579212756656",
       "temperatur": 7.5,
-      "cuaca_hujan": 3.4,
+      "curah_hujan": 3.4,
       "kelembaban_udara": 2.9,
       "skor": 58,
       "hasil_penilaian": "Sedang"
@@ -383,7 +383,7 @@ Base URL :
 | latitude                                 | `string` | **opsional** |                                                                                 |
 | longitude                                | `string` | **opsional** |                                                                                 |
 | temperatur                               | `float`  | **opsional** |                                                                                 |
-| cuaca_hujan                              | `float`  | **opsional** |                                                                                 |
+| curah_hujan                              | `float`  | **opsional** |                                                                                 |
 | kelembaban_udara                         | `float`  | **opsional** |                                                                                 |
 | tanggal_kejadian                         | `date`   | **opsional** |                                                                                 |
 | tanggal_penilaian                        | `date`   | **opsional** |                                                                                 |

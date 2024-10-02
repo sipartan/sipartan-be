@@ -73,7 +73,7 @@ class LahanController {
         latitude,
         longitude,
         temperatur,
-        cuaca_hujan,
+        curah_hujan,
         kelembaban_udara,
       } = req.body;
 
@@ -95,7 +95,7 @@ class LahanController {
         "latitude",
         "longitude",
         "temperatur",
-        "cuaca_hujan",
+        "curah_hujan",
         "kelembaban_udara",
       ];
 
@@ -123,7 +123,7 @@ class LahanController {
             typeof longitude !== "string" ||
             typeof luasan_karhutla !== "number" ||
             typeof temperatur !== "number" ||
-            typeof cuaca_hujan !== "number" ||
+            typeof curah_hujan !== "number" ||
             typeof kelembaban_udara !== "number"
           ) {
             res.status(400).json({ msg: "jenis data tidak sesuai" });
@@ -144,14 +144,14 @@ class LahanController {
               latitude,
               longitude,
               temperatur,
-              cuaca_hujan,
+              curah_hujan,
               kelembaban_udara
             );
-  
+
             res.status(201).json({ msg: "berhasil create data lahan Karhutla", dataKarhutla });
           }
         }
-        
+
       }
     } catch (error) {
       res.status(500).json({ msg: error.message });
@@ -230,7 +230,7 @@ class LahanController {
         "luasan_karhutla",
         "tinggi_muka_air_gambut",
         "temperatur",
-        "cuaca_hujan",
+        "curah_hujan",
         "kelembaban_udara",
       ];
 

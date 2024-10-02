@@ -34,7 +34,7 @@ class LahanService {
     latitude,
     longitude,
     temperatur,
-    cuaca_hujan,
+    curah_hujan,
     kelembaban_udara
   ) {
     return await DataUmumLahan.create({
@@ -50,7 +50,7 @@ class LahanService {
       latitude: latitude,
       longitude: longitude,
       temperatur: temperatur,
-      cuaca_hujan: cuaca_hujan,
+      curah_hujan: curah_hujan,
       kelembaban_udara: kelembaban_udara,
     });
   }
@@ -71,7 +71,7 @@ class LahanService {
     latitude,
     longitude,
     temperatur,
-    cuaca_hujan,
+    curah_hujan,
     kelembaban_udara
   ) {
     const foundRegion = await LokasiRegion.findAll({
@@ -109,7 +109,7 @@ class LahanService {
         latitude,
         longitude,
         temperatur,
-        cuaca_hujan,
+        curah_hujan,
         kelembaban_udara
       );
     } else {
@@ -133,7 +133,7 @@ class LahanService {
         latitude,
         longitude,
         temperatur,
-        cuaca_hujan,
+        curah_hujan,
         kelembaban_udara
       );
     }
@@ -185,7 +185,7 @@ class LahanService {
         "latitude",
         "longitude",
         "temperatur",
-        "cuaca_hujan",
+        "curah_hujan",
         "kelembaban_udara",
       ],
       where: {
@@ -355,7 +355,7 @@ class LahanService {
       latitude: foundLahan.dataValues.latitude,
       longitude: foundLahan.dataValues.longitude,
       temperatur: foundLahan.dataValues.temperatur,
-      cuaca_hujan: foundLahan.dataValues.cuaca_hujan,
+      curah_hujan: foundLahan.dataValues.curah_hujan,
       kelembaban_udara: foundLahan.dataValues.kelembaban_udara,
       tanggalKejadian: tanggalKejadian,
       tanggalPenilaian: tanggalPenilaian,
@@ -381,7 +381,7 @@ class LahanService {
           "latitude",
           "longitude",
           "temperatur",
-          "cuaca_hujan",
+          "curah_hujan",
           "kelembaban_udara",
           "createdAt",
           "updatedAt",
@@ -402,7 +402,7 @@ class LahanService {
           "latitude",
           "longitude",
           "temperatur",
-          "cuaca_hujan",
+          "curah_hujan",
           "kelembaban_udara",
           "createdAt",
           "updatedAt",
@@ -410,8 +410,10 @@ class LahanService {
       });
     }
 
+    
     const lahan = foundLahan.map((result) => result.dataValues);
-
+    
+    console.log(lahan);
     const data = [];
     for (let i = 0; i < lahan.length; i++) {
       const foundRegion = await LokasiRegion.findOne({
@@ -483,7 +485,7 @@ class LahanService {
           latitude: lahan[i].latitude,
           longitude: lahan[i].longitude,
           temperatur: lahan[i].temperatur,
-          cuaca_hujan: lahan[i].cuaca_hujan,
+          curah_hujan: lahan[i].curah_hujan,
           kelembaban_udara: lahan[i].kelembaban_udara,
           tanggalDibuat: tanggalDibuat,
           tanggalKejadian: tanggalKejadian,
@@ -540,7 +542,7 @@ class LahanService {
       latitude,
       longitude,
       temperatur,
-      cuaca_hujan,
+      curah_hujan,
       kelembaban_udara,
       tanggal_kejadian,
       tanggal_penilaian,
@@ -566,7 +568,7 @@ class LahanService {
         latitude: latitude,
         longitude: longitude,
         temperatur: temperatur,
-        cuaca_hujan: cuaca_hujan,
+        curah_hujan: curah_hujan,
         kelembaban_udara: kelembaban_udara,
       },
       {

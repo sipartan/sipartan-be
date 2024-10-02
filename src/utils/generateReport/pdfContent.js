@@ -52,9 +52,9 @@ const findPenilaian = async (
 
   if (
     kategoriPenilaian ==
-      "Tingkat keparahan kondisi tanah mineral" ||
+    "Tingkat keparahan kondisi tanah mineral" ||
     kategoriPenilaian ==
-      "Tingkat keparahan kondisi tanah gambut"
+    "Tingkat keparahan kondisi tanah gambut"
   ) {
     return penilaianVariabel;
   }
@@ -63,7 +63,7 @@ const findPenilaian = async (
 };
 
 const pdfContent = async (dataPDF) => {
-//   console.log(dataPDF);
+  //   console.log(dataPDF);
   return `
   <!DOCTYPE html>
   <html>
@@ -143,27 +143,23 @@ const pdfContent = async (dataPDF) => {
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Provinsi</td>
-                      <td class="col-7">: ${
-                        dataPDF.provinsi
-                      }</td>
+                      <td class="col-7">: ${dataPDF.provinsi
+    }</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Kabupaten</td>
-                      <td class="col-7">: ${
-                        dataPDF.kabupaten
-                      }</td>
+                      <td class="col-7">: ${dataPDF.kabupaten
+    }</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Kecamatan</td>
-                      <td class="col-7">: ${
-                        dataPDF.kecamatan
-                      }</td>
+                      <td class="col-7">: ${dataPDF.kecamatan
+    }</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Desa</td>
-                      <td class="col-7">: ${
-                        dataPDF.desa
-                      }</td>
+                      <td class="col-7">: ${dataPDF.desa
+    }</td>
                   </tr>
                   <tr class="text-center black-border">
                       <td colspan="2"><strong>Waktu</strong></td>
@@ -171,128 +167,114 @@ const pdfContent = async (dataPDF) => {
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Tanggal Kejadian</td>
                       <td class="col-7">: ${formatDate(
-                        dataPDF.tanggalKejadian
-                      )}</td>
+      dataPDF.tanggalKejadian
+    )}</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Tanggal Penilaian</td>
                       <td class="col-7">: ${formatDate(
-                        dataPDF.tanggalPenilaian
-                      )}</td>
+      dataPDF.tanggalPenilaian
+    )}</td>
                   </tr>
                   <tr class="text-center black-border">
                       <td colspan="2"><strong>Kondisi Cuaca</strong></td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Temperatur (°C)</td>
-                      <td class="col-7">: ${
-                        dataPDF.temperatur
-                      }</td>
+                      <td class="col-7">: ${dataPDF.temperatur
+    }</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Kelembapan Udara (RH)</td>
-                      <td class="col-7">: ${
-                        dataPDF.kelembaban_udara
-                      }</td>
+                      <td class="col-7">: ${dataPDF.kelembaban_udara
+    }</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Curah Hujan (mm)</td>
-                      <td class="col-7">: ${
-                        dataPDF.cuaca_hujan
-                      }</td>
+                      <td class="col-7">: ${dataPDF.curah_hujan
+    }</td>
                   </tr>
                   <tr class="text-center black-border">
                       <td colspan="2"><strong>Data Lahan</strong></td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Jenis Tanah</td>
-                      <td class="col-7">: ${
-                        dataPDF.jenis_tanah
-                      }</td>
+                      <td class="col-7">: ${dataPDF.jenis_tanah
+    }</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Jenis Vegetasi</td>
-                      <td class="col-7">: ${
-                        dataPDF.jenis_vegetasi
-                      }</td>
+                      <td class="col-7">: ${dataPDF.jenis_vegetasi
+    }</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Jenis Karhutla</td>
-                      <td class="col-7">: ${
-                        dataPDF.jenis_karhutla
-                      }</td>
+                      <td class="col-7">: ${dataPDF.jenis_karhutla
+    }</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Penggunaan Lahan</td>
-                      <td class="col-7">: ${
-                        dataPDF.penggunaan_lahan
-                      }</td>
+                      <td class="col-7">: ${dataPDF.penggunaan_lahan
+    }</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Tutupan Lahan</td>
-                      <td class="col-7">: ${
-                        dataPDF.tutupan_lahan
-                      }</td>
+                      <td class="col-7">: ${dataPDF.tutupan_lahan
+    }</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Estimasi Luas Karhutla</td>
-                      <td class="col-7">: ${
-                        dataPDF.luasan_karhutla
-                      }</td>
+                      <td class="col-7">: ${dataPDF.luasan_karhutla
+    }</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Tinggi Muka Air Gambut</td>
-                      <td class="col-7">: ${
-                        dataPDF.tinggi_muka_air_gambut
-                      }</td>
+                      <td class="col-7">: ${dataPDF.tinggi_muka_air_gambut
+    }</td>
                   </tr>
                   <tr class="text-center black-border">
                       <td colspan="2"><strong>Hasil Penilaian Rata - Rata</strong></td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Skor</td>
-                      <td class="col-7">: ${
-                        dataPDF.skor
-                      }</td>
+                      <td class="col-7">: ${dataPDF.skor
+    }</td>
                   </tr>
                   <tr>
                       <td class="col-5" style="padding-left: 10px;">Tingkat Keparahan</td>
-                      <td class="col-7">: ${
-                        dataPDF.hasil_penilaian
-                      }</td>
+                      <td class="col-7">: ${dataPDF.hasil_penilaian
+    }</td>
                   </tr>
               </table>
           </div>
       </section>
       
       ${await Promise.all(
-        dataPDF.single_plot.map(
-          async (plot, index) => {
-            const dataTanah =
-              dataPDF.jenis_tanah == "Gambut"
-                ? await findPenilaian(
-                    "Tingkat keparahan kondisi tanah gambut",
-                    plot.penilaianIdsSinglePlot
-                  )
-                : await findPenilaian(
-                    "Tingkat keparahan kondisi tanah mineral",
-                    plot.penilaianIdsSinglePlot
-                  );
-            return `
+      dataPDF.single_plot.map(
+        async (plot, index) => {
+          const dataTanah =
+            dataPDF.jenis_tanah == "Gambut"
+              ? await findPenilaian(
+                "Tingkat keparahan kondisi tanah gambut",
+                plot.penilaianIdsSinglePlot
+              )
+              : await findPenilaian(
+                "Tingkat keparahan kondisi tanah mineral",
+                plot.penilaianIdsSinglePlot
+              );
+          return `
             <section class="sheet padding-15mm">
                 <div class="container d-flex flex-column">
-                    <div class="h6"><strong>Plot ${
-                      index + 1
-                    } :</strong></div>
+                    <div class="h6"><strong>Plot ${index + 1
+            } :</strong></div>
                     <table class="mb-4 black-border">
                         <tr class="text-center black-border">
                             <td colspan="2"><strong>Luas Plot</strong></td>
                         </tr>
                         <tr>
                             <td class="col-6 pt-3 pb-3 ps-2">Luas Plot (m<sup>2</sup>)</td>
-                            <td class="col-6 pt-3 pb-3">: ${
-                              plot.luas_plot
-                            }</td>
+                            <td class="col-6 pt-3 pb-3">: ${plot.luas_plot
+            }</td>
                         </tr>
                         <tr class="text-center black-border">
                             <td colspan="2"><strong>Kondisi Vegetasi</strong></td>
@@ -300,9 +282,9 @@ const pdfContent = async (dataPDF) => {
                         <tr>
                             <td class="pt-3 ps-2">Kematian Pohon</td>
                             <td class="pt-3">: ${await findPenilaian(
-                              "Kematian pohon",
-                              plot.penilaianIdsSinglePlot
-                            )}</td>
+              "Kematian pohon",
+              plot.penilaianIdsSinglePlot
+            )}</td>
                         </tr>
                         <tr>
                             <td class="pt-3 ps-2">Kerusakan Batang</td>
@@ -310,51 +292,51 @@ const pdfContent = async (dataPDF) => {
                         <tr>
                             <td class="pt-2 ps-4">- Bagian Terbakar</td>
                             <td class="pt-2">: ${await findPenilaian(
-                              "Kerusakan batang bagian terbakar",
-                              plot.penilaianIdsSinglePlot
-                            )}</td>
+              "Kerusakan batang bagian terbakar",
+              plot.penilaianIdsSinglePlot
+            )}</td>
                         </tr>
                         <tr>
                             <td class="pt-2 ps-4">- Jenis Kerusakan</td>
                             <td class="pt-2">: ${await findPenilaian(
-                              "Kerusakan batang jenis kerusakan",
-                              plot.penilaianIdsSinglePlot
-                            )}</td>
+              "Kerusakan batang jenis kerusakan",
+              plot.penilaianIdsSinglePlot
+            )}</td>
                         </tr>
                         <tr>
                             <td class="pt-3 ps-2">Kerusakan Tajuk</td>
                             <td class="pt-3">: ${await findPenilaian(
-                              "Kerusakan batang kerusakan tajuk",
-                              plot.penilaianIdsSinglePlot
-                            )}</td>
+              "Kerusakan batang kerusakan tajuk",
+              plot.penilaianIdsSinglePlot
+            )}</td>
                         </tr>
                         <tr>
                             <td class="pt-3 ps-2">Kerusakan Cabang</td>
                             <td class="pt-3">: ${await findPenilaian(
-                              "Kerusakan cabang",
-                              plot.penilaianIdsSinglePlot
-                            )}</td>
+              "Kerusakan cabang",
+              plot.penilaianIdsSinglePlot
+            )}</td>
                         </tr>
                         <tr>
                             <td class="pt-3 ps-2">Kerusakan Dedaunan</td>
                             <td class="pt-3">: ${await findPenilaian(
-                              "Kerusakan dedaunan",
-                              plot.penilaianIdsSinglePlot
-                            )}</td>
+              "Kerusakan dedaunan",
+              plot.penilaianIdsSinglePlot
+            )}</td>
                         </tr>
                         <tr>
                             <td class="pt-3 ps-2">Kerusakan Akar</td>
                             <td class="pt-3">: ${await findPenilaian(
-                              "Kerusakan akar",
-                              plot.penilaianIdsSinglePlot
-                            )}</td>
+              "Kerusakan akar",
+              plot.penilaianIdsSinglePlot
+            )}</td>
                         </tr>
                         <tr>
                             <td class="pt-3 pb-3 ps-2">Tingkat Keparahan Vegetasi Terbakar</td>
                             <td class="pt-3 pb-3">: ${await findPenilaian(
-                              "Tingkat keparahan vegetasi terbakar",
-                              plot.penilaianIdsSinglePlot
-                            )}</td>
+              "Tingkat keparahan vegetasi terbakar",
+              plot.penilaianIdsSinglePlot
+            )}</td>
                         </tr>
                         <tr class="text-center black-border">
                             <td colspan="2"><strong>Kondisi Tanah</strong></td>
@@ -362,56 +344,52 @@ const pdfContent = async (dataPDF) => {
                         <tr>
                             <td class="pt-3 ps-2">Tingkat Keparahan</td>
                         </tr>
-                        ${
-                          dataPDF.jenis_tanah ==
-                          "Gambut"
-                            ? `<tr>
+                        ${dataPDF.jenis_tanah ==
+              "Gambut"
+              ? `<tr>
                         <td class="pt-2 ps-4">- Kondisi Tanah Gambut</td>
                         <td class="pt-2">: ${dataTanah.variable}</td>
                         </tr>`
-                            : `
+              : `
                         <tr>
                             <td class="pt-2 ps-4">- Kondisi Tanah Mineral</td>
                             <td class="pt-2">: ${dataTanah.variable}</td>
                         </tr>`
-                        }
+            }
                         
-                        ${
-                          dataPDF.jenis_tanah ==
-                          "Gambut"
-                            ? `<tr>
+                        ${dataPDF.jenis_tanah ==
+              "Gambut"
+              ? `<tr>
                             <td class="pt-2 pb-3 ps-4">- Keterangan</td>
                             <td class="pt-2 pb-3">: ${dataTanah.deskripsi}</td>
                         </tr>`
-                            : `
+              : `
                         <tr>
                             <td class="pt-2 pb-3 ps-4">- Keterangan</td>
                             <td class="pt-2 pb-3">: ${dataTanah.deskripsi}</td>
                         </tr>`
-                        }
+            }
                         
                         <tr class="text-center black-border">
                             <td colspan="2"><strong>Hasil Penilaian Plot</strong></td>
                         </tr>
                         <tr>
                             <td class="pt-3 ps-2">Skor Plot</td>
-                            <td class="pt-3">: ${
-                              plot.skor_plot
-                            }</td>
+                            <td class="pt-3">: ${plot.skor_plot
+            }</td>
                         </tr>
                         <tr>
                             <td class="pt-3 pb-3 ps-2">Tingkat Keparahan</td>
-                            <td class="pt-3 pb-3">: ${
-                              plot.hasil_plot
-                            }</td>
+                            <td class="pt-3 pb-3">: ${plot.hasil_plot
+            }</td>
                         </tr>
                     </table>
                 </div>
             </section>
         `;
-          }
-        )
-      )}
+        }
+      )
+    )}
       
   </body>
   
