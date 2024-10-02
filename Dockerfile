@@ -1,4 +1,4 @@
-FROM node:16-alpine AS base
+FROM node:20 AS base
 
 WORKDIR /app
 
@@ -15,4 +15,4 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/src ./src
 
 # Run
-CMD ["node", "--max_old_space_size=4096", "./src/app"]
+CMD ["node", "./src/app"]
