@@ -6,6 +6,7 @@ const ObservasiController = require("../controllers/observasiController");
 const router = express.Router();
 const observasiController = new ObservasiController();
 
+// Note yang dicomment ini sebenernya ga dipake frontend or mobile, tapi lebih ke testing API
 // router.post("/observasi", verifyToken, observasiController.createObservation); // mark
 // router.post("/plot", verifyToken, observasiController.createPlot); // mark
 router.post("/observasi/penilaian", verifyToken, observasiController.createPenilaian);

@@ -52,6 +52,7 @@ const Hasil = db.define(
   }
 );
 
+// TODO: di dbeaver ini one to many, seharusnya dia itu one to one
 Plot.hasOne(Hasil, {
   foreignKey: "plot_id",
 });

@@ -410,9 +410,9 @@ class LahanService {
       });
     }
 
-    
+
     const lahan = foundLahan.map((result) => result.dataValues);
-    
+
     console.log(lahan);
     const data = [];
     for (let i = 0; i < lahan.length; i++) {
@@ -441,6 +441,7 @@ class LahanService {
       }
 
       if (foundObservasi.length > 0) {
+        // TODO ubah ini nanti jadi semua observasi yang ada
         // ini baru cuma data observasi pertama aja yang ditampilin
         const skor = foundObservasi[0].dataValues.skor_akhir;
         const tanggalKejadian = foundObservasi[0].dataValues.tanggal_kejadian;
