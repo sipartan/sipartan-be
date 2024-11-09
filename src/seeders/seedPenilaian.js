@@ -277,7 +277,15 @@ const dataPenilaian = [
 
 async function seedPenilaian() {
     try {
-        await Penilaian.bulkCreate(dataPenilaian);
+        const penilaianCount = await Penilaian.count();
+
+        if (penilaianCount === 0) {
+            console.log("Database appears to be newly created. Seeding penilaian data...");
+            await Penilaian.bulkCreate(dataPenilaian);
+            console.log("Penilaian data seeding completed.");
+        } else {
+            console.log("Database already exists and contains data penilaian.");
+        }
 
         console.log("Seeding penilaian completed!");
     } catch (error) {

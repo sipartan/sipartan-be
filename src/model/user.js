@@ -4,7 +4,7 @@ const db = require('../config/database.js');
 const { DataTypes } = Sequelize;
 
 const User = db.define(
-  "user",
+  'user',
   {
     user_id: {
       type: DataTypes.STRING,
@@ -24,31 +24,47 @@ const User = db.define(
     },
     instansi: {
       type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+      allowNull: true, // Allow null for oauth users
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
       validate: {
         notEmpty: true,
+        isEmail: true,
       },
     },
     username: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
       validate: {
         notEmpty: true,
       },
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true, // Allow null for OAuth users
+    },
+    isEmailVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    role: {
+      type: DataTypes.STRING,
+      defaultValue: 'guest',
       validate: {
-        notEmpty: true,
+        isIn: [['admin', 'patroli', 'guest']],
       },
+    },
+    googleId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    facebookId: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
   },
   {

@@ -28,7 +28,11 @@ const db = new Sequelize(
   {
     host: process.env.DB_HOST,
     dialect: "postgres",
-    port: process.env.DB_PORT
+    port: process.env.DB_PORT,
+    define: {
+      schema: process.env.DB_SCHEMA,
+    },
+    logging: false,
   }
 );
 
