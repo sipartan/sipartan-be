@@ -1,22 +1,22 @@
 const multer = require("multer");
+const multerS3 = require("multer-s3");
+const { s3Client, bucketName } = require("../config/minioClient");
 
 const setMulter = () => {
   return (req, res, next) => {
     try {
-      const storage = multer.diskStorage({
-        destination: (req, file, cb) => {
-          cb(null, "src/image/upload");
-        },
-        filename: (req, file, cb) => {
-          cb(null, file.originalname);
-        },
-      });
-
-      const maxSize = 16 * 1024 * 1024;
-
       const upload = multer({
-        storage: storage,
-        limits: { fileSize: maxSize },
+        storage: multerS3({
+          s3: s3Client,
+          bucket: bucketName,
+          contentType: multerS3.AUTO_CONTENT_TYPE,
+          acl: "public-read",
+          key: function (req, file, cb) {
+            const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+            cb(null, "images/" + uniqueSuffix + "-" + file.originalname);
+          },
+        }),
+        limits: { fileSize: 16 * 1024 * 1024 },
         fileFilter: (req, file, cb) => {
           if (
             file.mimetype == "image/jpeg" ||
@@ -26,22 +26,19 @@ const setMulter = () => {
             cb(null, true);
           } else {
             cb(null, false);
-            return cb(new Error("Only jpeg, jpg, or png file allowed"));
+            return cb(new Error("Only jpeg, jpg, or png files are allowed"));
           }
         },
       }).array("files", 3);
 
-      // upload(req, res, next);
       upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
-          // Multer errors
           if (err.code === "LIMIT_FILE_SIZE") {
             res.status(400).json({ error: "File size exceeded the limit" });
           } else {
             res.status(400).json({ error: err.message });
           }
         } else if (err) {
-          // Other errors
           res.status(400).json({ error: err.message || "An error occurred" });
         } else {
           next();
@@ -54,6 +51,4 @@ const setMulter = () => {
   };
 };
 
-module.exports = {
-  setMulter,
-};
+module.exports = { setMulter };

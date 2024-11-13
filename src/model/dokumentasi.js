@@ -1,6 +1,6 @@
 const { Sequelize } = require("sequelize");
 const db = require("../config/database.js");
-const Plot = require('./plot.js')
+const Plot = require("./plot.js");
 
 const { DataTypes } = Sequelize;
 
@@ -18,14 +18,13 @@ const Dokumentasi = db.define(
     },
     plot_id: {
       type: DataTypes.STRING,
-      defaultValue: undefined,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
     nama: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(500), 
       allowNull: false,
       validate: {
         notEmpty: true,

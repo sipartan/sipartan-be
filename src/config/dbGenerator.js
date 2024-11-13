@@ -4,9 +4,17 @@ const seedPenilaian = require('../seeders/seedPenilaian');
 
 const dbGenerate = async () => {
   try {
-    await db.sync();
-    console.log("Database synchronized successfully.");
+    await db.authenticate();
+    console.log('Database connected...');
 
+    // Enable PostGIS extension
+    await db.query('CREATE EXTENSION IF NOT EXISTS postgis;');
+
+    // Sync models
+    // await db.sync({ alter: true }); // Use { force: true } cautiously
+    await db.sync();
+
+    console.log('Database synchronized...');
     await seedPenilaian();
     await seedUser();
     

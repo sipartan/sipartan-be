@@ -5,6 +5,11 @@ const PenilaianObservasi = require("../model/penilaianObservasi");
 const Hasil = require("../model/hasil");
 const Dokumentasi = require("../model/dokumentasi");
 const { Op } = require("sequelize");
+require("dotenv").config();
+const turf = require("@turf/turf");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { GetObjectCommand } = require("@aws-sdk/client-s3");
+const { s3Client, bucketName } = require("../config/minioClient");
 
 class ObservasiService {
   async createObservationData(
@@ -21,30 +26,45 @@ class ObservasiService {
     });
   }
 
-  async createPlotData (observation_id, dataPlot) {
+  async createPlotData(observation_id, dataPlot) {
     let result = [];
     for (let i = 0; i < dataPlot.length; i++) {
-      const { luasan_plot, penilaian_id } = dataPlot[i];
-  
+      const { penilaian_id } = dataPlot[i];
+
+      const coordinates = dataPlot[i].coordinates.map(coord => [coord[1], coord[0]]);
+      const polygonGeoJSON = {
+        type: "Polygon",
+        coordinates: [coordinates],
+      };
+
+
+      // Calculate the area using turf.js (area in square meters)
+      const area = turf.area(polygonGeoJSON);
+      console.log("Area in square meters: ", area);
+      // Convert area to hectares (1 hectare = 10,000 square meters)
+      const luasan_plot = area / 10000;
+      console.log("Area in hectares: ", luasan_plot);
+
       const makePlot = await Plot.create({
         observation_id: observation_id,
         luasan_plot: luasan_plot,
+        polygon: polygonGeoJSON,
       });
-  
+
       const makePenilaianObservasi = await this.createPenilaianObservasiData(
         makePlot.plot_id,
         penilaian_id
       );
-  
+
       const calculateResult = await this.calculateScore(makePlot.plot_id);
-  
+
       result.push(calculateResult);
     }
-  
-    return result;
-  };
 
-  async createPenilaianData (
+    return result;
+  }
+
+  async createPenilaianData(
     variable,
     type,
     bobot,
@@ -62,7 +82,7 @@ class ObservasiService {
     });
   };
 
-  async createPenilaianObservasiData (plot_id, penilaian_id) {
+  async createPenilaianObservasiData(plot_id, penilaian_id) {
     let result = [];
     for (let i = 0; i < penilaian_id.length; i++) {
       const penilaianObservasi = await PenilaianObservasi.create({
@@ -71,11 +91,11 @@ class ObservasiService {
       });
       result.push(penilaianObservasi.penilaian_observasi_id);
     }
-  
+
     return result;
   };
 
-  async createHasilData (
+  async createHasilData(
     plot_id,
     kondisi_vegetasi,
     kondisi_tanah,
@@ -89,31 +109,65 @@ class ObservasiService {
     });
   };
 
-  async createDokumentasiData (plot_id, files, type) {
+  async createDokumentasiData(plot_id, files, type) {
     for (let i = 0; i < files.length; i++) {
       await Dokumentasi.create({
         plot_id: plot_id,
-        nama: files[i].originalname,
+        nama: files[i].key, // Store the object key
         type: type,
       });
     }
-    return "aa";
-  };
+    return "Dokumentasi created successfully";
+  }
 
-  async getImageName (plot_id, type) {
-    const imageName = await Dokumentasi.findAll(
-      {
-        attributes: ["plot_id", "nama", "type"],
-        where: {
-          plot_id: plot_id,
-          type: type
-        },
-      }
-    )
-    return imageName;
-  };
+  // async getImageName(plot_id, type) {
+  //   console.log("plot_id: ", plot_id);
 
-  async calculateScore (plot_id) {
+  //   // Fetch images from the database
+  //   const images = await Dokumentasi.findAll({
+  //     attributes: ["plot_id", "nama", "type"],
+  //     where: {
+  //       plot_id: plot_id,
+  //       type: type,
+  //     },
+  //   });
+
+  //   // Construct direct URLs for each image
+  //   const imageUrls = images.map((image) => {
+  //     return `${process.env.MINIO_ENDPOINT}/${bucketName}/${image.nama}`;
+  //   });
+
+  //   return imageUrls;
+  // }
+
+
+  async getImageName(plot_id, type) {
+    console.log("plot_id: ", plot_id);
+    
+    // Fetch images from database
+    const images = await Dokumentasi.findAll({
+      attributes: ["plot_id", "nama", "type"],
+      where: {
+        plot_id: plot_id,
+        type: type,
+      },
+    });
+  
+    // Generate signed URLs for each image
+    const imageUrls = await Promise.all(
+      images.map(async (image) => {
+        const command = new GetObjectCommand({
+          Bucket: bucketName,
+          Key: image.nama,
+        });
+        return await getSignedUrl(s3Client, command, { Expires: 60 * 60 }); // 1 hour expiration
+      })
+    );
+  
+    return imageUrls;
+  }
+
+  async calculateScore(plot_id) {
     const foundPenilaianPlot = await PenilaianObservasi.findAll({
       attributes: ["penilaian_id"],
       where: {
@@ -123,7 +177,7 @@ class ObservasiService {
     const penilaianIds = foundPenilaianPlot.map(
       (result) => result.dataValues.penilaian_id
     );
-  
+
     const foundNilaiVegetasi = await Penilaian.findAll({
       attributes: ["bobot"],
       where: {
@@ -136,7 +190,7 @@ class ObservasiService {
     const nilaiVegetasi = foundNilaiVegetasi.map(
       (result) => result.dataValues.bobot
     );
-  
+
     const foundNilaiTanah = await Penilaian.findAll({
       attributes: ["bobot"],
       where: {
@@ -147,62 +201,57 @@ class ObservasiService {
       },
     });
     const nilaiTanah = foundNilaiTanah.map((result) => result.dataValues.bobot);
-  
+
     let resultNilaiVegetasi = 0;
     for (let i = 0; i < nilaiVegetasi.length; i++) {
       resultNilaiVegetasi += nilaiVegetasi[i];
     }
-  
+
     const makeHasil = await this.createHasilData(
       plot_id,
       resultNilaiVegetasi,
       nilaiTanah[0],
       resultNilaiVegetasi + nilaiTanah[0]
     );
-  
+
     return makeHasil;
   };
 
-  async createKarhutlaData (data) {
+  async createKarhutlaData(data) {
     const { data_lahan_id, tanggal_kejadian, tanggal_penilaian, dataPlot } = data;
-  
+
     const makeObservation = await this.createObservationData(
       data_lahan_id,
       tanggal_kejadian,
       tanggal_penilaian
     );
-  
-    const makePlot = await this.createPlotData(
-      makeObservation.observation_id,
-      dataPlot
-    );
-  
+
+    const makePlot = await this.createPlotData(makeObservation.observation_id, dataPlot);
+
     let finalScoreBeforeMean = 0;
     const scoreResult = makePlot.map((result) => result.dataValues.skor);
     for (let i = 0; i < scoreResult.length; i++) {
       finalScoreBeforeMean += scoreResult[i];
     }
     const finalScore = finalScoreBeforeMean / scoreResult.length;
-  
+
     makeObservation.skor_akhir = finalScore;
     await makeObservation.save();
 
-    const foundPlot = await Plot.findAll(
-      {
-        attributes: ["plot_id", "luasan_plot"],
-        where: {
-          observation_id: makeObservation.observation_id
-        }
-      }
-    );
+    const foundPlot = await Plot.findAll({
+      attributes: ["plot_id", "luasan_plot"],
+      where: {
+        observation_id: makeObservation.observation_id,
+      },
+    });
     const plotIds = foundPlot.map((res) => res.dataValues.plot_id);
 
-    const result = { ...makeObservation.dataValues, plotIds: plotIds}
-  
-    return result; // ntr kalo mau ubah sabi
-  };
+    const result = { ...makeObservation.dataValues, plotIds: plotIds };
 
-  async getPenilaianData () {
+    return result;
+  }
+
+  async getPenilaianData() {
     return await Penilaian.findAll();
   };
 

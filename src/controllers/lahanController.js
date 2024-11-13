@@ -36,7 +36,7 @@ class LahanController {
       } = req.body;
 
       // ntr ubah lagi kalo dh aktifin auth
-      const user_id = req.user.id;
+      const user_id = req.user.user_id;
 
       const dataUmumLahan = await this.lahanService.createDataUmumLahanData(
         user_id,
@@ -78,7 +78,7 @@ class LahanController {
       } = req.body;
 
       // ntr ubah lagi kalo dh aktifin auth
-      const user_id = req.user.id;
+      const user_id = req.user.user_id;
 
       // contoh validasi data sama ngirim response yang bener
       const requiredFields = [
@@ -172,11 +172,11 @@ class LahanController {
 
   getResults = async (req, res) => {
     try {
-      const { userId } = req.query;
+      const filters = req.query;
 
-      const result = await this.lahanService.getResultsData(userId);
+      const result = await this.lahanService.getResultsData(filters);
 
-      res.status(200).json({ msg: "berhasil get results", result });
+      res.status(200).json({ msg: "Berhasil get results", result });
     } catch (error) {
       res.status(500).json({ msg: error.message });
     }

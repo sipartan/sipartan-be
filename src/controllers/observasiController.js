@@ -130,24 +130,24 @@ class ObservasiController {
       const requiredFields = ["data_lahan_id", "tanggal_kejadian", "tanggal_penilaian", "dataPlot"];
 
       const missingFields = requiredFields.filter((field) => !data.hasOwnProperty(field));
-      let falseTypeInd = 0;
 
       if (missingFields.length > 0) {
-        res
-          .status(400)
-          .json({ msg: `Data belum lengkap, field yang kurang: ${missingFields.join(", ")}` });
+        res.status(400).json({
+          msg: `Data belum lengkap, field yang kurang: ${missingFields.join(", ")}`,
+        });
       } else {
+        let falseTypeInd = 0;
         data.dataPlot.forEach((plot) => {
-          if (typeof plot.luasan_plot !== "number") {
+          if (!Array.isArray(plot.coordinates)) {
             falseTypeInd++;
           }
         });
         if (falseTypeInd >= 1) {
-          res.status(400).json({ msg: "jenis data tidak sesuai" });
+          res.status(400).json({ msg: "Jenis data tidak sesuai" });
         } else {
           const result = await this.observasiService.createKarhutlaData(data);
 
-          res.status(201).json({ msg: "berhasil create hasil", result });
+          res.status(201).json({ msg: "Berhasil create hasil", result });
         }
       }
     } catch (error) {
@@ -167,23 +167,11 @@ class ObservasiController {
 
   getImage = async (req, res) => {
     try {
-      const fileName = req.params.fileName;
+      const { plot_id, type } = req.query;
 
-      const filePath = path.join(global.__basedir, "image", "upload", fileName);
+      const imageUrls = await this.observasiService.getImageName(plot_id, type);
 
-      // Read the file asynchronously
-      let fileContent = {};
-      try {
-        fileContent = await fs.readFile(filePath);
-
-        // Set the appropriate headers for the response
-        res.setHeader("Content-Type", "image/jpeg");
-
-        // Send the file content as the response
-        res.send(fileContent);
-      } catch (error) {
-        res.status(400).json({ msg: "Image tidak ditemukan" });
-      }
+      res.status(200).json({ msg: "Berhasil get image URLs", imageUrls });
     } catch (error) {
       res.status(500).json({ msg: error.message });
     }
@@ -192,6 +180,7 @@ class ObservasiController {
   getImageName = async (req, res) => {
     try {
       const { plot_id, type } = req.body;
+      console.log("plot_id", plot_id);
       const result = await this.observasiService.getImageName(plot_id, type);
 
       res.status(200).json({ msg: "berhasil get image name", result });

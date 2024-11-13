@@ -22,8 +22,8 @@ dbGenerate();
 
 // routes
 app.use(UserRoute);
-// app.use(LahanRoute);
-// app.use(ObservasiRoute);
+app.use(LahanRoute);
+app.use(ObservasiRoute);
 
 const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => {
