@@ -26,7 +26,6 @@
 const express = require("express");
 const passport = require("passport");
 const { authorizeRoles } = require("../middleware/authMiddleware");
-const { setMulter } = require("../middleware/multer");
 const ObservasiController = require("../controllers/observasiController");
 
 const router = express.Router();
@@ -44,7 +43,6 @@ router.post(
     "/observasi/dokumentasi",
     passport.authenticate("jwt", { session: false }),
     authorizeRoles("admin"),
-    setMulter(),
     observasiController.createDokumentasi
 );
 
@@ -62,13 +60,11 @@ router.get(
     observasiController.getPenilaian
 );
 
-router.get("/observasi/dokumentasi/:fileName", observasiController.getImage);
-
 router.get(
-    "/observasi/dokumentasiName",
+    "/observasi/dokumentasi/:plot_id",
     passport.authenticate("jwt", { session: false }),
     authorizeRoles("admin"),
-    observasiController.getImageName
+    observasiController.getImageUrl
 );
 
 router.delete(

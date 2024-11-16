@@ -23,15 +23,8 @@ const Dokumentasi = db.define(
         notEmpty: true,
       },
     },
-    nama: {
+    s3_key: {
       type: DataTypes.STRING(500), 
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    type: {
-      type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,

@@ -1,6 +1,9 @@
 const ObservasiService = require("../service/observasiService");
-const path = require("path");
-const fs = require("fs").promises;
+const Dokumentasi = require("../model/dokumentasi");
+const Busboy = require("busboy");
+const { s3Client, bucketName } = require("../config/minioClient");
+const { Upload } = require("@aws-sdk/lib-storage");
+const { nanoid } = require("nanoid");
 
 class ObservasiController {
   constructor() {
@@ -113,13 +116,116 @@ class ObservasiController {
 
   createDokumentasi = async (req, res) => {
     try {
-      const { plot_id, type } = req.body;
-      const files = req.files;
-
-      const dokumentasi = await this.observasiService.createDokumentasiData(plot_id, files, type);
-
-      res.status(201).json({ msg: "berhasil create dokumentasi" });
+      const busboy = Busboy({ headers: req.headers });
+      const files = [];
+      const fields = {};
+  
+      // Parse fields
+      busboy.on("field", (fieldname, value) => {
+        fields[fieldname] = value;
+      });
+  
+      // Parse files
+      busboy.on("file", (fieldname, file, fileInfo) => {
+        const { filename, mimeType } = fileInfo;
+        const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+  
+        if (!allowedTypes.includes(mimeType)) {
+          return res.status(400).json({ msg: "Only jpeg, jpg, or png files are allowed" });
+        }
+  
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const hour = String(now.getHours()).padStart(2, "0");
+        const minute = String(now.getMinutes()).padStart(2, "0");
+        const second = String(now.getSeconds()).padStart(2, "0");
+        const nanoId = nanoid();
+  
+        const filenameFormatted = `${year}-${month}-${day}_${hour}-${minute}-${second}_${nanoId}_${filename}`;
+        const s3Key = `${year}/${month}/${fields.provinsi}/${fields.kabupaten}/${fields.kecamatan}/${fields.desa}/${fields.tipe}/${fields.kategori}/${filenameFormatted}`;
+  
+        // Upload using @aws-sdk/lib-storage
+        const uploadPromise = new Upload({
+          client: s3Client,
+          params: {
+            Bucket: bucketName,
+            Key: s3Key,
+            Body: file,
+            ContentType: mimeType,
+          },
+        }).done();
+  
+        files.push({ uploadPromise, s3Key });
+      });
+  
+      // When done parsing
+      busboy.on("finish", async () => {
+        // Validate required fields
+        const requiredFields = [
+          "plot_id",
+          "provinsi",
+          "kabupaten",
+          "kecamatan",
+          "desa",
+          "tipe",
+          "kategori",
+        ];
+        const missingFields = requiredFields.filter((field) => !fields[field]);
+  
+        if (missingFields.length > 0) {
+          return res.status(400).json({
+            msg: `Missing required fields: ${missingFields.join(", ")}`,
+          });
+        }
+  
+        if (files.length === 0) {
+          return res.status(400).json({ msg: "No files uploaded" });
+        }
+  
+        // Wait for all files to upload to S3
+        const uploadResults = await Promise.all(
+          files.map(async ({ uploadPromise, s3Key }) => {
+            try {
+              await uploadPromise;
+              return { s3Key, success: true };
+            } catch (error) {
+              console.error("File upload failed:", error);
+              return { s3Key, success: false, error };
+            }
+          })
+        );
+  
+        // Check for failed uploads
+        const failedUploads = uploadResults.filter((result) => !result.success);
+        if (failedUploads.length > 0) {
+          return res.status(500).json({
+            msg: "Some files failed to upload",
+            errors: failedUploads.map((result) => result.error.message),
+          });
+        }
+  
+        // Save successful uploads to the database
+        for (const { s3Key } of uploadResults) {
+          await Dokumentasi.create({
+            plot_id: fields.plot_id,
+            s3_key: s3Key,
+            tipe: fields.tipe,
+            kategori: fields.kategori,
+          });
+        }
+  
+        // Respond with success
+        res.status(201).json({
+          msg: "Successfully created documentation",
+          dokumentasi: uploadResults.map((result) => result.s3Key),
+        });
+      });
+  
+      req.pipe(busboy);
     } catch (error) {
+      console.error("Error creating documentation:", error);
       res.status(500).json({ msg: error.message });
     }
   };
@@ -165,23 +271,10 @@ class ObservasiController {
     }
   };
 
-  getImage = async (req, res) => {
+  getImageUrl = async (req, res) => {
     try {
-      const { plot_id, type } = req.query;
-
-      const imageUrls = await this.observasiService.getImageName(plot_id, type);
-
-      res.status(200).json({ msg: "Berhasil get image URLs", imageUrls });
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
-    }
-  };
-
-  getImageName = async (req, res) => {
-    try {
-      const { plot_id, type } = req.body;
-      console.log("plot_id", plot_id);
-      const result = await this.observasiService.getImageName(plot_id, type);
+      const { plot_id } = req.params;
+      const result = await this.observasiService.getImageUrl(plot_id);
 
       res.status(200).json({ msg: "berhasil get image name", result });
     } catch (error) {

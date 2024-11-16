@@ -11,8 +11,12 @@ const PenilaianObservasi = require("../model/penilaianObservasi");
 const Penilaian = require("../model/penilaian");
 const paginate = require('../utils/pagination');
 const Dokumentasi = require("../model/dokumentasi");
+const ObservasiService = require("../service/observasiService");
 
 class LahanService {
+  constructor() {
+    this.observasiService = new ObservasiService();
+  }
   async createLokasiRegionData(provinsi, kabupaten, kecamatan, desa) {
     return await LokasiRegion.create({
       provinsi: provinsi,
@@ -172,200 +176,111 @@ class LahanService {
 
   async getSingleResultData(id, obsId) {
     const foundLahan = await DataUmumLahan.findOne({
-      attributes: [
-        "data_lahan_id",
-        "region_location_id",
-        "user_id",
-        "tutupan_lahan",
-        "luasan_karhutla",
-        "jenis_karhutla",
-        "penggunaan_lahan",
-        "jenis_tanah",
-        "jenis_vegetasi",
-        "tinggi_muka_air_gambut",
-        "latitude",
-        "longitude",
-        "temperatur",
-        "curah_hujan",
-        "kelembaban_udara",
+      where: { data_lahan_id: id },
+      include: [
+        {
+          model: LokasiRegion,
+          as: "lokasi_region",
+          attributes: ["provinsi", "kabupaten", "kecamatan", "desa"],
+        },
+        {
+          model: User,
+          as: "user",
+          attributes: ["nama", "instansi", "email"],
+        },
+        {
+          model: Observasi,
+          as: "observasis",
+          where: { observation_id: obsId },
+          include: [
+            {
+              model: Plot,
+              as: "plots",
+              include: [
+                {
+                  model: PenilaianObservasi,
+                  include: [
+                    {
+                      model: Penilaian,
+                    },
+                  ],
+                },
+                {
+                  model: Hasil,
+                },
+              ],
+            },
+          ],
+        },
       ],
-      where: {
-        data_lahan_id: id,
-      },
     });
 
-    const foundUser = await User.findOne({
-      attributes: ["user_id", "nama", "instansi", "email", "username"],
-      where: {
-        user_id: foundLahan.dataValues.user_id,
-      },
-    });
+    if (!foundLahan) {
+      throw new Error("Lahan not found");
+    }
 
-    const foundRegion = await LokasiRegion.findOne({
-      attributes: ["provinsi", "kabupaten", "kecamatan", "desa"],
-      where: {
-        region_location_id: foundLahan.dataValues.region_location_id,
-      },
-    });
-
-    const foundObservasi = await Observasi.findOne({
-      attributes: ["tanggal_kejadian", "tanggal_penilaian", "skor_akhir", "createdAt"],
-      where: {
-        data_lahan_id: id,
-        observation_id: obsId,
-      },
-    });
-
-    const foundPlot = await Plot.findAll({
-      attributes: ["plot_id", "luasan_plot"],
-      where: {
-        observation_id: obsId,
-      },
-    });
-    const plotIds = foundPlot.map((result) => result.dataValues.plot_id);
-
-    const resultSinglePlot = [];
-    for (let i = 0; i < foundPlot.length; i++) {
-      const foundHasilPlot = await Hasil.findOne({
-        attributes: ["skor"],
-        where: {
-          plot_id: foundPlot[i].dataValues.plot_id,
-        },
-      });
-
-      const foundPenilaianObservasi = await PenilaianObservasi.findAll({
-        attributes: ["penilaian_id", "penilaian_observasi_id", "plot_id"],
-        where: {
-          plot_id: foundPlot[i].dataValues.plot_id,
-        },
-      });
-
-      const foundPenilaianIds = [];
-
-      for (let i = 0; i < foundPenilaianObservasi.length; i++) {
-        let foundPenilaianIdsObj = {};
-        foundPenilaianIdsObj.penilaianObservasiIds =
-          foundPenilaianObservasi[i].dataValues.penilaian_observasi_id;
-        foundPenilaianIdsObj.penilaianIds = foundPenilaianObservasi[i].dataValues.penilaian_id;
-
-        const penilaianattr = await Penilaian.findOne({
-          attributes: ["variable", "kategori", "deskripsi"],
-          where: {
-            penilaian_id: foundPenilaianObservasi[i].dataValues.penilaian_id,
-          },
+    const observasiList = foundLahan.observasis.map((obs) => {
+      const plotList = obs.plots.map((plot) => {
+        const penilaianList = plot.penilaian_observasis.map((penObs) => {
+          return {
+            penilaianObservasiId: penObs.penilaian_observasi_id,
+            penilaianId: penObs.penilaian_id,
+            variable: penObs.penilaian.variable,
+            kategori: penObs.penilaian.kategori,
+            deskripsi: penObs.penilaian.deskripsi,
+          };
         });
 
-        const foundImageName = await Dokumentasi.findAll({
-          attributes: ["nama"],
-          where: {
-            plot_id: foundPenilaianObservasi[i].dataValues.plot_id,
-            type: penilaianattr.dataValues.kategori,
-          },
-        });
+        return {
+          plot_id: plot.plot_id,
+          luasan_plot: plot.luasan_plot,
+          polygon: plot.polygon,
+          skor_plot: plot.hasil.skor,
+          hasil_plot: this.getHasilPenilaianFromSkor(plot.hasil.skor),
+          penilaianList: penilaianList,
+          images: [], // We'll populate this next
+        };
+      });
 
-        let imageNames = [];
-        if (foundImageName.length > 0) {
-          imageNames = foundImageName.map((result) => result.dataValues.nama);
-        }
-
-        foundPenilaianIdsObj.penilaianName = penilaianattr.dataValues.variable;
-        foundPenilaianIdsObj.penilaianKategori = penilaianattr.dataValues.kategori;
-        foundPenilaianIdsObj.penilaianDeskripsi = penilaianattr.dataValues.deskripsi || "";
-        foundPenilaianIdsObj.penilaianImgNames = imageNames;
-        foundPenilaianIds.push(foundPenilaianIdsObj);
-      }
-
-      const skorPlot = foundHasilPlot.dataValues.skor;
-      let hasilPlot = "";
-
-      switch (true) {
-        case skorPlot > 0 && skorPlot <= 20:
-          hasilPlot = "Sangat Ringan";
-          break;
-        case skorPlot > 20 && skorPlot <= 40:
-          hasilPlot = "Ringan";
-          break;
-        case skorPlot > 40 && skorPlot <= 60:
-          hasilPlot = "Sedang";
-          break;
-        case skorPlot > 60 && skorPlot <= 80:
-          hasilPlot = "Berat";
-          break;
-        case skorPlot > 80 && skorPlot <= 100:
-          hasilPlot = "Sangat Berat";
-          break;
-
-        default:
-          break;
-      }
-
-      const singlePlot = {
-        plot_id: foundPlot[i].dataValues.plot_id,
-        luas_plot: foundPlot[i].dataValues.luasan_plot,
-        skor_plot: skorPlot,
-        hasil_plot: hasilPlot,
-        penilaianIdsSinglePlot: foundPenilaianIds,
+      return {
+        observation_id: obs.observation_id,
+        tanggal_kejadian: obs.tanggal_kejadian,
+        tanggal_penilaian: obs.tanggal_penilaian,
+        skor_akhir: obs.skor_akhir,
+        hasil_penilaian: this.getHasilPenilaianFromSkor(obs.skor_akhir),
+        plots: plotList,
       };
+    });
 
-      resultSinglePlot.push(singlePlot);
+    // Fetch images for each plot
+    for (const obs of observasiList) {
+      for (const plot of obs.plots) {
+        plot.images = await this.observasiService.getImageUrl(plot.plot_id);
+      }
     }
 
-    const skor = foundObservasi.dataValues.skor_akhir;
-    const tanggalKejadian = foundObservasi.dataValues.tanggal_kejadian;
-    const tanggalPenilaian = foundObservasi.dataValues.tanggal_penilaian;
-    const tanggalUpload = new Date(foundObservasi.dataValues.createdAt);
-    const tanggalUploadFormatted = await this.timeAgo(tanggalUpload);
-
-    let hasilPenilaian = "";
-    switch (true) {
-      case skor > 0 && skor <= 20:
-        hasilPenilaian = "Sangat Ringan";
-        break;
-      case skor > 20 && skor <= 40:
-        hasilPenilaian = "Ringan";
-        break;
-      case skor > 40 && skor <= 60:
-        hasilPenilaian = "Sedang";
-        break;
-      case skor > 60 && skor <= 80:
-        hasilPenilaian = "Berat";
-        break;
-      case skor > 80 && skor <= 100:
-        hasilPenilaian = "Sangat Berat";
-        break;
-
-      default:
-        break;
-    }
-
-    const data = {
-      tutupan_lahan: foundLahan.dataValues.tutupan_lahan,
-      luasan_karhutla: foundLahan.dataValues.luasan_karhutla,
-      jenis_karhutla: foundLahan.dataValues.jenis_karhutla,
-      penggunaan_lahan: foundLahan.dataValues.penggunaan_lahan,
-      jenis_tanah: foundLahan.dataValues.jenis_tanah,
-      jenis_vegetasi: foundLahan.dataValues.jenis_vegetasi,
-      tinggi_muka_air_gambut: foundLahan.dataValues.tinggi_muka_air_gambut,
-      nama_user: foundUser.dataValues.nama,
-      instansi_user: foundUser.dataValues.instansi,
-      tanggal_upload: tanggalUploadFormatted,
-      provinsi: foundRegion.dataValues.provinsi,
-      kabupaten: foundRegion.dataValues.kabupaten,
-      kecamatan: foundRegion.dataValues.kecamatan,
-      desa: foundRegion.dataValues.desa,
-      latitude: foundLahan.dataValues.latitude,
-      longitude: foundLahan.dataValues.longitude,
-      temperatur: foundLahan.dataValues.temperatur,
-      curah_hujan: foundLahan.dataValues.curah_hujan,
-      kelembaban_udara: foundLahan.dataValues.kelembaban_udara,
-      tanggalKejadian: tanggalKejadian,
-      tanggalPenilaian: tanggalPenilaian,
-      single_plot: resultSinglePlot,
-      skor: skor,
-      hasil_penilaian: hasilPenilaian,
+    const result = {
+      region: foundLahan.region,
+      dataumumlahan: {
+        data_lahan_id: foundLahan.data_lahan_id,
+        tutupan_lahan: foundLahan.tutupan_lahan,
+        luasan_karhutla: foundLahan.luasan_karhutla,
+        jenis_karhutla: foundLahan.jenis_karhutla,
+        penggunaan_lahan: foundLahan.penggunaan_lahan,
+        jenis_tanah: foundLahan.jenis_tanah,
+        jenis_vegetasi: foundLahan.jenis_vegetasi,
+        tinggi_muka_air_gambut: foundLahan.tinggi_muka_air_gambut,
+        latitude: foundLahan.latitude,
+        longitude: foundLahan.longitude,
+        temperatur: foundLahan.temperatur,
+        curah_hujan: foundLahan.curah_hujan,
+        kelembaban_udara: foundLahan.kelembaban_udara,
+      },
+      user: foundLahan.user,
+      observasi: observasiList,
     };
 
-    return data;
+    return result;
   }
 
   async getResultsData(filters) {
@@ -452,7 +367,18 @@ class LahanService {
         "createdAt",
         "updatedAt",
       ],
-      include,
+      include: [
+        {
+          model: Observasi,
+          attributes: ["observation_id", "skor_akhir", "createdAt"],
+          include: [
+            {
+              model: Plot,
+              attributes: ["plot_id", "luasan_plot", "polygon"],
+            },
+          ],
+        },
+      ],
       order: [[sortBy, order]],
       page: parseInt(page),
       limit: parseInt(limit),
@@ -461,11 +387,24 @@ class LahanService {
     const result = await paginate(DataUmumLahan, options);
 
     // Process the results to add additional data like hasil_penilaian
-    // for (const lahan of result.results) {
-    //   const skor = lahan.observasis[0].skor_akhir;
-    //   lahan.dataValues.skor = skor;
-    //   lahan.dataValues.hasil_penilaian = this.getHasilPenilaianFromSkor(skor);
-    // }
+    result.results = result.results.map((lahan) => {
+      const skor = lahan.observasis[0].skor_akhir;
+      return {
+        ...lahan.toJSON(),
+        skor: skor,
+        hasil_penilaian: this.getHasilPenilaianFromSkor(skor),
+        observasi: lahan.observasis.map((obs) => ({
+          observation_id: obs.observation_id,
+          skor_akhir: obs.skor_akhir,
+          hasil_penilaian: this.getHasilPenilaianFromSkor(obs.skor_akhir),
+          plots: obs.plots.map((plot) => ({
+            plot_id: plot.plot_id,
+            luasan_plot: plot.luasan_plot,
+            polygon: plot.polygon,
+          })),
+        })),
+      };
+    });
 
     return result;
   }

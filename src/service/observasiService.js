@@ -120,36 +120,13 @@ class ObservasiService {
     return "Dokumentasi created successfully";
   }
 
-  // async getImageName(plot_id, type) {
-  //   console.log("plot_id: ", plot_id);
 
-  //   // Fetch images from the database
-  //   const images = await Dokumentasi.findAll({
-  //     attributes: ["plot_id", "nama", "type"],
-  //     where: {
-  //       plot_id: plot_id,
-  //       type: type,
-  //     },
-  //   });
-
-  //   // Construct direct URLs for each image
-  //   const imageUrls = images.map((image) => {
-  //     return `${process.env.MINIO_ENDPOINT}/${bucketName}/${image.nama}`;
-  //   });
-
-  //   return imageUrls;
-  // }
-
-
-  async getImageName(plot_id, type) {
-    console.log("plot_id: ", plot_id);
-    
-    // Fetch images from database
+  async getImageUrl(plot_id) {
+    // Find all images for the given plot_id
     const images = await Dokumentasi.findAll({
-      attributes: ["plot_id", "nama", "type"],
+      attributes: ["s3_key"],
       where: {
         plot_id: plot_id,
-        type: type,
       },
     });
   
@@ -158,7 +135,7 @@ class ObservasiService {
       images.map(async (image) => {
         const command = new GetObjectCommand({
           Bucket: bucketName,
-          Key: image.nama,
+          Key: image.s3_key,
         });
         return await getSignedUrl(s3Client, command, { Expires: 60 * 60 }); // 1 hour expiration
       })
