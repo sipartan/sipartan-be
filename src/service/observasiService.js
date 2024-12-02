@@ -121,12 +121,12 @@ class ObservasiService {
   }
 
 
-  async getImageUrl(plot_id) {
-    // Find all images for the given plot_id
+  async getImageUrl(penilaian_observasi_id) {
+    // Find all images for the given penilaian_observasi_id
     const images = await Dokumentasi.findAll({
       attributes: ["s3_key"],
       where: {
-        plot_id: plot_id,
+        penilaian_observasi_id: penilaian_observasi_id,
       },
     });
   

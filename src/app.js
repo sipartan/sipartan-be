@@ -1,31 +1,44 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
 const dbGenerate = require('./config/dbGenerator');
 const UserRoute = require('./routes/userRoute');
 const LahanRoute = require('./routes/lahanRoute');
 const ObservasiRoute = require('./routes/observasiRoute');
-const path = require('path');
+const infoRoute = require('./routes/infoRoute');
 const passport = require('./config/passport');
 
 require('dotenv').config();
 
-global.__basedir = path.resolve(__dirname);
-
 const app = express();
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+
 app.use(cors());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(compression());
 app.use(passport.initialize());
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
-dbGenerate();
+dbGenerate().catch((err) => {
+  console.error('Database connection failed:', err.message);
+  process.exit(1); // Exit app on DB connection failure
+});
 
-// routes
+// Routes
 app.use(UserRoute);
 app.use(LahanRoute);
 app.use(ObservasiRoute);
+app.use('/info', infoRoute);
 
+// Server Initialization
 const PORT = process.env.PORT || 8081;
 app.listen(PORT, () => {
-  console.log('Server listening on ' + PORT);
+  console.log(`Server listening on ${PORT}`);
+});
+
+// Graceful Shutdown
+process.on('SIGINT', () => {
+  console.log('Gracefully shutting down...');
+  process.exit(0);
 });

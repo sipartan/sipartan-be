@@ -228,6 +228,7 @@ class LahanService {
             variable: penObs.penilaian.variable,
             kategori: penObs.penilaian.kategori,
             deskripsi: penObs.penilaian.deskripsi,
+            images: [],
           };
         });
 
@@ -238,7 +239,7 @@ class LahanService {
           skor_plot: plot.hasil.skor,
           hasil_plot: this.getHasilPenilaianFromSkor(plot.hasil.skor),
           penilaianList: penilaianList,
-          images: [], // We'll populate this next
+          // images: [], // We'll populate this next
         };
       });
 
@@ -252,15 +253,25 @@ class LahanService {
       };
     });
 
-    // Fetch images for each plot
+    // // Fetch images for each plot
+    // for (const obs of observasiList) {
+    //   for (const plot of obs.plots) {
+    //     plot.images = await this.observasiService.getImageUrl(plot.plot_id);
+    //   }
+    // }
+
+    // // Fetch images for each penilaian
     for (const obs of observasiList) {
       for (const plot of obs.plots) {
-        plot.images = await this.observasiService.getImageUrl(plot.plot_id);
+        for (const penilaian of plot.penilaianList) {
+          penilaian.images = await this.observasiService.getImageUrl(penilaian.penilaianObservasiId);
+        }
       }
     }
 
+
     const result = {
-      region: foundLahan.region,
+      lokasi_region: foundLahan.lokasi_region,
       dataumumlahan: {
         data_lahan_id: foundLahan.data_lahan_id,
         tutupan_lahan: foundLahan.tutupan_lahan,

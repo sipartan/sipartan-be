@@ -164,7 +164,7 @@ class ObservasiController {
       busboy.on("finish", async () => {
         // Validate required fields
         const requiredFields = [
-          "plot_id",
+          "penilaian_observasi_id",
           "provinsi",
           "kabupaten",
           "kecamatan",
@@ -209,7 +209,7 @@ class ObservasiController {
         // Save successful uploads to the database
         for (const { s3Key } of uploadResults) {
           await Dokumentasi.create({
-            plot_id: fields.plot_id,
+            penilaian_observasi_id: fields.penilaian_observasi_id,
             s3_key: s3Key,
             tipe: fields.tipe,
             kategori: fields.kategori,
@@ -273,8 +273,8 @@ class ObservasiController {
 
   getImageUrl = async (req, res) => {
     try {
-      const { plot_id } = req.params;
-      const result = await this.observasiService.getImageUrl(plot_id);
+      const { penilaian_observasi_id } = req.params;
+      const result = await this.observasiService.getImageUrl(penilaian_observasi_id);
 
       res.status(200).json({ msg: "berhasil get image name", result });
     } catch (error) {
