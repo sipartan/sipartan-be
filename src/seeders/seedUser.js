@@ -1,4 +1,4 @@
-const User = require("../model/user");
+const User = require("../models/user");
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
@@ -13,7 +13,7 @@ let users = {
 const seedAdminUser = async () => {
     try {
         const existingUser = await User.findOne({ where: { username: users.username } });
-        
+
         if (existingUser) {
             console.log('Admin user already exists');
             return;
@@ -21,9 +21,9 @@ const seedAdminUser = async () => {
 
         const salt = bcrypt.genSaltSync(10);
         users.password = bcrypt.hashSync(users.password, salt);
-        
+
         await User.create(users);
-        
+
         console.log('Admin user seeded successfully');
     } catch (error) {
         console.error('Error seeding admin user:', error);

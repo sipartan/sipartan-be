@@ -1,5 +1,5 @@
-const ObservasiService = require("../service/observasiService");
-const Dokumentasi = require("../model/dokumentasi");
+const ObservasiService = require("../services/observasiService");
+const Dokumentasi = require("../models/dokumentasi");
 const Busboy = require("busboy");
 const { s3Client, bucketName } = require("../config/minioClient");
 const { Upload } = require("@aws-sdk/lib-storage");
@@ -119,21 +119,21 @@ class ObservasiController {
       const busboy = Busboy({ headers: req.headers });
       const files = [];
       const fields = {};
-  
+
       // Parse fields
       busboy.on("field", (fieldname, value) => {
         fields[fieldname] = value;
       });
-  
+
       // Parse files
       busboy.on("file", (fieldname, file, fileInfo) => {
         const { filename, mimeType } = fileInfo;
         const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-  
+
         if (!allowedTypes.includes(mimeType)) {
           return res.status(400).json({ msg: "Only jpeg, jpg, or png files are allowed" });
         }
-  
+
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -142,10 +142,10 @@ class ObservasiController {
         const minute = String(now.getMinutes()).padStart(2, "0");
         const second = String(now.getSeconds()).padStart(2, "0");
         const nanoId = nanoid();
-  
+
         const filenameFormatted = `${year}-${month}-${day}_${hour}-${minute}-${second}_${nanoId}_${filename}`;
         const s3Key = `${year}/${month}/${fields.provinsi}/${fields.kabupaten}/${fields.kecamatan}/${fields.desa}/${fields.tipe}/${fields.kategori}/${filenameFormatted}`;
-  
+
         // Upload using @aws-sdk/lib-storage
         const uploadPromise = new Upload({
           client: s3Client,
@@ -156,10 +156,10 @@ class ObservasiController {
             ContentType: mimeType,
           },
         }).done();
-  
+
         files.push({ uploadPromise, s3Key });
       });
-  
+
       // When done parsing
       busboy.on("finish", async () => {
         // Validate required fields
@@ -173,17 +173,17 @@ class ObservasiController {
           "kategori",
         ];
         const missingFields = requiredFields.filter((field) => !fields[field]);
-  
+
         if (missingFields.length > 0) {
           return res.status(400).json({
             msg: `Missing required fields: ${missingFields.join(", ")}`,
           });
         }
-  
+
         if (files.length === 0) {
           return res.status(400).json({ msg: "No files uploaded" });
         }
-  
+
         // Wait for all files to upload to S3
         const uploadResults = await Promise.all(
           files.map(async ({ uploadPromise, s3Key }) => {
@@ -196,7 +196,7 @@ class ObservasiController {
             }
           })
         );
-  
+
         // Check for failed uploads
         const failedUploads = uploadResults.filter((result) => !result.success);
         if (failedUploads.length > 0) {
@@ -205,7 +205,7 @@ class ObservasiController {
             errors: failedUploads.map((result) => result.error.message),
           });
         }
-  
+
         // Save successful uploads to the database
         for (const { s3Key } of uploadResults) {
           await Dokumentasi.create({
@@ -215,14 +215,14 @@ class ObservasiController {
             kategori: fields.kategori,
           });
         }
-  
+
         // Respond with success
         res.status(201).json({
           msg: "Successfully created documentation",
           dokumentasi: uploadResults.map((result) => result.s3Key),
         });
       });
-  
+
       req.pipe(busboy);
     } catch (error) {
       console.error("Error creating documentation:", error);

@@ -1,4 +1,4 @@
-const Penilaian = require('../model/penilaian'); 
+const Penilaian = require('../models/penilaian');
 
 const dataPenilaian = [
     {

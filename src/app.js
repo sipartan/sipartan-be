@@ -3,10 +3,12 @@ const cors = require('cors');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const dbGenerate = require('./config/dbGenerator');
+const errorHandler = require('./middlewares/error');
 const UserRoute = require('./routes/userRoute');
 const LahanRoute = require('./routes/lahanRoute');
 const ObservasiRoute = require('./routes/observasiRoute');
 const infoRoute = require('./routes/infoRoute');
+const authRoute = require('./routes/authRoute');
 const passport = require('./config/passport');
 
 require('dotenv').config();
@@ -26,10 +28,13 @@ dbGenerate().catch((err) => {
 });
 
 // Routes
-app.use(UserRoute);
+app.use('/user', UserRoute);
 app.use(LahanRoute);
 app.use(ObservasiRoute);
+app.use('/auth', authRoute);
 app.use('/info', infoRoute);
+
+app.use(errorHandler);
 
 // Server Initialization
 const PORT = process.env.PORT || 8081;

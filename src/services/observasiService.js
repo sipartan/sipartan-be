@@ -1,9 +1,9 @@
-const Observasi = require("../model/observasi");
-const Plot = require("../model/plot");
-const Penilaian = require("../model/penilaian");
-const PenilaianObservasi = require("../model/penilaianObservasi");
-const Hasil = require("../model/hasil");
-const Dokumentasi = require("../model/dokumentasi");
+const Observasi = require("../models/observasi");
+const Plot = require("../models/plot");
+const Penilaian = require("../models/penilaian");
+const PenilaianObservasi = require("../models/penilaianObservasi");
+const Hasil = require("../models/hasil");
+const Dokumentasi = require("../models/dokumentasi");
 const { Op } = require("sequelize");
 require("dotenv").config();
 const turf = require("@turf/turf");
@@ -129,7 +129,7 @@ class ObservasiService {
         penilaian_observasi_id: penilaian_observasi_id,
       },
     });
-  
+
     // Generate signed URLs for each image
     const imageUrls = await Promise.all(
       images.map(async (image) => {
@@ -140,7 +140,7 @@ class ObservasiService {
         return await getSignedUrl(s3Client, command, { Expires: 60 * 60 }); // 1 hour expiration
       })
     );
-  
+
     return imageUrls;
   }
 

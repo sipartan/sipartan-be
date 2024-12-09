@@ -1,4 +1,4 @@
-const LahanService = require("../service/lahanService");
+const LahanService = require("../services/lahanService");
 
 class LahanController {
   constructor() {

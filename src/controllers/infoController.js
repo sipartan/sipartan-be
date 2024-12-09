@@ -1,7 +1,7 @@
-const InfoService = require('../service/infoService');
+const InfoService = require('../services/infoService');
 
-class InfoController{
-    constructor(){
+class InfoController {
+    constructor() {
         this.infoService = new InfoService();
     }
 
@@ -62,7 +62,7 @@ class InfoController{
             const weather = await this.infoService.getWeatherByCityId(city_id);
             res.json(weather);
         } catch (error) {
-            res.status(500).json({ error: error});
+            res.status(500).json({ error: error });
         }
     }
 

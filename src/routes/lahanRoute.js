@@ -22,7 +22,7 @@
 
 const express = require("express");
 const passport = require("passport");
-const { authorizeRoles } = require("../middleware/authMiddleware");
+const { authorizeRoles } = require("../middlewares/auth");
 const LahanController = require("../controllers/lahanController");
 
 const router = express.Router();

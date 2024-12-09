@@ -1,17 +1,17 @@
-const LokasiRegion = require("../model/lokasiRegion");
-const DataUmumLahan = require("../model/dataUmum");
+const LokasiRegion = require("../models/lokasiRegion");
+const DataUmumLahan = require("../models/dataUmum");
 const { Op, where } = require("sequelize");
-const Observasi = require("../model/observasi");
-const Plot = require("../model/plot");
-const Hasil = require("../model/hasil");
-const User = require("../model/user");
+const Observasi = require("../models/observasi");
+const Plot = require("../models/plot");
+const Hasil = require("../models/hasil");
+const User = require("../models/user");
 const { NotFound } = require("../utils/response");
 const downloadPDFReport = require("../utils/generateReport/index");
-const PenilaianObservasi = require("../model/penilaianObservasi");
-const Penilaian = require("../model/penilaian");
+const PenilaianObservasi = require("../models/penilaianObservasi");
+const Penilaian = require("../models/penilaian");
 const paginate = require('../utils/pagination');
-const Dokumentasi = require("../model/dokumentasi");
-const ObservasiService = require("../service/observasiService");
+const Dokumentasi = require("../models/dokumentasi");
+const ObservasiService = require("../services/observasiService");
 
 class LahanService {
   constructor() {

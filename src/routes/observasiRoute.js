@@ -25,7 +25,7 @@
 
 const express = require("express");
 const passport = require("passport");
-const { authorizeRoles } = require("../middleware/authMiddleware");
+const { authorizeRoles } = require("../middlewares/auth");
 const ObservasiController = require("../controllers/observasiController");
 
 const router = express.Router();

@@ -2,7 +2,7 @@ const passport = require('passport');
 const { ExtractJwt, Strategy: JwtStrategy } = require('passport-jwt');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
-const User = require('../model/user');
+const User = require('../models/user');
 require('dotenv').config();
 
 const secretKey = process.env.SECRETKEY;
@@ -33,7 +33,7 @@ passport.use(
         {
             clientID: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: `${process.env.DOMAIN}/auth/google/callback`,
+            callbackURL: `${process.env.DOMAIN}/auth/google/callback`, // TODO: Change this in the future with the actual domain
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
@@ -62,7 +62,7 @@ passport.use(
         {
             clientID: process.env.FACEBOOK_APP_ID,
             clientSecret: process.env.FACEBOOK_APP_SECRET,
-            callbackURL: `${process.env.DOMAIN}/auth/facebook/callback`,
+            callbackURL: `${process.env.DOMAIN}/auth/facebook/callback`, // TODO: Change this in the future with the actual domain
             profileFields: ['id', 'displayName', 'emails'],
         },
         async (accessToken, refreshToken, profile, done) => {
