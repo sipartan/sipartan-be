@@ -50,6 +50,7 @@
     "pg-hstore": "^2.3.4",
     "puppeteer": "^22.0.0",
     "sequelize": "^6.33.0",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   }
 }
