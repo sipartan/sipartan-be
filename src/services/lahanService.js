@@ -10,7 +10,6 @@ const downloadPDFReport = require("../utils/generateReport/index");
 const PenilaianObservasi = require("../models/penilaianObservasi");
 const Penilaian = require("../models/penilaian");
 const paginate = require('../utils/pagination');
-const Dokumentasi = require("../models/dokumentasi");
 const ObservasiService = require("../services/observasiService");
 
 class LahanService {

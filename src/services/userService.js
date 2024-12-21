@@ -3,9 +3,10 @@ const { Op } = require('sequelize');
 const paginate = require('../utils/pagination');
 const ApiError = require('../utils/ApiError');
 const bcrypt = require('bcrypt');
-require('dotenv').config();
+const config = require('../config/config');
+const logger = require('../utils/logger');
 
-const SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 10;
+const SALT_ROUNDS = parseInt(config.jwt.bcryptSaltRounds, 10) || 10;
 
 /**
  * Fetches paginated users based on the provided query.
@@ -30,9 +31,10 @@ const getUsers = async (query = {}) => {
         };
 
         const result = await paginate(User, options);
-
+        logger.info('Users retrieved successfully', { query });
         return result;
     } catch (error) {
+        logger.error('An error occurred while fetching users:', error);
         if (error instanceof ApiError) {
             throw error;
         }
@@ -51,6 +53,7 @@ const createUser = async (data) => {
     try {
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
+            logger.warn(`User creation failed: Email ${email} is already registered.`);
             throw new ApiError(400, 'Email is already registered.');
         }
 
@@ -65,8 +68,10 @@ const createUser = async (data) => {
             role,
         });
 
+        logger.info(`User created successfully: ${username}`);
         return { user_id: userCreated.user_id };
     } catch (error) {
+        logger.error('An error occurred while creating the user:', error);
         if (error instanceof ApiError) {
             throw error;
         }
@@ -82,6 +87,7 @@ const createUser = async (data) => {
  */
 const getUserById = async (userId, authenticatedUser) => {
     if (authenticatedUser.role !== 'admin' && authenticatedUser.user_id !== userId) {
+        logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
         throw new ApiError(403, 'Access denied.');
     }
 
@@ -91,11 +97,14 @@ const getUserById = async (userId, authenticatedUser) => {
         });
 
         if (!user) {
+            logger.warn(`User not found with ID: ${userId}`);
             throw new ApiError(404, 'User not found.');
         }
 
+        logger.info(`User retrieved successfully: ${userId}`);
         return user;
     } catch (error) {
+        logger.error('An error occurred while fetching the user:', error);
         if (error instanceof ApiError) {
             throw error;
         }
@@ -112,18 +121,22 @@ const getUserById = async (userId, authenticatedUser) => {
  */
 const updateUser = async (userId, data, authenticatedUser) => {
     if (authenticatedUser.role !== 'admin' && authenticatedUser.user_id !== userId) {
+        logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
         throw new ApiError(403, 'Access denied.');
     }
 
     try {
         const user = await User.findByPk(userId);
         if (!user) {
+            logger.warn(`User not found with ID: ${userId}`);
             throw new ApiError(404, 'User not found.');
         }
 
         await user.update(data);
+        logger.info(`User updated successfully: ${userId}`);
         return user;
     } catch (error) {
+        logger.error('An error occurred while updating the user:', error);
         if (error instanceof ApiError) {
             throw error;
         }
@@ -139,17 +152,21 @@ const updateUser = async (userId, data, authenticatedUser) => {
  */
 const deleteUser = async (userId, authenticatedUser) => {
     if (authenticatedUser.role !== 'admin' && authenticatedUser.user_id !== userId) {
+        logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
         throw new ApiError(403, 'Access denied.');
     }
 
     try {
         const user = await User.findByPk(userId);
         if (!user) {
+            logger.warn(`User not found with ID: ${userId}`);
             throw new ApiError(404, 'User not found.');
         }
 
         await user.destroy();
+        logger.info(`User deleted successfully: ${userId}`);
     } catch (error) {
+        logger.error('An error occurred while deleting the user:', error);
         if (error instanceof ApiError) {
             throw error;
         }
@@ -166,6 +183,7 @@ const deleteUser = async (userId, authenticatedUser) => {
  */
 const verifyUserRole = async (userId, role, authenticatedUser) => {
     if (authenticatedUser.role !== 'admin') {
+        logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
         throw new ApiError(403, 'Access denied.');
     }
 
@@ -174,16 +192,20 @@ const verifyUserRole = async (userId, role, authenticatedUser) => {
             attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role'],
         });
         if (!user) {
+            logger.warn(`User not found with ID: ${userId}`);
             throw new ApiError(404, 'User not found.');
         }
 
         if (!user.isEmailVerified) {
+            logger.warn(`User email not verified for user ID: ${userId}`);
             throw new ApiError(400, 'User email is not verified.');
         }
 
         await user.update({ role });
+        logger.info(`User role updated successfully: ${userId}`);
         return user;
     } catch (error) {
+        logger.error('An error occurred while verifying the user role:', error);
         if (error instanceof ApiError) {
             throw error;
         }

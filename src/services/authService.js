@@ -4,13 +4,14 @@ const emailService = require('../services/emailService');
 const User = require('../models/user');
 const ApiError = require('../utils/ApiError');
 const { Op } = require('sequelize');
-require('dotenv').config();
+const config = require('../config/config');
+const logger = require('../utils/logger');
 
-const SALT_ROUNDS = parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 10;
-const SECRET_KEY = process.env.SECRETKEY || 'default_secret_key';
-const AUTH_TOKEN_EXPIRATION = process.env.AUTH_TOKEN_EXPIRATION || '1d';
-const RESET_PASSWORD_TOKEN_EXPIRATION = process.env.RESET_PASSWORD_TOKEN_EXPIRATION || '1h';
-const VERIFY_EMAIL_TOKEN_EXPIRATION = process.env.VERIFY_EMAIL_TOKEN_EXPIRATION || '1d';
+const SALT_ROUNDS = parseInt(config.jwt.bcryptSaltRounds, 10) || 10;
+const SECRET_KEY = config.jwt.secretKey || 'default_secret_key';
+const AUTH_TOKEN_EXPIRATION = config.jwt.authTokenExpiration || '1d';
+const RESET_PASSWORD_TOKEN_EXPIRATION = config.jwt.resetPasswordTokenExpiration || '1h';
+const VERIFY_EMAIL_TOKEN_EXPIRATION = config.jwt.verifyEmailTokenExpiration || '1d';
 
 /**
  * Registers a new user.
@@ -20,7 +21,6 @@ const VERIFY_EMAIL_TOKEN_EXPIRATION = process.env.VERIFY_EMAIL_TOKEN_EXPIRATION 
 const registerUser = async (data) => {
     const { nama, instansi, email, username, password } = data;
 
-
     const existingUser = await User.findOne({
         where: {
             [Op.or]: [{ email }, { username }]
@@ -29,9 +29,11 @@ const registerUser = async (data) => {
 
     if (existingUser) {
         if (existingUser.email === email) {
+            logger.warn(`Registration failed: Email ${email} is already registered.`);
             throw new ApiError(400, 'Email is already registered.');
         }
         if (existingUser.username === username) {
+            logger.warn(`Registration failed: Username ${username} is already taken.`);
             throw new ApiError(400, 'Username is already taken.');
         }
     }
@@ -47,8 +49,10 @@ const registerUser = async (data) => {
             password: hashedPassword,
         });
 
+        logger.info(`User registered successfully: ${username}`);
         return { user_id: userCreated.user_id };
     } catch (error) {
+        logger.error('An error occurred during registration:', error);
         if (error instanceof ApiError) {
             throw error;
         }
@@ -66,16 +70,20 @@ const loginUser = async (email, password) => {
     try {
         const user = await User.findOne({ where: { email } });
         if (!user) {
+            logger.warn(`Login failed: Invalid email ${email}`);
             throw new ApiError(400, 'Invalid email or password.');
         }
 
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
+            logger.warn(`Login failed: Invalid password for email ${email}`);
             throw new ApiError(400, 'Invalid email or password.');
         }
 
+        logger.info(`User logged in successfully: ${email}`);
         return generateToken({ id: user.user_id, email: user.email, role: user.role }, AUTH_TOKEN_EXPIRATION);
     } catch (error) {
+        logger.error('An error occurred during login:', error);
         if (error instanceof ApiError) {
             throw error;
         }
@@ -94,15 +102,19 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
         const decoded = jwt.verify(resetPasswordToken, SECRET_KEY);
         const user = await User.findByPk(decoded.id);
         if (!user) {
+            logger.warn('Reset password failed: User not found.');
             throw new ApiError(404, 'User not found.');
         }
 
         user.password = await bcrypt.hash(newPassword, SALT_ROUNDS);
         await user.save();
+        logger.info(`Password reset successfully for user ID: ${user.user_id}`);
     } catch (error) {
         if (error.name === 'JsonWebTokenError') {
+            logger.warn('Reset password failed: Invalid or expired token.');
             throw new ApiError(400, 'Invalid or expired token.');
         }
+        logger.error('An error occurred while resetting the password:', error);
         if (error instanceof ApiError) {
             throw error;
         }
@@ -120,15 +132,19 @@ const verifyEmail = async (token) => {
         const decoded = jwt.verify(token, SECRET_KEY);
         const user = await User.findByPk(decoded.id);
         if (!user) {
+            logger.warn('Email verification failed: User not found.');
             throw new ApiError(404, 'User not found.');
         }
 
         user.isEmailVerified = true;
         await user.save();
+        logger.info(`Email verified successfully for user ID: ${user.user_id}`);
     } catch (error) {
         if (error.name === 'JsonWebTokenError') {
+            logger.warn('Email verification failed: Invalid or expired token.');
             throw new ApiError(400, 'Invalid or expired token.');
         }
+        logger.error('An error occurred during email verification:', error);
         if (error instanceof ApiError) {
             throw error;
         }
@@ -167,11 +183,13 @@ const getUserByEmail = async (email) => {
             attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified']
         });
         if (!user) {
+            logger.warn(`User not found with email: ${email}`);
             throw new ApiError(404, 'User not found.');
         }
 
         return user;
     } catch (error) {
+        logger.error('An error occurred while fetching the user:', error);
         if (error instanceof ApiError) {
             throw error;
         }
@@ -189,16 +207,17 @@ const forgotPassword = async (email) => {
     try {
         const user = await getUserByEmail(email);
         const token = generateToken({ id: user.user_id }, RESET_PASSWORD_TOKEN_EXPIRATION);
-        const forgotPasswordLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+        const forgotPasswordLink = `${config.urls.frontend}/reset-password?token=${token}`;
         await emailService.sendResetPasswordEmail(user, forgotPasswordLink);
-    }
-    catch (error) {
+        // logger.info(`Password reset email sent to: ${email}`);
+    } catch (error) {
+        logger.error('An error occurred while sending the reset password email:', error);
         if (error instanceof ApiError) {
             throw error;
         }
         throw new ApiError(500, 'An error occurred while sending the reset password email.');
     }
-}
+};
 
 /**
  * Sends an email verification link to the user.
@@ -210,17 +229,16 @@ const sendVerificationEmail = async (email) => {
     try {
         const user = await getUserByEmail(email);
         const token = generateToken({ id: user.user_id }, VERIFY_EMAIL_TOKEN_EXPIRATION);
-        const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+        const verificationLink = `${config.urls.frontend}/verify-email?token=${token}`;
         await emailService.sendVerificationEmail(user, verificationLink);
-    }
-    catch (error) {
+    } catch (error) {
+        logger.error('An error occurred while sending the verification email:', error);
         if (error instanceof ApiError) {
             throw error;
         }
         throw new ApiError(500, 'An error occurred while sending the verification email.');
     }
-}
-
+};
 
 module.exports = {
     registerUser,

@@ -1,25 +1,30 @@
 const db = require('./database');
 const seedUser = require('../seeders/seedUser');
-const seedPenilaian = require('../seeders/seedPenilaian'); 
+const seedPenilaian = require('../seeders/seedPenilaian');
+const logger = require('../utils/logger');
 
 const dbGenerate = async () => {
   try {
     await db.authenticate();
-    console.log('Database connected...');
+    logger.info('Database connected...');
 
     // Enable PostGIS extension
     await db.query('CREATE EXTENSION IF NOT EXISTS postgis;');
+    logger.info('PostGIS extension enabled...');
 
     // Sync models
-    // await db.sync({ alter: true }); // Use { force: true } cautiously
+    // await db.sync({ alter: true }); // { force: true } is dangerous 
     await db.sync();
+    logger.info('Database synchronized...');
 
-    console.log('Database synchronized...');
     await seedPenilaian();
+    logger.info('Penilaian seeded successfully...');
+
     await seedUser();
+    logger.info('User seeded successfully...');
     
   } catch (error) {
-    console.error("Unable to generate the database:", error);
+    logger.error("Unable to generate the database:", error);
   }
 };
 

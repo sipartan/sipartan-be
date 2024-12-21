@@ -1,13 +1,14 @@
 const User = require("../models/user");
 const bcrypt = require('bcrypt');
-require('dotenv').config();
+const config = require('../config/config');
+const logger = require('../utils/logger');
 
 let users = {
-    nama: process.env.ADMIN_USERNAME,
-    username: process.env.ADMIN_USERNAME,
-    password: process.env.ADMIN_PASSWORD,
+    nama: config.admin.username,
+    username: config.admin.username,
+    password: config.admin.password,
     role: 'admin',
-    email: process.env.ADMIN_EMAIL
+    email: config.admin.email
 };
 
 const seedAdminUser = async () => {
@@ -15,7 +16,7 @@ const seedAdminUser = async () => {
         const existingUser = await User.findOne({ where: { username: users.username } });
 
         if (existingUser) {
-            console.log('Admin user already exists');
+            logger.info('Admin user already exists');
             return;
         }
 
@@ -24,9 +25,9 @@ const seedAdminUser = async () => {
 
         await User.create(users);
 
-        console.log('Admin user seeded successfully');
+        logger.info('Admin user seeded successfully');
     } catch (error) {
-        console.error('Error seeding admin user:', error);
+        logger.error('Error seeding admin user:', error);
     }
 };
 

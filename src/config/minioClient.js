@@ -1,4 +1,5 @@
 const { S3Client, ListBucketsCommand } = require("@aws-sdk/client-s3");
+const logger = require('../utils/logger');
 require("dotenv").config();
 
 const s3Client = new S3Client({
@@ -7,23 +8,24 @@ const s3Client = new S3Client({
         accessKeyId: process.env.MINIO_ROOT_USER || "minioadmin",
         secretAccessKey: process.env.MINIO_ROOT_PASSWORD || "minioadmin",
     },
-    region: "us-east-1", 
-    forcePathStyle: true, 
+    region: "us-east-1",
+    forcePathStyle: true,
 });
 
 const bucketName = process.env.MINIO_BUCKET || "sipartan";
 
-// // Test MinIO connection using AWS SDK v3
-// async function testConnection() {
-//   try {
-//     const command = new ListBucketsCommand({});
-//     const data = await s3Client.send(command);
-//     console.log("Connected to MinIO. Buckets:", data.Buckets);
-//   } catch (err) {
-//     console.error("Error connecting to MinIO:", err);
-//   }
-// }
+// Test MinIO connection using AWS SDK v3
+async function testConnection() {
+    try {
+        const command = new ListBucketsCommand({});
+        const data = await s3Client.send(command);
+        logger.info("Connected to MinIO. Buckets:", {buckets: data.Buckets});
+    } catch (err) {
+        logger.error("Error connecting to MinIO:", err);
+        process.exit(1);
+    }
+}
 
-// testConnection();
+testConnection();
 
 module.exports = { s3Client, bucketName };

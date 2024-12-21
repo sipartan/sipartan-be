@@ -3,9 +3,9 @@ const { ExtractJwt, Strategy: JwtStrategy } = require('passport-jwt');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const User = require('../models/user');
-require('dotenv').config();
+const config = require('../config/config');
 
-const secretKey = process.env.SECRETKEY;
+const secretKey = config.jwt.secretKey;
 
 // JWT Strategy
 const jwtOpts = {
@@ -31,9 +31,9 @@ passport.use(
 passport.use(
     new GoogleStrategy(
         {
-            clientID: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            callbackURL: `${process.env.DOMAIN}/auth/google/callback`, // TODO: Change this in the future with the actual domain
+            clientID: config.oauth.google.clientId,
+            clientSecret: config.oauth.google.clientSecret,
+            callbackURL: `${config.env.domain}/auth/google/callback`, // TODO: Change this in the future with the actual domain
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
@@ -60,9 +60,9 @@ passport.use(
 passport.use(
     new FacebookStrategy(
         {
-            clientID: process.env.FACEBOOK_APP_ID,
-            clientSecret: process.env.FACEBOOK_APP_SECRET,
-            callbackURL: `${process.env.DOMAIN}/auth/facebook/callback`, // TODO: Change this in the future with the actual domain
+            clientID: config.oauth.facebook.appId,
+            clientSecret: config.oauth.facebook.appSecret,
+            callbackURL: `${config.env.domain}/auth/facebook/callback`, // TODO: Change this in the future with the actual domain
             profileFields: ['id', 'displayName', 'emails'],
         },
         async (accessToken, refreshToken, profile, done) => {
