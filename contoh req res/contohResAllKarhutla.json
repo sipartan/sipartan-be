@@ -1,0 +1,137 @@
+{
+    "status": 200,
+    "message": "Data berhasil diambil",
+    "data": {
+        "results": [
+            {
+                "region": {
+                    "region_location_id": "fcbc88be-be67-4434-a139-3b281b4fd8c4",
+                    "provinsi": "Kalimantan Tengah",
+                    "kabupaten": "Kabupaten Barito Utara",
+                    "kecamatan": "Kecamatan Dusun Hilir",
+                    "desa": "Desa Dusun Hilir"
+                },
+                "dataUmumLahan": {
+                    "data_lahan_id": "fcbc88be-be67-4434-a139-3b281b4fd8c4",
+                    "tutupan_lahan": "hutan test aja ya 7",
+                    "jenis_vegetasi": "flores",
+                    "luasan_karhutla": 40,
+                    "jenis_tanah": "Gambut",
+                    "tinggi_muka_air_gambut": 5,
+                    "jenis_karhutla": "Parah",
+                    "penggunaan_lahan": "sumber kayu",
+                    "latitude": -6.651431132578957,
+                    "longitude": 111.03647347058305,
+                    "temperatur": 27,
+                    "curah_hujan": 21,
+                    "kelembaban_udara": 12,
+                    "createdAt": "2024-11-09T09:12:22.719Z",
+                    "updatedAt": "2024-11-09T09:12:22.719Z",
+                    "skor_lahan": 26,
+                    "hasil_penilaian_lahan": "Ringan"
+                },
+                "observasi": [
+                    {
+                        "user": {
+                            "user_id": "fcbc88be-be67-4434-a139-3b281b4fd8c4",
+                            "nama": "John Doe"
+                        },
+                        "observation_id": "bdd10ca7-c37e-40a9-bc46-ea33bce4b8fc",
+                        "tanggal_kejadian": "2024-02-27T06:25:54.633Z",
+                        "tanggal_penilaian": "2024-03-04T06:25:54.633Z",
+                        "skor_akhir": 26,
+                        "hasil_penilaian": "Ringan",
+                        "plots": [
+                            {
+                                "plot_id": "9afe49db-9303-4a58-aeef-a72b80aa1147",
+                                "luasan_plot": 0.3157631126747664,
+                                "polygon": {
+                                    "crs": {
+                                        "type": "name",
+                                        "properties": {
+                                            "name": "EPSG:4326"
+                                        }
+                                    },
+                                    "type": "Polygon",
+                                    "coordinates": [
+                                        [
+                                            [
+                                                106.73257232151731,
+                                                -6.556975239188053
+                                            ],
+                                            [
+                                                106.73313022097479,
+                                                -6.556977903852133
+                                            ],
+                                            [
+                                                106.73312619766138,
+                                                -6.557442887515221
+                                            ],
+                                            [
+                                                106.73257366262177,
+                                                -6.557436225861227
+                                            ],
+                                            [
+                                                106.73257232151731,
+                                                -6.556975239188053
+                                            ]
+                                        ]
+                                    ]
+                                },
+                                "kondisi_vegetasi": 16,
+                                "kondisi_tanah": 10,
+                                "skor_plot": 26,
+                                "hasil_plot": "Ringan"
+                            },
+                            {
+                                "plot_id": "2a611809-fa69-486f-811a-38217b96a95d",
+                                "luasan_plot": 0.3157631126747664,
+                                "polygon": {
+                                    "crs": {
+                                        "type": "name",
+                                        "properties": {
+                                            "name": "EPSG:4326"
+                                        }
+                                    },
+                                    "type": "Polygon",
+                                    "coordinates": [
+                                        [
+                                            [
+                                                106.73257232151731,
+                                                -6.556975239188053
+                                            ],
+                                            [
+                                                106.73313022097479,
+                                                -6.556977903852133
+                                            ],
+                                            [
+                                                106.73312619766138,
+                                                -6.557442887515221
+                                            ],
+                                            [
+                                                106.73257366262177,
+                                                -6.557436225861227
+                                            ],
+                                            [
+                                                106.73257232151731,
+                                                -6.556975239188053
+                                            ]
+                                        ]
+                                    ]
+                                },
+                                "kondisi_vegetasi": 16,
+                                "kondisi_tanah": 10,
+                                "skor_plot": 26,
+                                "hasil_plot": "Ringan"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "page": 1,
+        "limit": 10,
+        "totalPages": 1,
+        "totalResults": 8
+    }
+}

@@ -5,7 +5,7 @@ require('dotenv').config();
 const envSchema = Joi.object({
     // NODE_ENV: Joi.string().valid('development', 'production', 'test').required(),
     PORT: Joi.number().default(3000),
-    DOMAIN: Joi.string().uri().required(),
+    BASE_URL: Joi.string().uri().required(),
     ADMIN_USERNAME: Joi.string().required(),
     ADMIN_PASSWORD: Joi.string().required(),
     ADMIN_EMAIL: Joi.string().email().required(),
@@ -29,6 +29,10 @@ const envSchema = Joi.object({
     FACEBOOK_APP_SECRET: Joi.string().required(),
     OPENWEATHER_API_KEY: Joi.string().required(),
     GEOCODING_API_KEY: Joi.string().required(),
+    MINIO_ENDPOINT: Joi.string().uri().required(),
+    MINIO_ROOT_USER: Joi.string().required(),
+    MINIO_ROOT_PASSWORD: Joi.string().required(),
+    MINIO_BUCKET: Joi.string().required(),
 }).unknown().required();
 
 const { error, value: envVars } = envSchema.validate(process.env);
@@ -41,7 +45,7 @@ module.exports = {
     env: {
         nodeEnv: envVars.NODE_ENV,
         port: envVars.PORT,
-        domain: envVars.DOMAIN,
+        baseUrl: envVars.BASE_URL,
     },
     admin: {
         username: envVars.ADMIN_USERNAME,
@@ -62,6 +66,12 @@ module.exports = {
         name: envVars.DB_NAME,
         port: envVars.DB_PORT,
         schema: envVars.DB_SCHEMA,
+    },
+    minio: {
+        endpoint: envVars.MINIO_ENDPOINT,
+        rootUser: envVars.MINIO_ROOT_USER,
+        rootPassword: envVars.MINIO_ROOT_PASSWORD,
+        bucket: envVars.MINIO_BUCKET,
     },
     urls: {
         frontend: envVars.FRONTEND_URL,

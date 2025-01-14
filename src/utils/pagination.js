@@ -1,5 +1,3 @@
-const { Op } = require('sequelize');
-
 /**
  * Pagination helper for Sequelize queries.
  * @param {Model} model - Sequelize model.

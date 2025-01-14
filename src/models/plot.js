@@ -1,3 +1,4 @@
+/* src/models/plot.js */
 const { Sequelize } = require("sequelize");
 const db = require("../config/database.js");
 const Observasi = require("./observasi.js");
@@ -35,6 +36,21 @@ const Plot = db.define(
       validate: {
         notEmpty: true,
       },
+    },
+    kondisi_vegetasi: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    kondisi_tanah: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    skor: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      defaultValue: 0,
     },
   },
   {

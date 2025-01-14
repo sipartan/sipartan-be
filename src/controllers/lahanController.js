@@ -5,254 +5,103 @@ class LahanController {
     this.lahanService = new LahanService();
   }
 
-  createLokasiRegion = async (req, res) => {
+  /**
+   * Creates a new Lahan Karhutla (DataUmumLahan).
+   * [POST] /lahan-karhutla
+   */
+  createLahanKarhutla = async (req, res, next) => {
     try {
-      const { provinsi, kabupaten, kecamatan, desa } = req.body;
-
-      const lokasiRegion = await this.lahanService.createLokasiRegionData(
-        provinsi,
-        kabupaten,
-        kecamatan,
-        desa
-      );
-
-      res.status(200).json({ msg: "berhasil create lokasi region", lokasiRegion });
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
-    }
-  };
-
-  createDataUmumLahan = async (req, res) => {
-    try {
-      const {
-        region_location_id,
-        tutupan_lahan,
-        jenis_vegetasi,
-        luasan_karhutla,
-        jenis_tanah,
-        tinggi_muka_air_gambut,
-        jenis_karhutla,
-        penggunaan_lahan,
-      } = req.body;
-
-      // ntr ubah lagi kalo dh aktifin auth
       const user_id = req.user.user_id;
+      const newData = { ...req.body, user_id };
 
-      const dataUmumLahan = await this.lahanService.createDataUmumLahanData(
-        user_id,
-        region_location_id,
-        tutupan_lahan,
-        jenis_vegetasi,
-        luasan_karhutla,
-        jenis_tanah,
-        tinggi_muka_air_gambut,
-        jenis_karhutla,
-        penggunaan_lahan
-      );
-
-      res.status(200).json({ msg: "berhasil create data umum lahan", dataUmumLahan });
+      const dataKarhutla = await this.lahanService.createLahanKarhutlaData(newData);
+      return res
+        .status(201)
+        .json({ status: 200, message: "Berhasil create data lahan Karhutla", data: dataKarhutla });
     } catch (error) {
-      res.status(500).json({ msg: error.message });
+      return next(error);
     }
   };
 
-  createLahanKarhutla = async (req, res) => {
-    try {
-      const {
-        provinsi,
-        kabupaten,
-        kecamatan,
-        desa,
-        tutupan_lahan,
-        jenis_vegetasi,
-        luasan_karhutla,
-        jenis_tanah,
-        tinggi_muka_air_gambut,
-        jenis_karhutla,
-        penggunaan_lahan,
-        latitude,
-        longitude,
-        temperatur,
-        curah_hujan,
-        kelembaban_udara,
-      } = req.body;
-
-      // ntr ubah lagi kalo dh aktifin auth
-      const user_id = req.user.user_id;
-
-      // contoh validasi data sama ngirim response yang bener
-      const requiredFields = [
-        "provinsi",
-        "kabupaten",
-        "kecamatan",
-        "desa",
-        "tutupan_lahan",
-        "jenis_vegetasi",
-        "luasan_karhutla",
-        "jenis_tanah",
-        "jenis_karhutla",
-        "penggunaan_lahan",
-        "latitude",
-        "longitude",
-        "temperatur",
-        "curah_hujan",
-        "kelembaban_udara",
-      ];
-
-      const missingFields = requiredFields.filter((field) => !req.body.hasOwnProperty(field));
-
-      if (missingFields.length > 0) {
-        res
-          .status(400)
-          .json({ msg: `Data belum lengkap, field yang kurang: ${missingFields.join(", ")}` });
-      } else {
-        if (tinggi_muka_air_gambut && typeof tinggi_muka_air_gambut !== "number") {
-          res.status(400).json({ msg: "jenis data tidak sesuai" });
-        } else {
-          if (
-            typeof provinsi !== "string" ||
-            typeof kabupaten !== "string" ||
-            typeof kecamatan !== "string" ||
-            typeof desa !== "string" ||
-            typeof tutupan_lahan !== "string" ||
-            typeof jenis_vegetasi !== "string" ||
-            typeof jenis_tanah !== "string" ||
-            typeof jenis_karhutla !== "string" ||
-            typeof penggunaan_lahan !== "string" ||
-            typeof latitude !== "string" ||
-            typeof longitude !== "string" ||
-            typeof luasan_karhutla !== "number" ||
-            typeof temperatur !== "number" ||
-            typeof curah_hujan !== "number" ||
-            typeof kelembaban_udara !== "number"
-          ) {
-            res.status(400).json({ msg: "jenis data tidak sesuai" });
-          } else {
-            const dataKarhutla = await this.lahanService.createLahanKarhutlaData(
-              provinsi,
-              kabupaten,
-              kecamatan,
-              desa,
-              user_id,
-              tutupan_lahan,
-              jenis_vegetasi,
-              luasan_karhutla,
-              jenis_tanah,
-              tinggi_muka_air_gambut,
-              jenis_karhutla,
-              penggunaan_lahan,
-              latitude,
-              longitude,
-              temperatur,
-              curah_hujan,
-              kelembaban_udara
-            );
-
-            res.status(201).json({ msg: "berhasil create data lahan Karhutla", dataKarhutla });
-          }
-        }
-
-      }
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
-    }
-  };
-
-  getSingleResult = async (req, res) => {
+  /**
+   * Retrieves a single result for lahan + specific observasi.
+   * [GET] /lahan-karhutla/:id/:obsId
+   */
+  getSingleResult = async (req, res, next) => {
     try {
       const { id, obsId } = req.params;
-
       const result = await this.lahanService.getSingleResultData(id, obsId);
-
-      res.status(200).json({ msg: "berhasil get single result", result });
+      return res
+        .status(200)
+        .json({ status: 200, message: "Berhasil get single result", data: result });
     } catch (error) {
-      res.status(500).json({ msg: error.message });
+      return next(error);
     }
   };
 
-  getResults = async (req, res) => {
+  /**
+   * Retrieves all lahan (Karhutla) with optional filters/pagination.
+   * [GET] /lahan-karhutla
+   */
+  getResults = async (req, res, next) => {
     try {
       const filters = req.query;
-
       const result = await this.lahanService.getResultsData(filters);
-
-      res.status(200).json({ msg: "Berhasil get results", result });
+      return res
+        .status(200)
+        .json({ status: 200, message: "Berhasil get results", data: result });
     } catch (error) {
-      res.status(500).json({ msg: error.message });
+      return next(error);
     }
   };
 
-  downloadPDF = async (req, res) => {
+  /**
+   * Downloads a PDF for a given lahan + observasi.
+   * [GET] /lahan-karhutla/downloadPDF/:id/:obsId
+   */
+  downloadPDF = async (req, res, next) => {
     try {
       const { id, obsId } = req.params;
-
-      const result = await this.lahanService.downloadPDF(id, obsId);
+      const pdfBuffer = await this.lahanService.downloadPDF(id, obsId);
 
       res.setHeader("Content-Type", "application/pdf");
-      res.send(result);
+      return res.status(200).send(pdfBuffer);
     } catch (error) {
-      res.status(500).json({ msg: error.message });
+      return next(error);
     }
   };
 
-  deleteKarhutla = async (req, res) => {
-    try {
-      const { id } = req.params;
-
-      const result = await this.lahanService.deleteKarhutla(id);
-
-      res.status(200).json({ msg: "berhasil delete karhutla", result });
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
-    }
-  };
-
-  editKarhutla = async (req, res) => {
+  /**
+   * Edits Karhutla data for a lahan + observasi.
+   * [PUT] /lahan-karhutla/:id/:obsId
+   */
+  editKarhutla = async (req, res, next) => {
     try {
       const { id, obsId } = req.params;
-      const { data } = req.body;
+      const updatedData = req.body.data;
 
-      const fieldsToCheckString = [
-        "provinsi",
-        "kabupaten",
-        "kecamatan",
-        "desa",
-        "tutupan_lahan",
-        "jenis_vegetasi",
-        "jenis_tanah",
-        "jenis_karhutla",
-        "penggunaan_lahan",
-        "latitude",
-        "longitude",
-      ];
-
-      const fieldsToCheckNumber = [
-        "luasan_karhutla",
-        "tinggi_muka_air_gambut",
-        "temperatur",
-        "curah_hujan",
-        "kelembaban_udara",
-      ];
-
-      for (const field of fieldsToCheckString) {
-        if (data[field] && typeof data[field] !== "string") {
-          res.status(400).json({ msg: "jenis data tidak sesuai" });
-          return;
-        }
-      }
-
-      for (const field of fieldsToCheckNumber) {
-        if (data[field] && typeof data[field] !== "number") {
-          res.status(400).json({ msg: "jenis data tidak sesuai" });
-          return;
-        }
-      }
-
-      const result = await this.lahanService.editKarhutla(id, obsId, data);
-
-      res.status(200).json({ msg: "berhasil edit karhutla", result });
+      const result = await this.lahanService.editKarhutla(id, obsId, updatedData);
+      return res
+        .status(200)
+        .json({ status: 200, message: "Berhasil edit karhutla", data: result });
     } catch (error) {
-      res.status(500).json({ msg: error.message });
+      return next(error);
+    }
+  };
+
+  /**
+   * Deletes a lahan (Karhutla).
+   * [DELETE] /lahan-karhutla/:id
+   */
+  deleteKarhutla = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const result = await this.lahanService.deleteKarhutla(id);
+      return res
+        .status(200)
+        .json({ status: 200, message: "Berhasil delete karhutla", data: result });
+    } catch (error) {
+      return next(error);
     }
   };
 }

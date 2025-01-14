@@ -1,181 +1,84 @@
+const { Op } = require("sequelize");
+const turf = require("@turf/turf");
+
 const LokasiRegion = require("../models/lokasiRegion");
 const DataUmumLahan = require("../models/dataUmum");
-const { Op, where } = require("sequelize");
 const Observasi = require("../models/observasi");
 const Plot = require("../models/plot");
-const Hasil = require("../models/hasil");
 const User = require("../models/user");
-const { NotFound } = require("../utils/response");
-const downloadPDFReport = require("../utils/generateReport/index");
-const PenilaianObservasi = require("../models/penilaianObservasi");
 const Penilaian = require("../models/penilaian");
-const paginate = require('../utils/pagination');
-const ObservasiService = require("../services/observasiService");
+const PenilaianObservasi = require("../models/penilaianObservasi");
+const paginate = require("../utils/pagination");
+const downloadPDFReport = require("../utils/generateReport/index");
+const { NotFound } = require("../utils/response");
+const config = require("../config/config");
+
+const ObservasiService = require("./observasiService");
 
 class LahanService {
   constructor() {
     this.observasiService = new ObservasiService();
   }
-  async createLokasiRegionData(provinsi, kabupaten, kecamatan, desa) {
-    return await LokasiRegion.create({
-      provinsi: provinsi,
-      kabupaten: kabupaten,
-      kecamatan: kecamatan,
-      desa: desa,
-    });
-  }
 
-  async createDataUmumLahanData(
-    user_id,
-    region_location_id,
-    tutupan_lahan,
-    jenis_vegetasi,
-    luasan_karhutla,
-    jenis_tanah,
-    tinggi_muka_air_gambut,
-    jenis_karhutla,
-    penggunaan_lahan,
-    latitude,
-    longitude,
-    temperatur,
-    curah_hujan,
-    kelembaban_udara
-  ) {
+  /**
+   * Create a new Lahan Karhutla (DataUmumLahan).
+   * If the region does not exist, create one. Otherwise reuse.
+   * @param {Object} data - All data needed to create the lahan karhutla
+   * @returns {Promise<Object>} Created lahan data
+   */
+  async createLahanKarhutlaData(data) {
+    const {
+      provinsi,
+      kabupaten,
+      kecamatan,
+      desa,
+      user_id,
+      tutupan_lahan,
+      jenis_vegetasi,
+      luasan_karhutla,
+      jenis_tanah,
+      tinggi_muka_air_gambut,
+      jenis_karhutla,
+      penggunaan_lahan,
+      latitude,
+      longitude,
+      temperatur,
+      curah_hujan,
+      kelembaban_udara,
+    } = data;
+
+    // 1. Find or create LokasiRegion in a single query
+    const [lokasiRegion] = await LokasiRegion.findOrCreate({
+      where: { provinsi, kabupaten, kecamatan, desa },
+      defaults: { provinsi, kabupaten, kecamatan, desa },
+    });
+
+    // 2. Create DataUmumLahan using the region_location_id from LokasiRegion
     return await DataUmumLahan.create({
-      user_id: user_id,
-      region_location_id: region_location_id,
-      tutupan_lahan: tutupan_lahan,
-      jenis_vegetasi: jenis_vegetasi,
-      luasan_karhutla: luasan_karhutla,
-      jenis_tanah: jenis_tanah,
-      tinggi_muka_air_gambut: tinggi_muka_air_gambut,
-      jenis_karhutla: jenis_karhutla,
-      penggunaan_lahan: penggunaan_lahan,
-      latitude: latitude,
-      longitude: longitude,
-      temperatur: temperatur,
-      curah_hujan: curah_hujan,
-      kelembaban_udara: kelembaban_udara,
+      user_id,
+      region_location_id: lokasiRegion.region_location_id,
+      tutupan_lahan,
+      jenis_vegetasi,
+      luasan_karhutla,
+      jenis_tanah,
+      tinggi_muka_air_gambut,
+      jenis_karhutla,
+      penggunaan_lahan,
+      latitude,
+      longitude,
+      temperatur,
+      curah_hujan,
+      kelembaban_udara,
     });
   }
 
-  async createLahanKarhutlaData(
-    provinsi,
-    kabupaten,
-    kecamatan,
-    desa,
-    user_id,
-    tutupan_lahan,
-    jenis_vegetasi,
-    luasan_karhutla,
-    jenis_tanah,
-    tinggi_muka_air_gambut,
-    jenis_karhutla,
-    penggunaan_lahan,
-    latitude,
-    longitude,
-    temperatur,
-    curah_hujan,
-    kelembaban_udara
-  ) {
-    const foundRegion = await LokasiRegion.findAll({
-      attributes: ["region_location_id", "provinsi", "kabupaten", "kecamatan", "desa"],
-      where: {
-        [Op.and]: [
-          {
-            provinsi: provinsi,
-          },
-          {
-            kabupaten: kabupaten,
-          },
-          {
-            kecamatan: kecamatan,
-          },
-          {
-            desa: desa,
-          },
-        ],
-      },
-    });
 
-    let makeDataLahan = null;
-    if (foundRegion.length > 0) {
-      makeDataLahan = await this.createDataUmumLahanData(
-        user_id,
-        foundRegion[0].dataValues.region_location_id,
-        tutupan_lahan,
-        jenis_vegetasi,
-        luasan_karhutla,
-        jenis_tanah,
-        tinggi_muka_air_gambut,
-        jenis_karhutla,
-        penggunaan_lahan,
-        latitude,
-        longitude,
-        temperatur,
-        curah_hujan,
-        kelembaban_udara
-      );
-    } else {
-      const makeLokasiRegion = await this.createLokasiRegionData(
-        provinsi,
-        kabupaten,
-        kecamatan,
-        desa
-      );
-
-      makeDataLahan = await this.createDataUmumLahanData(
-        user_id,
-        makeLokasiRegion.region_location_id,
-        tutupan_lahan,
-        jenis_vegetasi,
-        luasan_karhutla,
-        jenis_tanah,
-        tinggi_muka_air_gambut,
-        jenis_karhutla,
-        penggunaan_lahan,
-        latitude,
-        longitude,
-        temperatur,
-        curah_hujan,
-        kelembaban_udara
-      );
-    }
-
-    return makeDataLahan;
-  }
-
-  async timeAgo(date) {
-    const currentDate = new Date();
-    const timestamp = date.getTime();
-    const currentTimestamp = currentDate.getTime();
-    const difference = currentTimestamp - timestamp;
-
-    const seconds = Math.floor(difference / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    const weeks = Math.floor(days / 7);
-    const months = Math.floor(days / 30);
-
-    if (months > 0) {
-      return months === 1 ? "one month ago" : `${months} months ago`;
-    } else if (weeks > 0) {
-      return weeks === 1 ? "one week ago" : `${weeks} weeks ago`;
-    } else if (days > 0) {
-      return days === 1 ? "one day ago" : `${days} days ago`;
-    } else if (hours > 0) {
-      return hours === 1 ? "one hour ago" : `${hours} hours ago`;
-    } else if (minutes > 0) {
-      return minutes === 1 ? "one minute ago" : `${minutes} minutes ago`;
-    } else {
-      return "just now";
-    }
-  }
-
-  async getSingleResultData(id, obsId) {
-    const foundLahan = await DataUmumLahan.findOne({
-      where: { data_lahan_id: id },
+  /**
+   * Retrieves detailed single result data for lahan + specific observasi.
+   */
+  async getSingleResultData(lahanId, observasiId) {
+    const lahan = await DataUmumLahan.findOne({
+      where: { data_lahan_id: lahanId },
       include: [
         {
           model: LokasiRegion,
@@ -190,7 +93,7 @@ class LahanService {
         {
           model: Observasi,
           as: "observasis",
-          where: { observation_id: obsId },
+          where: { observation_id: observasiId },
           include: [
             {
               model: Plot,
@@ -198,14 +101,7 @@ class LahanService {
               include: [
                 {
                   model: PenilaianObservasi,
-                  include: [
-                    {
-                      model: Penilaian,
-                    },
-                  ],
-                },
-                {
-                  model: Hasil,
+                  include: [Penilaian],
                 },
               ],
             },
@@ -214,85 +110,27 @@ class LahanService {
       ],
     });
 
-    if (!foundLahan) {
+    if (!lahan) {
       throw new Error("Lahan not found");
     }
 
-    const observasiList = foundLahan.observasis.map((obs) => {
-      const plotList = obs.plots.map((plot) => {
-        const penilaianList = plot.penilaian_observasis.map((penObs) => {
-          return {
-            penilaianObservasiId: penObs.penilaian_observasi_id,
-            penilaianId: penObs.penilaian_id,
-            variable: penObs.penilaian.variable,
-            kategori: penObs.penilaian.kategori,
-            deskripsi: penObs.penilaian.deskripsi,
-            images: [],
-          };
-        });
-
-        return {
-          plot_id: plot.plot_id,
-          luasan_plot: plot.luasan_plot,
-          polygon: plot.polygon,
-          skor_plot: plot.hasil.skor,
-          hasil_plot: this.getHasilPenilaianFromSkor(plot.hasil.skor),
-          penilaianList: penilaianList,
-          // images: [], // We'll populate this next
-        };
-      });
-
-      return {
-        observation_id: obs.observation_id,
-        tanggal_kejadian: obs.tanggal_kejadian,
-        tanggal_penilaian: obs.tanggal_penilaian,
-        skor_akhir: obs.skor_akhir,
-        hasil_penilaian: this.getHasilPenilaianFromSkor(obs.skor_akhir),
-        plots: plotList,
-      };
-    });
-
-    // // Fetch images for each plot
-    // for (const obs of observasiList) {
-    //   for (const plot of obs.plots) {
-    //     plot.images = await this.observasiService.getImageUrl(plot.plot_id);
-    //   }
-    // }
-
-    // // Fetch images for each penilaian
-    for (const obs of observasiList) {
+    // Transform the data into the structure 
+    const result = this._transformSingleResult(lahan);
+    for (const obs of result.observasi) {
       for (const plot of obs.plots) {
-        for (const penilaian of plot.penilaianList) {
-          penilaian.images = await this.observasiService.getImageUrl(penilaian.penilaianObservasiId);
+        for (const pen of plot.penilaianList) {
+          const dokumentasi = await this.observasiService.getDokumentasiId(pen.penilaianObservasiId);
+          pen.images = dokumentasi.map(doc => `${config.env.baseUrl}/observasi/dokumentasi/${doc.dokumentasi_id}`);
         }
       }
     }
 
-
-    const result = {
-      lokasi_region: foundLahan.lokasi_region,
-      dataumumlahan: {
-        data_lahan_id: foundLahan.data_lahan_id,
-        tutupan_lahan: foundLahan.tutupan_lahan,
-        luasan_karhutla: foundLahan.luasan_karhutla,
-        jenis_karhutla: foundLahan.jenis_karhutla,
-        penggunaan_lahan: foundLahan.penggunaan_lahan,
-        jenis_tanah: foundLahan.jenis_tanah,
-        jenis_vegetasi: foundLahan.jenis_vegetasi,
-        tinggi_muka_air_gambut: foundLahan.tinggi_muka_air_gambut,
-        latitude: foundLahan.latitude,
-        longitude: foundLahan.longitude,
-        temperatur: foundLahan.temperatur,
-        curah_hujan: foundLahan.curah_hujan,
-        kelembaban_udara: foundLahan.kelembaban_udara,
-      },
-      user: foundLahan.user,
-      observasi: observasiList,
-    };
-
     return result;
   }
 
+  /**
+   * Retrieves multiple lahan (Karhutla) results with optional filters & pagination.
+   */
   async getResultsData(filters) {
     const {
       userId,
@@ -308,60 +146,50 @@ class LahanService {
     } = filters;
 
     const where = {};
-
     if (userId) {
       where.user_id = userId;
     }
-
     if (date_start && date_end) {
-      where.createdAt = {
-        [Op.between]: [new Date(date_start), new Date(date_end)],
-      };
+      where.createdAt = { [Op.between]: [new Date(date_start), new Date(date_end)] };
     } else if (date_start) {
-      where.createdAt = {
-        [Op.gte]: new Date(date_start),
-      };
+      where.createdAt = { [Op.gte]: new Date(date_start) };
     } else if (date_end) {
-      where.createdAt = {
-        [Op.lte]: new Date(date_end),
-      };
+      where.createdAt = { [Op.lte]: new Date(date_end) };
     }
 
-    // Use include to join Observasi and filter by skor
-    const include = [
-      {
-        model: Observasi,
-        attributes: ["observation_id", "skor_akhir", "createdAt"],
-        where: {},
-        required: true,
-      },
-    ];
-
+    // Observasi filters
+    const obsWhere = {};
+    // If skor_min & skor_max
     if (skor_min && skor_max) {
-      include[0].where.skor_akhir = {
-        [Op.between]: [parseFloat(skor_min), parseFloat(skor_max)],
-      };
+      obsWhere.skor_akhir = { [Op.between]: [parseFloat(skor_min), parseFloat(skor_max)] };
     } else if (skor_min) {
-      include[0].where.skor_akhir = {
-        [Op.gte]: parseFloat(skor_min),
-      };
+      obsWhere.skor_akhir = { [Op.gte]: parseFloat(skor_min) };
     } else if (skor_max) {
-      include[0].where.skor_akhir = {
-        [Op.lte]: parseFloat(skor_max),
-      };
+      obsWhere.skor_akhir = { [Op.lte]: parseFloat(skor_max) };
     }
-
+    // Filter by hasil_penilaian => map to skor range
     if (hasil_penilaian) {
-      const skorRange = this.getSkorRangeFromHasilPenilaian(hasil_penilaian);
-      if (skorRange) {
-        include[0].where.skor_akhir = {
-          [Op.between]: [skorRange.min, skorRange.max],
-        };
+      const range = this._mapHasilPenilaianToSkor(hasil_penilaian);
+      if (range) {
+        obsWhere.skor_akhir = { [Op.between]: [range.min, range.max] };
       }
     }
 
     const options = {
       where,
+      include: [
+        {
+          model: Observasi,
+          required: true,
+          where: obsWhere,
+          include: [
+            {
+              model: Plot,
+              attributes: ["plot_id", "luasan_plot", "polygon", "skor"],
+            },
+          ],
+        },
+      ],
       attributes: [
         "data_lahan_id",
         "region_location_id",
@@ -377,40 +205,28 @@ class LahanService {
         "createdAt",
         "updatedAt",
       ],
-      include: [
-        {
-          model: Observasi,
-          attributes: ["observation_id", "skor_akhir", "createdAt"],
-          include: [
-            {
-              model: Plot,
-              attributes: ["plot_id", "luasan_plot", "polygon"],
-            },
-          ],
-        },
-      ],
       order: [[sortBy, order]],
-      page: parseInt(page),
-      limit: parseInt(limit),
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
     };
 
     const result = await paginate(DataUmumLahan, options);
-
-    // Process the results to add additional data like hasil_penilaian
+    // Transform the data if needed
     result.results = result.results.map((lahan) => {
       const skor = lahan.observasis[0].skor_akhir;
       return {
         ...lahan.toJSON(),
-        skor: skor,
-        hasil_penilaian: this.getHasilPenilaianFromSkor(skor),
+        skor,
+        hasil_penilaian: this._getHasilFromSkor(skor),
         observasi: lahan.observasis.map((obs) => ({
           observation_id: obs.observation_id,
           skor_akhir: obs.skor_akhir,
-          hasil_penilaian: this.getHasilPenilaianFromSkor(obs.skor_akhir),
+          hasil_penilaian: this._getHasilFromSkor(obs.skor_akhir),
           plots: obs.plots.map((plot) => ({
             plot_id: plot.plot_id,
             luasan_plot: plot.luasan_plot,
             polygon: plot.polygon,
+            skor: plot.skor,
           })),
         })),
       };
@@ -419,25 +235,171 @@ class LahanService {
     return result;
   }
 
-  getSkorRangeFromHasilPenilaian(hasil_penilaian) {
-    // Map hasil_penilaian to skor ranges
-    switch (hasil_penilaian.toLowerCase()) {
-      case "sangat ringan":
-        return { min: 0, max: 20 };
-      case "ringan":
-        return { min: 21, max: 40 };
-      case "sedang":
-        return { min: 41, max: 60 };
-      case "berat":
-        return { min: 61, max: 80 };
-      case "sangat berat":
-        return { min: 81, max: 100 };
-      default:
-        return null;
-    }
+  /**
+   * Download a PDF for a given lahan + observasi.
+   */
+  async downloadPDF(lahanId, obsId) {
+    const dataPDF = await this.getSingleResultData(lahanId, obsId);
+    return downloadPDFReport(dataPDF);
   }
 
-  getHasilPenilaianFromSkor(skor) {
+  /**
+   * Deletes a Karhutla (DataUmumLahan) by ID.
+   */
+  async deleteKarhutla(lahanId) {
+    // Find the main Lahan record along with related Observasi records
+    const foundLahan = await DataUmumLahan.findOne({
+      where: { data_lahan_id: lahanId },
+      include: [
+        {
+          model: Observasi,
+          as: "observasis",
+          include: [
+            {
+              model: Plot,
+              as: "plots",
+              include: [
+                {
+                  model: PenilaianObservasi,
+                  as: "penilaian_observasis",
+                  include: [
+                    {
+                      model: Dokumentasi,
+                      as: "dokumentasis",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    // If the Lahan record is not found, throw an error
+    if (!foundLahan) {
+      throw new NotFound("Lahan tidak ditemukan");
+    }
+
+    // Use Promise.all for efficient parallel deletion
+    const deletionPromises = [];
+
+    // Iterate and queue deletions for related Dokumentasi, PenilaianObservasi, Plots, and Observasi
+    for (const observasi of foundLahan.observasis) {
+      for (const plot of observasi.plots) {
+        for (const penilaian of plot.penilaian_observasis) {
+          // Queue Dokumentasi deletions
+          for (const dokumentasi of penilaian.dokumentasis) {
+            deletionPromises.push(dokumentasi.destroy());
+          }
+          // Queue PenilaianObservasi deletions
+          deletionPromises.push(penilaian.destroy());
+        }
+        // Queue Plot deletions
+        deletionPromises.push(plot.destroy());
+      }
+      // Queue Observasi deletions
+      deletionPromises.push(observasi.destroy());
+    }
+
+    // Execute all deletions in parallel
+    await Promise.all(deletionPromises);
+
+    // Finally, delete the Lahan record itself
+    await foundLahan.destroy();
+
+    return { message: "Data lahan deleted successfully." };
+  }
+
+
+  /**
+   * Edits an existing Karhutla (DataUmumLahan + Observasi).
+   */
+  async editKarhutla(lahanId, observasiId, data) {
+    const lahan = await DataUmumLahan.findOne({ where: { data_lahan_id: lahanId } });
+    if (!lahan) {
+      throw new NotFound("Lahan not found");
+    }
+
+    // Update lahan fields
+    await lahan.update({
+      tutupan_lahan: data.tutupan_lahan,
+      jenis_vegetasi: data.jenis_vegetasi,
+      luasan_karhutla: data.luasan_karhutla,
+      jenis_tanah: data.jenis_tanah,
+      tinggi_muka_air_gambut: data.tinggi_muka_air_gambut,
+      jenis_karhutla: data.jenis_karhutla,
+      penggunaan_lahan: data.penggunaan_lahan,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      temperatur: data.temperatur,
+      curah_hujan: data.curah_hujan,
+      kelembaban_udara: data.kelembaban_udara,
+    });
+
+    // Update lokasi region if needed
+    await this._updateLokasiRegionIfNeeded(lahan, data);
+
+    // Update Observasi dates
+    await Observasi.update(
+      {
+        tanggal_kejadian: data.tanggal_kejadian,
+        tanggal_penilaian: data.tanggal_penilaian,
+      },
+      { where: { observation_id: observasiId } }
+    );
+
+    // Update polygon if luas_plot is provided
+    if (data.luas_plot) {
+      for (const plotData of data.luas_plot) {
+        const { plot_id, coordinates } = plotData;
+        const polygonGeoJSON = {
+          type: "Polygon",
+          coordinates: [coordinates],
+        };
+        const area = turf.area(polygonGeoJSON);
+        const newArea = area / 10000; // hectares
+
+        await Plot.update(
+          {
+            luasan_plot: newArea,
+            polygon: polygonGeoJSON,
+          },
+          { where: { plot_id } }
+        );
+      }
+    }
+
+    // If data_indikator => update penilaianObservasi and recalc plot scores
+    if (data.data_indikator) {
+      await this._updatePenilaianObservasiAndRecalc(observasiId, data.data_indikator);
+    }
+
+    return { message: "Karhutla data edited successfully." };
+  }
+
+  /********************************************************
+   * Private Helpers
+   ********************************************************/
+
+  /**
+   * Maps "hasil_penilaian" text to a skor range.
+   */
+  _mapHasilPenilaianToSkor(hasil_penilaian) {
+    const mapping = {
+      "sangat ringan": { min: 0, max: 20 },
+      ringan: { min: 21, max: 40 },
+      sedang: { min: 41, max: 60 },
+      berat: { min: 61, max: 80 },
+      "sangat berat": { min: 81, max: 100 },
+    };
+    return mapping[hasil_penilaian.toLowerCase()] || null;
+  }
+
+  /**
+   * Returns a text-based interpretation of skor.
+   */
+  _getHasilFromSkor(skor) {
     switch (true) {
       case skor >= 0 && skor <= 20:
         return "Sangat Ringan";
@@ -454,206 +416,135 @@ class LahanService {
     }
   }
 
-  async downloadPDF(id, obsId) {
-    const dataPDF = await this.getSingleResultData(id, obsId);
-
-    return await downloadPDFReport(dataPDF);
-  }
-
-  async deleteKarhutla(id) {
-    const foundLahan = await DataUmumLahan.findOne({
-      where: {
-        data_lahan_id: id,
-      },
-    });
-    if (!foundLahan) {
-      throw new NotFound("Lahan tidak ditemukan");
-    }
-
-    const lahanDeleted = await DataUmumLahan.destroy({
-      where: {
-        data_lahan_id: id,
-      },
-    });
-
-    return lahanDeleted;
-  }
-
-  async editKarhutla(id, obsId, data) {
-    const {
-      tutupan_lahan,
-      jenis_vegetasi,
-      luasan_karhutla,
-      jenis_tanah,
-      tinggi_muka_air_gambut,
-      jenis_karhutla,
-      penggunaan_lahan,
-      provinsi,
-      kabupaten,
-      kecamatan,
-      desa,
-      latitude,
-      longitude,
-      temperatur,
-      curah_hujan,
-      kelembaban_udara,
-      tanggal_kejadian,
-      tanggal_penilaian,
-      data_indikator,
-      luas_plot,
-    } = data;
-
-    const foundLahan = await DataUmumLahan.findOne({
-      where: { data_lahan_id: id },
-    });
-
-    const lahanToEdit = await DataUmumLahan.update(
-      {
-        tutupan_lahan,
-        jenis_vegetasi,
-        luasan_karhutla,
-        jenis_tanah,
-        tinggi_muka_air_gambut,
-        jenis_karhutla,
-        penggunaan_lahan,
-        latitude,
-        longitude,
-        temperatur,
-        curah_hujan,
-        kelembaban_udara,
-      },
-      { where: { data_lahan_id: id } }
-    );
-
-    const foundRegion = await LokasiRegion.findOne({
-      where: { region_location_id: foundLahan.dataValues.region_location_id },
-    });
-
-    if (provinsi || kabupaten || kecamatan || desa) {
-      const regionExisted = await LokasiRegion.findAll({
-        attributes: ["region_location_id", "provinsi", "kabupaten", "kecamatan", "desa"],
-        where: {
-          [Op.and]: [
-            { provinsi: provinsi || foundRegion.dataValues.provinsi },
-            { kabupaten: kabupaten || foundRegion.dataValues.kabupaten },
-            { kecamatan: kecamatan || foundRegion.dataValues.kecamatan },
-            { desa: desa || foundRegion.dataValues.desa },
-          ],
-        },
-      });
-
-      if (regionExisted.length > 0) {
-        foundLahan.region_location_id = regionExisted[0].dataValues.region_location_id;
-        await foundLahan.save();
-      } else {
-        const makeLokasiRegion = await this.createLokasiRegionData(
-          provinsi || foundRegion.dataValues.provinsi,
-          kabupaten || foundRegion.dataValues.kabupaten,
-          kecamatan || foundRegion.dataValues.kecamatan,
-          desa || foundRegion.dataValues.desa
-        );
-
-        foundLahan.region_location_id = makeLokasiRegion.region_location_id;
-        await foundLahan.save();
-      }
-    }
-
-    // Update observation dates
-    await Observasi.update(
-      { tanggal_kejadian, tanggal_penilaian },
-      { where: { observation_id: obsId } }
-    );
-
-    // Update each plot with new area and polygon geometry if provided
-    if (luas_plot) {
-      for (let i = 0; i < luas_plot.length; i++) {
-        const { plot_id, coordinates } = luas_plot[i];
-
-        // Create a GeoJSON polygon from the provided coordinates
-        const polygonGeoJSON = {
-          type: "Polygon",
-          coordinates: [coordinates],
+  /**
+   * Transforms the raw lahan + observasi data.
+   */
+  _transformSingleResult(lahan) {
+    const observasiList = lahan.observasis.map((obs) => {
+      const plotList = obs.plots.map((plot) => {
+        const penilaianList = plot.penilaian_observasis.map((po) => ({
+          penilaianObservasiId: po.penilaian_observasi_id,
+          penilaianId: po.penilaian_id,
+          variable: po.penilaian.variable,
+          kategori: po.penilaian.kategori,
+          deskripsi: po.penilaian.deskripsi,
+          images: [],
+        }));
+        return {
+          plot_id: plot.plot_id,
+          luasan_plot: plot.luasan_plot,
+          polygon: plot.polygon,
+          kondisi_vegetasi: plot.kondisi_vegetasi,
+          kondisi_tanah: plot.kondisi_tanah,
+          skor_plot: plot.skor,
+          hasil_plot: this._getHasilFromSkor(plot.skor),
+          penilaianList,
         };
+      });
+      return {
+        observation_id: obs.observation_id,
+        tanggal_kejadian: obs.tanggal_kejadian,
+        tanggal_penilaian: obs.tanggal_penilaian,
+        skor_akhir: obs.skor_akhir,
+        hasil_penilaian: this._getHasilFromSkor(obs.skor_akhir),
+        plots: plotList,
+      };
+    });
 
-        // Calculate the area in square meters and convert to hectares
-        const area = turf.area(polygonGeoJSON);
-        const luasan_plot = area / 10000; // Convert to hectares
+    return {
+      lokasi_region: lahan.lokasi_region,
+      dataumumlahan: {
+        data_lahan_id: lahan.data_lahan_id,
+        tutupan_lahan: lahan.tutupan_lahan,
+        luasan_karhutla: lahan.luasan_karhutla,
+        jenis_karhutla: lahan.jenis_karhutla,
+        penggunaan_lahan: lahan.penggunaan_lahan,
+        jenis_tanah: lahan.jenis_tanah,
+        jenis_vegetasi: lahan.jenis_vegetasi,
+        tinggi_muka_air_gambut: lahan.tinggi_muka_air_gambut,
+        latitude: lahan.latitude,
+        longitude: lahan.longitude,
+        temperatur: lahan.temperatur,
+        curah_hujan: lahan.curah_hujan,
+        kelembaban_udara: lahan.kelembaban_udara,
+      },
+      user: lahan.user,
+      observasi: observasiList,
+    };
+  }
 
-        await Plot.update(
-          {
-            luasan_plot: luasan_plot,
-            polygon: polygonGeoJSON, // Store the polygon as GeoJSON
-          },
-          {
-            where: { plot_id: plot_id },
-          }
-        );
-      }
+  /**
+   * Updates lokasi region if the user changed province/kab/kec/desa.
+   */
+  async _updateLokasiRegionIfNeeded(lahan, data) {
+    const foundRegion = await LokasiRegion.findByPk(lahan.region_location_id);
+    if (!foundRegion) {
+      throw new NotFound("Lokasi region not found");
     }
 
-    // Process data indicators and update plot scores
-    if (data_indikator) {
-      for (let i = 0; i < data_indikator.length; i++) {
-        await PenilaianObservasi.update(
-          { penilaian_id: data_indikator[i].penilaian_id },
-          { where: { penilaian_observasi_id: data_indikator[i].penilaianObservation_id } }
-        );
-      }
+    const { provinsi, kabupaten, kecamatan, desa } = data;
+    if (!provinsi && !kabupaten && !kecamatan && !desa) {
+      return; // Nothing to update
+    }
 
-      const foundPlots = await Plot.findAll({
-        attributes: ["plot_id", "observation_id", "luasan_plot"],
-        where: { observation_id: obsId },
+    // Check if existing region combination is found
+    const regionExisted = await LokasiRegion.findOne({
+      where: {
+        provinsi: provinsi || foundRegion.provinsi,
+        kabupaten: kabupaten || foundRegion.kabupaten,
+        kecamatan: kecamatan || foundRegion.kecamatan,
+        desa: desa || foundRegion.desa,
+      },
+    });
+
+    if (regionExisted) {
+      lahan.region_location_id = regionExisted.region_location_id;
+      await lahan.save();
+    } else {
+      // Create a new region
+      const newRegion = await LokasiRegion.create({
+        provinsi: provinsi || foundRegion.provinsi,
+        kabupaten: kabupaten || foundRegion.kabupaten,
+        kecamatan: kecamatan || foundRegion.kecamatan,
+        desa: desa || foundRegion.desa,
       });
+      lahan.region_location_id = newRegion.region_location_id;
+      await lahan.save();
+    }
+  }
 
-      let newScore = [];
-      for (let i = 0; i < foundPlots.length; i++) {
-        const foundPenilaianPlot = await PenilaianObservasi.findAll({
-          attributes: ["penilaian_id"],
-          where: { plot_id: foundPlots[i].dataValues.plot_id },
-        });
-        const penilaianIds = foundPenilaianPlot.map((result) => result.dataValues.penilaian_id);
-
-        const foundNilaiVegetasi = await Penilaian.findAll({
-          attributes: ["bobot"],
-          where: {
-            penilaian_id: { [Op.in]: penilaianIds },
-            type: "Kondisi Vegetasi",
-          },
-        });
-        const nilaiVegetasi = foundNilaiVegetasi.map((result) => result.dataValues.bobot);
-
-        const foundNilaiTanah = await Penilaian.findAll({
-          attributes: ["bobot"],
-          where: {
-            penilaian_id: { [Op.in]: penilaianIds },
-            type: "Kondisi Tanah",
-          },
-        });
-        const nilaiTanah = foundNilaiTanah.map((result) => result.dataValues.bobot);
-
-        let resultNilaiVegetasi = nilaiVegetasi.reduce((acc, val) => acc + val, 0);
-
-        await Hasil.update(
-          {
-            kondisi_vegetasi: resultNilaiVegetasi,
-            kondisi_tanah: nilaiTanah[0],
-            skor: resultNilaiVegetasi + nilaiTanah[0],
-          },
-          { where: { plot_id: foundPlots[i].dataValues.plot_id } }
-        );
-
-        newScore.push(resultNilaiVegetasi + nilaiTanah[0]);
-      }
-
-      let scoreBeforeMean = newScore.reduce((acc, val) => acc + val, 0);
-
-      await Observasi.update(
-        { skor_akhir: scoreBeforeMean / newScore.length },
-        { where: { observation_id: obsId } }
+  /**
+   * Updates penilaianObservasi and recalculates scores for all plots in an observasi.
+   */
+  async _updatePenilaianObservasiAndRecalc(observation_id, dataIndikator) {
+    // dataIndikator is an array like [{ penilaianObservation_id, penilaian_id }, ...]
+    for (const item of dataIndikator) {
+      await PenilaianObservasi.update(
+        { penilaian_id: item.penilaian_id },
+        { where: { penilaian_observasi_id: item.penilaianObservation_id } }
       );
     }
 
-    return lahanToEdit;
+    // Recalculate plot scores
+    const foundPlots = await Plot.findAll({
+      where: { observation_id },
+    });
+
+    const newScores = [];
+    for (const plot of foundPlots) {
+      // Reuse ObservasiService's calculateScore if you want
+      const updatedPlot = await this.observasiService.calculateScore(plot.plot_id);
+      newScores.push(updatedPlot.skor);
+    }
+
+    // Update the observation's final score
+    const totalScore = newScores.reduce((acc, val) => acc + val, 0);
+    const averageScore = newScores.length > 0 ? totalScore / newScores.length : 0;
+
+    await Observasi.update(
+      { skor_akhir: averageScore },
+      { where: { observation_id } }
+    );
   }
 }
 

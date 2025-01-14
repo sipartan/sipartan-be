@@ -33,7 +33,7 @@ passport.use(
         {
             clientID: config.oauth.google.clientId,
             clientSecret: config.oauth.google.clientSecret,
-            callbackURL: `${config.env.domain}/auth/google/callback`, // TODO: Change this in the future with the actual domain
+            callbackURL: `${config.env.baseUrl}/auth/google/callback`, // TODO: Change this in the future with the actual baseUrl
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
@@ -62,7 +62,7 @@ passport.use(
         {
             clientID: config.oauth.facebook.appId,
             clientSecret: config.oauth.facebook.appSecret,
-            callbackURL: `${config.env.domain}/auth/facebook/callback`, // TODO: Change this in the future with the actual domain
+            callbackURL: `${config.env.baseUrl}/auth/facebook/callback`, // TODO: Change this in the future with the actual baseUrl
             profileFields: ['id', 'displayName', 'emails'],
         },
         async (accessToken, refreshToken, profile, done) => {

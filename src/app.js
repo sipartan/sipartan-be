@@ -6,19 +6,18 @@ const morgan = require('morgan');
 const logger = require('./utils/logger');
 const dbGenerate = require('./config/dbGenerator');
 const errorHandler = require('./middlewares/error');
-const UserRoute = require('./routes/userRoute');
+const userRoute = require('./routes/userRoute');
 const LahanRoute = require('./routes/lahanRoute');
 const ObservasiRoute = require('./routes/observasiRoute');
+const karhutlaRoute = require('./routes/karhutlaRoute');
 const infoRoute = require('./routes/infoRoute');
 const authRoute = require('./routes/authRoute');
-// const karhutlaRoute = require('./routes/karhutlaRoute');
 const passport = require('./config/passport');
 
 require('dotenv').config();
 
 const app = express();
 
-// Morgan setup with improved log structure
 app.use(
   morgan((tokens, req, res) => {
     return JSON.stringify({
@@ -53,12 +52,12 @@ dbGenerate().catch((err) => {
 });
 
 // Routes
-app.use('/user', UserRoute);
+app.use('/user', userRoute);
 app.use(LahanRoute);
 app.use(ObservasiRoute);
 app.use('/auth', authRoute);
 app.use('/info', infoRoute);
-// app.use('/karhutla', karhutlaRoute);
+app.use('/karhutla', karhutlaRoute);
 
 // Error handler
 app.use(errorHandler);

@@ -1,76 +1,61 @@
-// const express = require("express");
-// const { verifyToken } = require("../middleware/authMiddleware");
-// const { setMulter } = require("../middleware/multer");
-// const ObservasiController = require("../controllers/observasiController");
-
-// const router = express.Router();
-// const observasiController = new ObservasiController();
-
-// // Note yang dicomment ini sebenernya ga dipake frontend or mobile, tapi lebih ke testing API
-// // router.post("/observasi", verifyToken, observasiController.createObservation); // mark
-// // router.post("/plot", verifyToken, observasiController.createPlot); // mark
-// router.post("/observasi/penilaian", verifyToken, observasiController.createPenilaian);
-// // router.post("/penilaian-observasi", verifyToken, observasiController.createPenilaianObservasi); // mark
-// // router.post("/hasil", verifyToken, observasiController.createHasil); // mark
-// router.post("/observasi/dokumentasi", verifyToken, setMulter(), observasiController.createDokumentasi);
-// router.post("/observasi", verifyToken, observasiController.createKarhutla);
-
-// router.get("/observasi/penilaian", verifyToken, observasiController.getPenilaian);
-// router.get("/observasi/dokumentasi/:fileName", observasiController.getImage);
-// router.get("/observasi/dokumentasiName", verifyToken, observasiController.getImageName);
-
-// router.delete("/penilaian/:id", verifyToken, observasiController.deletePenilaian);
-
-// module.exports = router;
-
 const express = require("express");
 const passport = require("passport");
 const { authorizeRoles } = require("../middlewares/auth");
 const ObservasiController = require("../controllers/observasiController");
+const observasiValidation = require("../validations/observasiValidation");
+const validate = require("../middlewares/validate");
 
 const router = express.Router();
 const observasiController = new ObservasiController();
 
-// Protected routes for observasi actions
 router.post(
-    "/observasi/penilaian",
+    "/observasi",
     passport.authenticate("jwt", { session: false }),
-    authorizeRoles("admin"),
-    observasiController.createPenilaian
+    authorizeRoles("patroli", "admin"),
+    validate(observasiValidation.createKarhutla),
+    observasiController.createKarhutla
 );
+
+router.route("/observasi/penilaian")
+    .post(
+        passport.authenticate("jwt", { session: false }),
+        authorizeRoles("patroli", "admin"),
+        validate(observasiValidation.createPenilaian),
+        observasiController.createPenilaian
+    )
+    .get(
+        passport.authenticate("jwt", { session: false }),
+        authorizeRoles("patroli", "admin"),
+        observasiController.getPenilaian
+    );
 
 router.post(
     "/observasi/dokumentasi",
     passport.authenticate("jwt", { session: false }),
-    authorizeRoles("admin"),
+    authorizeRoles("patroli", "admin"),
+    validate(observasiValidation.createDokumentasi),
     observasiController.createDokumentasi
 );
 
-router.post(
-    "/observasi",
-    passport.authenticate("jwt", { session: false }),
-    authorizeRoles("admin"),
-    observasiController.createKarhutla
-);
-
-router.get(
-    "/observasi/penilaian",
-    passport.authenticate("jwt", { session: false }),
-    authorizeRoles("admin"),
-    observasiController.getPenilaian
-);
-
-router.get(
-    "/observasi/dokumentasi/:plot_id",
-    passport.authenticate("jwt", { session: false }),
-    authorizeRoles("admin"),
-    observasiController.getImageUrl
-);
+router.route("/observasi/dokumentasi/:id")
+    .get(
+        passport.authenticate("jwt", { session: false }),
+        authorizeRoles("guest", "patroli", "admin"),
+        validate(observasiValidation.getImage),
+        observasiController.getImage
+    )
+    .delete(
+        passport.authenticate("jwt", { session: false }),
+        authorizeRoles("patroli", "admin"),
+        validate(observasiValidation.deleteDokumentasi),
+        observasiController.deleteDokumentasi
+    );
 
 router.delete(
-    "/penilaian/:id",
+    "/penilaian/:penilaian_id",
     passport.authenticate("jwt", { session: false }),
-    authorizeRoles("admin"),
+    authorizeRoles("patroli", "admin"),
+    validate(observasiValidation.deletePenilaian),
     observasiController.deletePenilaian
 );
 
