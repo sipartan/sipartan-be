@@ -1,62 +1,101 @@
 const express = require("express");
 const passport = require("passport");
 const { authorizeRoles } = require("../middlewares/auth");
-const ObservasiController = require("../controllers/observasiController");
+const { uploadFiles } = require("../middlewares/multer");
+const observasiController = require("../controllers/observasiController");
 const observasiValidation = require("../validations/observasiValidation");
 const validate = require("../middlewares/validate");
 
 const router = express.Router();
-const observasiController = new ObservasiController();
 
-router.post(
-    "/observasi",
-    passport.authenticate("jwt", { session: false }),
-    authorizeRoles("patroli", "admin"),
-    validate(observasiValidation.createKarhutla),
-    observasiController.createKarhutla
-);
-
-router.route("/observasi/penilaian")
+router.route("/")
     .post(
         passport.authenticate("jwt", { session: false }),
-        authorizeRoles("patroli", "admin"),
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.createObservasi),
+        observasiController.createObservasi
+    )
+    .get(
+        passport.authenticate("jwt", { session: false }),
+        validate(observasiValidation.getObservasi),
+        observasiController.getObservasi
+    );
+
+router.route("/penilaian")
+    .post(
+        passport.authenticate("jwt", { session: false }),
+        authorizeRoles("penilai", "admin"),
         validate(observasiValidation.createPenilaian),
         observasiController.createPenilaian
     )
     .get(
         passport.authenticate("jwt", { session: false }),
-        authorizeRoles("patroli", "admin"),
-        observasiController.getPenilaian
+        authorizeRoles("penilai", "admin"),
+        observasiController.getAllPenilaian
     );
 
-router.post(
-    "/observasi/dokumentasi",
-    passport.authenticate("jwt", { session: false }),
-    authorizeRoles("patroli", "admin"),
-    validate(observasiValidation.createDokumentasi),
-    observasiController.createDokumentasi
-);
+router.route("/dokumentasi")
+    .post(
+        passport.authenticate("jwt", { session: false }),
+        authorizeRoles("penilai", "admin"),
+        uploadFiles,
+        validate(observasiValidation.uploadDokumentasi),
+        observasiController.uploadDokumentasi
+    );
 
-router.route("/observasi/dokumentasi/:id")
+router.route("/pdf/:observasi_id")
+    .get(
+        // passport.authenticate("jwt", { session: false }),
+        // authorizeRoles("penilai", "admin"),
+        observasiController.convertToPDF
+    );
+
+router.route("/dokumentasi/:dokumentasi_id")
     .get(
         passport.authenticate("jwt", { session: false }),
-        authorizeRoles("guest", "patroli", "admin"),
-        validate(observasiValidation.getImage),
-        observasiController.getImage
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.getDokumentasi),
+        observasiController.getDokumentasi
     )
     .delete(
         passport.authenticate("jwt", { session: false }),
-        authorizeRoles("patroli", "admin"),
+        authorizeRoles("penilai", "admin"),
         validate(observasiValidation.deleteDokumentasi),
         observasiController.deleteDokumentasi
     );
 
-router.delete(
-    "/penilaian/:penilaian_id",
-    passport.authenticate("jwt", { session: false }),
-    authorizeRoles("patroli", "admin"),
-    validate(observasiValidation.deletePenilaian),
-    observasiController.deletePenilaian
-);
+router.route("/plot/:plot_id")
+    .patch(
+        passport.authenticate("jwt", { session: false }),
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.editPlot),
+        observasiController.editPlot
+    )
+    .delete(
+        passport.authenticate("jwt", { session: false }),
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.deletePlot),
+        observasiController.deletePlot
+    );
+
+router.route("/:observasi_id")
+    .get(
+        passport.authenticate("jwt", { session: false }),
+        validate(observasiValidation.getObservasiDetail),
+        observasiController.getObservasiDetail
+    )
+    .patch(
+        passport.authenticate("jwt", { session: false }),
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.editObservasi),
+        observasiController.editObservasi
+    )
+    .delete(
+        passport.authenticate("jwt", { session: false }),
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.deleteObservasi),
+        observasiController.deleteObservasi
+    );
+
 
 module.exports = router;

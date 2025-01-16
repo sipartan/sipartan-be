@@ -1,4 +1,5 @@
 const multer = require('multer');
+const { BadRequest } = require('../utils/response');
 
 const storage = multer.memoryStorage();
 
@@ -11,7 +12,7 @@ const upload = multer({
     fileFilter: (req, file, cb) => {
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         if (!allowedTypes.includes(file.mimetype)) {
-            return cb(new Error('Only jpeg, jpg, or png files are allowed'));
+            return cb(new BadRequest('Only jpeg, jpg, or png files are allowed'));
         }
         cb(null, true);
     },

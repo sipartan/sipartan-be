@@ -1,6 +1,5 @@
 const { Sequelize } = require("sequelize");
 const db = require("../config/database.js");
-const PenilaianObservasi = require("./penilaianObservasi.js");
 
 const { DataTypes } = Sequelize;
 
@@ -36,12 +35,5 @@ const Dokumentasi = db.define(
     timestamps: true,
   }
 );
-
-PenilaianObservasi.hasMany(Dokumentasi, {
-  foreignKey: "penilaian_observasi_id",
-});
-Dokumentasi.belongsTo(PenilaianObservasi, {
-  foreignKey: "penilaian_observasi_id",
-});
 
 module.exports = Dokumentasi;

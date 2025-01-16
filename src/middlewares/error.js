@@ -1,23 +1,11 @@
-const ApiError = require('../utils/ApiError');
+const { sendResponse } = require('../utils/response');
 
 const errorHandler = (err, req, res, next) => {
-    const statusCode = err.statusCode || 500; // Uses `statusCode` from ApiError
+    const statusCode = err.status || 500;
     const message = err.message || 'Internal Server Error';
+    const errors = err.errors || undefined; // Include additional error details
 
-    // Check for Joi validation errors
-    if (err.isJoi) {
-        return res.status(400).json({
-            status: 400,
-            message: 'Validation Error',
-            errors: err.details.map((detail) => detail.message),
-        });
-    }
-
-    // Handle other errors
-    res.status(statusCode).json({
-        status: statusCode,
-        message,
-    });
+    sendResponse(res, { status: statusCode, message, errors });
 };
 
 module.exports = errorHandler;

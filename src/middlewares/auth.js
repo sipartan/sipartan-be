@@ -1,3 +1,5 @@
+const { Unauthorized } = require('../utils/response');
+
 const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
     const { user } = req;
@@ -5,7 +7,7 @@ const authorizeRoles = (...allowedRoles) => {
     if (user && allowedRoles.includes(user.role)) {
       next();
     } else {
-      res.status(403).json({ msg: 'Access denied: insufficient privileges' });
+      next(new Unauthorized('Access denied: insufficient privileges'));
     }
   };
 };

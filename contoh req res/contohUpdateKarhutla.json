@@ -12,7 +12,7 @@
         "longitude": 110.9,
         "temperatur": 28,
         "curah_hujan": 30,
-        "kelembaban_udara": 15
+        "kelembapan_udara": 15
     },
     "observasi": {
         "observation_id": "ec11ce48-5a17-489e-9818-c96a959776cf",

@@ -55,7 +55,7 @@ const User = db.define(
       type: DataTypes.STRING,
       defaultValue: 'guest',
       validate: {
-        isIn: [['admin', 'patroli', 'guest']],
+        isIn: [['admin', 'penilai', 'guest']],
       },
     },
     googleId: {

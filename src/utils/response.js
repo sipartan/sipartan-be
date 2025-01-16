@@ -37,8 +37,9 @@ class Created extends ResponseBody {
 }
 
 class BadRequest extends CustomError {
-    constructor(message) {
+    constructor(message, errors = []) {
         super(400, message);
+        this.errors = errors;
     }
 }
 
@@ -70,9 +71,11 @@ const sendResponse = async (res, data) => {
     res.status(data.status).json({
         status: data.status,
         message: data.message,
+        errors: data.errors ?? undefined, // Include errors if present
         data: data.data ?? undefined,
     });
 };
+
 
 module.exports = {
     CustomError,

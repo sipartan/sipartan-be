@@ -7,7 +7,7 @@
  * @param {Array} [options.include] - Associations to include.
  * @param {Array} [options.order] - Order by clauses.
  * @param {number} [options.page=1] - Page number.
- * @param {number} [options.limit=10] - Number of results per page.
+ * @param {number} [options.limit] - Number of results per page.
  * @returns {Object} - Paginated results.
  */
 async function paginate(model, options) {
@@ -17,7 +17,7 @@ async function paginate(model, options) {
         include = null,
         order = [['createdAt', 'DESC']],
         page = 1,
-        limit = 10,
+        limit,
     } = options;
 
     const offset = (page - 1) * limit;

@@ -1,198 +1,218 @@
-const Busboy = require("busboy");
-const { Upload } = require("@aws-sdk/lib-storage");
-const { nanoid } = require("nanoid");
-const { s3Client, bucketName } = require("../config/minioClient");
-const ObservasiService = require("../services/observasiService");
+const { Upload } = require('@aws-sdk/lib-storage');
+const { nanoid } = require('nanoid');
+const { s3Client, bucketName } = require('../config/minioClient');
+const observasiService = require('../services/observasiService');
+const dokumentasiService = require('../services/dokumentasiService');
+const penilaianService = require('../services/penilaianService');
 
-class ObservasiController {
-  constructor() {
-    this.observasiService = new ObservasiService();
-  }
-
-  /**
-   * Creates a new Penilaian.
-   * [POST] /observasi/penilaian
-   */
-  createPenilaian = async (req, res, next) => {
+const createObservasi = async (req, res, next) => {
     try {
-      const { variable, type, bobot, nilai, deskripsi, kategori } = req.body;
+        const user_id = req.user.user_id;
+        const newDataObservasi = { ...req.body, user_id };
 
-      const penilaian = await this.observasiService.createPenilaianData(
-        variable,
-        type,
-        bobot,
-        nilai,
-        deskripsi,
-        kategori
-      );
-      return res.status(201).json({
-        status: 200,
-        message: "Berhasil create penilaian",
-        data: penilaian,
-      });
+        const dataObservasi = await observasiService.createObservasiData(newDataObservasi);
+        return res
+            .status(201)
+            .json({ status: 200, message: "Berhasil create data observasi", data: dataObservasi });
     } catch (error) {
-      return next(error);
+        return next(error);
     }
-  };
+};
 
-  /**
-   * Creates new Dokumentasi using Busboy for file upload.
-   * [POST] /observasi/dokumentasi
-   */
-  createDokumentasi = async (req, res, next) => {
+const getObservasi = async (req, res, next) => {
     try {
-      const busboy = Busboy({ headers: req.headers });
-      const files = [];
-      const fields = {};
+        const { user_id } = req.user;
+        const filters = req.query;
+        const result = await observasiService.getObservasiData(user_id, filters);
+        return res
+            .status(200)
+            .json({ status: 200, message: "Berhasil get observasi", data: result });
+    } catch (error) {
+        return next(error);
+    }
+};
 
-      busboy.on("field", (fieldname, value) => {
-        fields[fieldname] = value;
-      });
+const getObservasiDetail = async (req, res, next) => {
+    try {
+        const { observasi_id } = req.params;
+        const result = await observasiService.getObservasiDetailData(observasi_id);
+        return res
+            .status(200)
+            .json({ status: 200, message: "Berhasil get detail observasi", data: result });
+    } catch (error) {
+        return next(error);
+    }
+};
 
-      busboy.on("file", (file, fileInfo) => {
-        const { mimeType } = fileInfo;
-        const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-        if (!allowedTypes.includes(mimeType)) {
-          return res.status(400).json({
-            status: 400,
-            message: "Only jpeg, jpg, or png files are allowed",
-            data: null,
-          });
-        }
+const editObservasi = async (req, res, next) => {
+    try {
+        const { observasi_id } = req.params;
+        const newDataObservasi = req.body;
+        const result = await observasiService.editObservasiData(observasi_id, newDataObservasi);
+        return res
+            .status(200)
+            .json({ status: 200, message: "Berhasil edit observasi", data: result });
+    }
+    catch (error) {
+        return next(error);
+    }
+};
 
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const day = String(now.getDate()).padStart(2, "0");
-        const hour = String(now.getHours()).padStart(2, "0");
-        const minute = String(now.getMinutes()).padStart(2, "0");
-        const second = String(now.getSeconds()).padStart(2, "0");
-        const nanoId = nanoid();
+const deleteObservasi = async (req, res, next) => {
+    try {
+        const { observasi_id } = req.params;
+        await observasiService.deleteObservasiData(observasi_id);
+        return res
+            .status(200)
+            .json({ status: 200, message: "Berhasil delete observasi" });
+    } catch (error) {
+        return next(error);
+    }
+};
 
-        const filenameFormatted = `${year}-${month}-${day}_${hour}-${minute}-${second}_${nanoId}`;
-        const s3Key = `${year}/${month}/${fields.provinsi}/${fields.kabupaten}/${fields.kecamatan}/${fields.desa}/${fields.tipe}/${fields.kategori}/${filenameFormatted}`;
-
-        const uploadPromise = new Upload({
-          client: s3Client,
-          params: {
-            Bucket: bucketName,
-            Key: s3Key,
-            Body: file,
-            ContentType: mimeType,
-          },
-        }).done();
-
-        files.push({ uploadPromise, s3Key });
-      });
-
-      busboy.on("finish", async () => {
-        try {
-          if (files.length === 0) {
+const uploadDokumentasi = async (req, res, next) => {
+    try {
+        // Check if files were uploaded
+        if (!req.files || req.files.length === 0) {
             return res.status(400).json({
-              status: 400,
-              message: "No files uploaded",
-              data: null,
+                status: 400,
+                message: 'No files uploaded',
             });
-          }
-
-          const { imageUrls } = await this.observasiService.uploadDokumentasi(
-            files,
-            fields
-          );
-
-          return res.status(201).json({
-            status: 200,
-            message: "Successfully created documentation",
-            data: { imageUrls },
-          });
-        } catch (error) {
-          return next(error);
         }
-      });
 
-      req.pipe(busboy);
+        // Process each uploaded file
+        const files = req.files.map((file) => {
+            const now = new Date();
+            const filenameFormatted = `${now.toISOString().replace(/[:.]/g, '-')}_${nanoid()}`;
+            const s3Key = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${req.body.provinsi}/${req.body.kabupaten}/${req.body.kecamatan}/${req.body.desa}/${req.body.tipe}/${req.body.kategori}/${filenameFormatted}`;
+
+            return {
+                uploadPromise: new Upload({
+                    client: s3Client,
+                    params: {
+                        Bucket: bucketName,
+                        Key: s3Key,
+                        Body: file.buffer,
+                        ContentType: file.mimetype,
+                    },
+                }).done(),
+                s3Key,
+            };
+        });
+
+        // Wait for all uploads to complete
+        const { imageUrls } = await dokumentasiService.uploadDokumentasiData(files, req.body);
+
+        return res.status(201).json({
+            status: 200,
+            message: 'Successfully created documentation',
+            data: { imageUrls },
+        });
     } catch (error) {
-      return next(error);
+        next(error);
     }
-  };
+};
 
-  deleteDokumentasi = async (req, res, next) => {
+const getDokumentasi = async (req, res, next) => {
     try {
-      const { dokumentasi_id } = req.params;
-      await this.observasiService.deleteDokumentasi(dokumentasi_id);
-      return res.status(200).json({
-        status: 200,
-        message: "Berhasil delete dokumentasi"
-      });
-    } catch (error) {
-      return next(error);
-    }
-  };
+        const { dokumentasi_id } = req.params;
 
-  getImage = async (req, res, next) => {
+        const fileStream = await dokumentasiService.getImage(dokumentasi_id);
+
+        // Pipe the file stream directly to the response
+        fileStream.pipe(res);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const deleteDokumentasi = async (req, res, next) => {
     try {
-      const { dokumentasi_id } = req.params;
-
-      const fileStream = await this.observasiService.getSignedFileStream(dokumentasi_id);
-
-      // Pipe the file stream directly to the response
-      fileStream.pipe(res);
+        const { dokumentasi_id } = req.params;
+        await dokumentasiService.deleteDokumentasiData(dokumentasi_id);
+        return res.status(200).json({
+            status: 200,
+            message: "Berhasil delete dokumentasi"
+        });
     } catch (error) {
-      next(error);
+        return next(error);
     }
-  };
+};
 
-  /**
-   * Creates new Karhutla data (observation + multiple plots).
-   * [POST] /observasi
-   */
-  createKarhutla = async (req, res, next) => {
+const editPlot = async (req, res, next) => {
     try {
-      const { data } = req.body;
-      const result = await this.observasiService.createKarhutlaData(data);
-      return res.status(201).json({
-        status: 200,
-        message: "Berhasil create hasil",
-        data: result,
-      });
+        const { plot_id } = req.params;
+        const newData = req.body;
+        const result = await observasiService.editPlotData(plot_id, newData);
+        return res
+            .status(200)
+            .json({ status: 200, message: "Berhasil edit plot", data: result });
     } catch (error) {
-      return next(error);
+        return next(error);
     }
-  };
+};
 
-  /**
-   * Retrieves all Penilaian data.
-   * [GET] /observasi/penilaian
-   */
-  getPenilaian = async (req, res, next) => {
+const deletePlot = async (req, res, next) => {
     try {
-      const result = await this.observasiService.getPenilaianData();
-      return res.status(200).json({
-        status: 200,
-        message: "Berhasil get penilaian",
-        data: result,
-      });
+        const { plot_id } = req.params;
+        await observasiService.deletePlotData(plot_id);
+        return res
+            .status(200)
+            .json({ status: 200, message: "Berhasil delete plot" });
     } catch (error) {
-      return next(error);
+        return next(error);
     }
-  };
+};
 
-  /**
-   * Deletes a penilaian by ID.
-   * [DELETE] /penilaian/:id
-   */
-  deletePenilaian = async (req, res, next) => {
+const createPenilaian = async (req, res, next) => {
     try {
-      const { id } = req.params;
-      const result = await this.observasiService.deletePenilaian(id);
-      return res.status(200).json({
-        status: 200,
-        message: "Berhasil delete penilaian",
-      });
-    } catch (error) {
-      return next(error);
+        const newData = req.body;
+        const result = await penilaianService.createPenilaianData(newData);
+        return res
+            .status(201)
+            .json({ status: 200, message: "Berhasil create penilaian", data: result });
     }
-  };
-}
+    catch (error) {
+        return next(error);
+    }
+};
 
-module.exports = ObservasiController;
+const getAllPenilaian = async (req, res, next) => {
+    try {
+        const result = await penilaianService.getAllPenilaianData();
+        return res
+            .status(200)
+            .json({ status: 200, message: "Berhasil get all penilaian", data: result });
+    } catch (error) {
+        return next(error);
+    }
+};
+
+const convertToPDF = async (req, res, next) => {
+    try {
+        const { observasi_id } = req.params;
+        const pdfBuffer = await observasiService.convertToPDF(observasi_id);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=observasi_${observasi_id}.pdf`);
+        res.send(pdfBuffer);
+    } catch (error) {
+        return next(error);
+    }
+};
+
+module.exports = {
+    createObservasi,
+    getObservasi,
+    getObservasiDetail,
+    editObservasi,
+    deleteObservasi,
+    uploadDokumentasi,
+    getDokumentasi,
+    deleteDokumentasi,
+    editPlot,
+    deletePlot,
+    createPenilaian,
+    getAllPenilaian,
+    convertToPDF,
+};

@@ -1,0 +1,42 @@
+{
+    "coordinates": [
+        [
+            -6.556975239188053,
+            106.73257232151731
+        ],
+        [
+            -6.556977903852133,
+            106.73313022097479
+        ],
+        [
+            -6.557442887515221,
+            106.73312619766138
+        ],
+        [
+            -6.557436225861227,
+            106.73257366262177
+        ],
+        [
+            -6.556975239188053,
+            106.73257232151731
+        ]
+    ],
+    "penilaianList": [
+        {
+            "penilaian_observasi_id": "06d2bf98-a9e1-445a-a5bf-83183561b54f",
+            "penilaian_id": "06d2bf98-a9e1-445a-a5bf-83183561b54f"
+        },
+        {
+            "penilaian_observasi_id": "dfe8ddc6-9269-4828-aaec-0d4791279c63",
+            "penilaian_id": "dfe8ddc6-9269-4828-aaec-0d4791279c63"
+        },
+        {
+            "penilaian_observasi_id": "ea047f2a-e39e-48b7-bbbb-61e0400bf3e0",
+            "penilaian_id": "ea047f2a-e39e-48b7-bbbb-61e0400bf3e0"
+        },
+        {
+            "penilaian_observasi_id": "b539a9a6-65b7-4e18-a286-5cfc0fc9cad4",
+            "penilaian_id": "b539a9a6-65b7-4e18-a286-5cfc0fc9cad4"
+        }
+    ]
+}

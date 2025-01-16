@@ -1,12 +1,9 @@
 const Dokumentasi = require("../models/dokumentasi");
 const { DeleteObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { s3Client, bucketName } = require("../config/minioClient");
-const config = require("../config/config");
+const { NotFound } = require("../utils/response");
 
-const BASE_URL = config.env.baseUrl;
-
-const uploadDokumentasi = async (file, fields) => {
-    // 1. Wait for all uploadPromises
+const uploadDokumentasiData = async (files, fields) => {
     const uploadResults = await Promise.all(
         files.map(async ({ uploadPromise, s3Key }) => {
             try {
@@ -18,13 +15,11 @@ const uploadDokumentasi = async (file, fields) => {
         })
     );
 
-    // 2. Check for failures
     const failed = uploadResults.filter((r) => !r.success);
     if (failed.length > 0) {
-        throw new Error("Some files failed to upload");
+        throw new Error('Some files failed to upload');
     }
 
-    // 3. Save successful uploads to Dokumentasi and generate URLs
     const imageUrls = [];
     for (const { s3Key } of uploadResults) {
         const doc = await Dokumentasi.create({
@@ -34,24 +29,20 @@ const uploadDokumentasi = async (file, fields) => {
             kategori: fields.kategori,
         });
 
-        // Generate the image URL
-        const imageUrl = `${BASE_URL}/observasi/dokumentasi/${doc.dokumentasi_id}`;
+        const imageUrl = `${process.env.BASE_URL}/observasi/dokumentasi/${doc.dokumentasi_id}`;
         imageUrls.push(imageUrl);
     }
 
-    // 4. Return the array of image URLs
-    return {
-        imageUrls,
-    };
+    return { imageUrls };
 };
 
-const getImage = async (dokumentasi_id) => {
+const getImage = async (dokumentasiId) => {
     const dokumentasi = await Dokumentasi.findOne({
-        where: { dokumentasi_id },
+        where: { dokumentasi_id: dokumentasiId },
     });
 
     if (!dokumentasi) {
-        throw new Error("Dokumentasi tidak ditemukan");
+        throw new NotFound(`Dokumentasi with ID ${dokumentasiId} not found`);
     }
 
     const s3Key = dokumentasi.s3_key;
@@ -69,23 +60,35 @@ const getImage = async (dokumentasi_id) => {
     return Body;
 };
 
-const deleteDokumentasi = async (dokumentasi_id) => {
+const deleteDokumentasiData = async (dokumentasiId) => {
+    // Step 1: Find the Dokumentasi record
     const dokumentasi = await Dokumentasi.findOne({
-        where: { dokumentasi_id },
+        where: { dokumentasi_id: dokumentasiId },
     });
 
     if (!dokumentasi) {
-        throw new Error("Dokumentasi tidak ditemukan");
+        throw new NotFound(`Dokumentasi with ID ${dokumentasiId} not found`);
     }
 
-    // Delete from S3
+    // Step 2: Delete the file from MinIO (S3)
     const command = new DeleteObjectCommand({
         Bucket: bucketName,
         Key: dokumentasi.s3_key,
     });
 
-    await s3Client.send(command);
+    try {
+        await s3Client.send(command);
+    } catch (error) {
+        console.error("Error deleting file from MinIO:", error);
+        throw new Error("Failed to delete file from MinIO");
+    }
 
-    // Delete from database
-    await Dokumentasi.destroy({ where: { dokumentasi_id } });
+    // Step 3: Delete the Dokumentasi record from the database
+    await Dokumentasi.destroy({ where: { dokumentasi_id: dokumentasiId } });
+};
+
+module.exports = {
+    uploadDokumentasiData,
+    getImage,
+    deleteDokumentasiData,
 };

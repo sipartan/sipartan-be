@@ -155,7 +155,7 @@ Base URL :
 | longitude              | `float`  | **required** |      |
 | temperatur             | `float`  | **required** |      |
 | curah_hujan            | `float`  | **required** |      |
-| kelembaban_udara       | `float`  | **required** |      |
+| kelembapan_udara       | `float`  | **required** |      |
 
 ### Sample success response
 
@@ -271,7 +271,7 @@ Base URL :
     "longitude": "111.00579212756656",
     "temperatur": 7.5,
     "curah_hujan": 3.4,
-    "kelembaban_udara": 2.9,
+    "kelembapan_udara": 2.9,
     "tanggalKejadian": "2023-10-04T03:00:00.000Z",
     "tanggalPenilaian": "2023-10-05T03:00:00.000Z",
     "single_plot": [
@@ -320,7 +320,7 @@ Base URL :
       "longitude": "111.00579212756656",
       "temperatur": 7.5,
       "curah_hujan": 3.4,
-      "kelembaban_udara": 2.9,
+      "kelembapan_udara": 2.9,
       "skor": 58,
       "hasil_penilaian": "Sedang"
     },
@@ -336,7 +336,7 @@ Base URL :
       "longitude": "111.00579212756656",
       "temperatur": 7.5,
       "curah_hujan": 3.4,
-      "kelembaban_udara": 2.9,
+      "kelembapan_udara": 2.9,
       "skor": 58,
       "hasil_penilaian": "Sedang"
     }
@@ -384,7 +384,7 @@ Base URL :
 | longitude                                | `string` | **opsional** |                                                                                 |
 | temperatur                               | `float`  | **opsional** |                                                                                 |
 | curah_hujan                              | `float`  | **opsional** |                                                                                 |
-| kelembaban_udara                         | `float`  | **opsional** |                                                                                 |
+| kelembapan_udara                         | `float`  | **opsional** |                                                                                 |
 | tanggal_kejadian                         | `date`   | **opsional** |                                                                                 |
 | tanggal_penilaian                        | `date`   | **opsional** |                                                                                 |
 | luas_plot                                | `array`  | **opsional** |                                                                                 |

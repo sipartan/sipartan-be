@@ -16,7 +16,7 @@ const fileFormat = format.printf(({ timestamp, level, message, ...metadata }) =>
     return `${timestamp} [${level.toUpperCase()}]: ${message} | metadata: ${JSON.stringify({ service: serviceName, ...metadata })}`;
 });
 
-// In the future is using kibana, should make another transport and correct format for kibana
+// If in the future using kibana, should make another transport and correct format for kibana
 
 const logger = winston.createLogger({
     level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',

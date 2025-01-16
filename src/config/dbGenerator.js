@@ -1,4 +1,5 @@
 const db = require('./database');
+const { User, LokasiRegion, Lahan, Observasi, Plot, Penilaian, PenilaianObservasi } = require('../models');
 const seedUser = require('../seeders/seedUser');
 const seedPenilaian = require('../seeders/seedPenilaian');
 const logger = require('../utils/logger');
@@ -13,6 +14,7 @@ const dbGenerate = async () => {
     logger.info('PostGIS extension enabled...');
 
     // Sync models
+    // await db.sync({ force: true }); // delete and create
     // await db.sync({ alter: true }); // { force: true } is dangerous 
     await db.sync();
     logger.info('Database synchronized...');

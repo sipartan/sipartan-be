@@ -58,7 +58,7 @@ const deleteUser = async (req, res, next) => {
     logger.info(`User deleted successfully: ${req.params.id}`);
     return res
       .status(200)
-      .json({ status: 200, message: 'User deleted successfully', data: null });
+      .json({ status: 200, message: 'User deleted successfully' });
   } catch (error) {
     logger.error(`Failed to delete user: ${req.params.id}`, error);
     return next(error);
@@ -66,7 +66,7 @@ const deleteUser = async (req, res, next) => {
 };
 
 /**
- * Verifies a user's role (e.g., promoting from 'guest' to 'patroli').
+ * Verifies a user's role (e.g., promoting from 'guest' to 'penilai').
  */
 const verifyUserRole = async (req, res, next) => {
   try {

@@ -7,7 +7,7 @@ const getAllUsers = {
         sortBy: Joi.string(),
         order: Joi.string().valid('ASC', 'DESC'),
         nama: Joi.string(),
-        role: Joi.string().valid('guest', 'patroli', 'admin'),
+        role: Joi.string().valid('guest', 'penilai', 'admin'),
         email: Joi.string().email(),
     }),
 };
@@ -41,7 +41,7 @@ const verifyUserRole = {
         id: Joi.required(),
     }),
     body: Joi.object().keys({
-        role: Joi.string().required().valid('guest', 'patroli'),
+        role: Joi.string().required().valid('guest', 'penilai'),
     }),
 };
 

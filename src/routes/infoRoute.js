@@ -1,8 +1,7 @@
 const express = require('express');
-const InfoController = require('../controllers/infoController');
+const infoController = require('../controllers/infoController');
 
 const router = express.Router();
-const infoController = new InfoController();
 
 router.get('/provinces', infoController.getProvinces);
 router.get('/regencies/:province_id', infoController.getRegencies);

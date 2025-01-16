@@ -6,7 +6,7 @@ const { DataTypes } = Sequelize;
 const LokasiRegion = db.define(
   "lokasi_region",
   {
-    region_location_id: {
+    lokasi_region_id: {
       type: DataTypes.STRING,
       defaultValue: Sequelize.literal("gen_random_uuid()"),
       allowNull: false,

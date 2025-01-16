@@ -17,7 +17,7 @@
         "longitude": "111.03647347058305",
         "temperatur": 27,
         "curah_hujan": 21,
-        "kelembaban_udara": 12
+        "kelembapan_udara": 12
     },
     "observasi": {
         "tanggal_kejadian": "2024-02-27T06:25:54.633Z",

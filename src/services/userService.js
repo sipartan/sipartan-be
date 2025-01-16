@@ -1,7 +1,7 @@
 const User = require('../models/user');
 const { Op } = require('sequelize');
 const paginate = require('../utils/pagination');
-const ApiError = require('../utils/ApiError');
+const { NotFound, BadRequest, Unauthorized } = require('../utils/response');
 const bcrypt = require('bcrypt');
 const config = require('../config/config');
 const logger = require('../utils/logger');
@@ -35,10 +35,7 @@ const getUsers = async (query = {}) => {
         return result;
     } catch (error) {
         logger.error('An error occurred while fetching users:', error);
-        if (error instanceof ApiError) {
-            throw error;
-        }
-        throw new ApiError(500, 'An error occurred while fetching users.');
+        throw error;
     }
 };
 
@@ -54,7 +51,7 @@ const createUser = async (data) => {
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
             logger.warn(`User creation failed: Email ${email} is already registered.`);
-            throw new ApiError(400, 'Email is already registered.');
+            throw new BadRequest('Email is already registered.');
         }
 
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -72,10 +69,7 @@ const createUser = async (data) => {
         return { user_id: userCreated.user_id };
     } catch (error) {
         logger.error('An error occurred while creating the user:', error);
-        if (error instanceof ApiError) {
-            throw error;
-        }
-        throw new ApiError(500, 'An error occurred while creating the user.');
+        throw error;
     }
 };
 
@@ -88,7 +82,7 @@ const createUser = async (data) => {
 const getUserById = async (userId, authenticatedUser) => {
     if (authenticatedUser.role !== 'admin' && authenticatedUser.user_id !== userId) {
         logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
-        throw new ApiError(403, 'Access denied.');
+        throw new Unauthorized('Access denied.');
     }
 
     try {
@@ -98,17 +92,14 @@ const getUserById = async (userId, authenticatedUser) => {
 
         if (!user) {
             logger.warn(`User not found with ID: ${userId}`);
-            throw new ApiError(404, 'User not found.');
+            throw new NotFound('User not found.');
         }
 
         logger.info(`User retrieved successfully: ${userId}`);
         return user;
     } catch (error) {
         logger.error('An error occurred while fetching the user:', error);
-        if (error instanceof ApiError) {
-            throw error;
-        }
-        throw new ApiError(500, 'An error occurred while fetching the user.');
+        throw error;
     }
 };
 
@@ -122,14 +113,14 @@ const getUserById = async (userId, authenticatedUser) => {
 const updateUser = async (userId, data, authenticatedUser) => {
     if (authenticatedUser.role !== 'admin' && authenticatedUser.user_id !== userId) {
         logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
-        throw new ApiError(403, 'Access denied.');
+        throw new Unauthorized('Access denied.');
     }
 
     try {
         const user = await User.findByPk(userId);
         if (!user) {
             logger.warn(`User not found with ID: ${userId}`);
-            throw new ApiError(404, 'User not found.');
+            throw new NotFound('User not found.');
         }
 
         await user.update(data);
@@ -137,10 +128,7 @@ const updateUser = async (userId, data, authenticatedUser) => {
         return user;
     } catch (error) {
         logger.error('An error occurred while updating the user:', error);
-        if (error instanceof ApiError) {
-            throw error;
-        }
-        throw new ApiError(500, 'An error occurred while updating the user.');
+        throw error;
     }
 };
 
@@ -153,24 +141,21 @@ const updateUser = async (userId, data, authenticatedUser) => {
 const deleteUser = async (userId, authenticatedUser) => {
     if (authenticatedUser.role !== 'admin' && authenticatedUser.user_id !== userId) {
         logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
-        throw new ApiError(403, 'Access denied.');
+        throw new Unauthorized('Access denied.');
     }
 
     try {
         const user = await User.findByPk(userId);
         if (!user) {
             logger.warn(`User not found with ID: ${userId}`);
-            throw new ApiError(404, 'User not found.');
+            throw new NotFound('User not found.');
         }
 
         await user.destroy();
         logger.info(`User deleted successfully: ${userId}`);
     } catch (error) {
         logger.error('An error occurred while deleting the user:', error);
-        if (error instanceof ApiError) {
-            throw error;
-        }
-        throw new ApiError(500, 'An error occurred while deleting the user.');
+        throw error;
     }
 };
 
@@ -184,7 +169,7 @@ const deleteUser = async (userId, authenticatedUser) => {
 const verifyUserRole = async (userId, role, authenticatedUser) => {
     if (authenticatedUser.role !== 'admin') {
         logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
-        throw new ApiError(403, 'Access denied.');
+        throw new Unauthorized('Access denied.');
     }
 
     try {
@@ -193,12 +178,12 @@ const verifyUserRole = async (userId, role, authenticatedUser) => {
         });
         if (!user) {
             logger.warn(`User not found with ID: ${userId}`);
-            throw new ApiError(404, 'User not found.');
+            throw new NotFound('User not found.');
         }
 
         if (!user.isEmailVerified) {
             logger.warn(`User email not verified for user ID: ${userId}`);
-            throw new ApiError(400, 'User email is not verified.');
+            throw new BadRequest('User email not verified.');
         }
 
         await user.update({ role });
@@ -206,10 +191,7 @@ const verifyUserRole = async (userId, role, authenticatedUser) => {
         return user;
     } catch (error) {
         logger.error('An error occurred while verifying the user role:', error);
-        if (error instanceof ApiError) {
-            throw error;
-        }
-        throw new ApiError(500, 'An error occurred while verifying the user role.');
+        throw error;
     }
 };
 

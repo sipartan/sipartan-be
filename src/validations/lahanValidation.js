@@ -1,110 +1,90 @@
 const Joi = require('joi');
 
-const createLahanKarhutla = {
-    body: Joi.object({
-        provinsi: Joi.string().required(),
-        kabupaten: Joi.string().required(),
-        kecamatan: Joi.string().required(),
-        desa: Joi.string().required(),
-        tutupan_lahan: Joi.string().required(),
-        jenis_vegetasi: Joi.string().required(),
-        luasan_karhutla: Joi.number().required(),
-        jenis_tanah: Joi.string().required(),
-        tinggi_muka_air_gambut: Joi.number().required(),
-        jenis_karhutla: Joi.string().required(),
-        penggunaan_lahan: Joi.string().required(),
-        latitude: Joi.number().required(),
-        longitude: Joi.number().required(),
-        temperatur: Joi.number().required(),
-        curah_hujan: Joi.number().required(),
-        kelembaban_udara: Joi.number().required(),
-    }),
+const createLahan = {
+    body: Joi.object().keys({
+        lokasi_region: Joi.object().keys({
+            provinsi: Joi.string().required(),
+            kabupaten: Joi.string().required(),
+            kecamatan: Joi.string().required(),
+            desa: Joi.string().required(),
+        }).required(),
+        lahan: Joi.object().keys({
+            nama_lahan: Joi.string().required(),
+            tutupan_lahan: Joi.string().required(),
+            jenis_vegetasi: Joi.string().required(),
+            jenis_tanah: Joi.string().required(),
+            tinggi_muka_air_gambut: Joi.number().required(),
+            penggunaan_lahan: Joi.string().required(),
+            latitude: Joi.string().required(),
+            longitude: Joi.string().required(),
+            coordinates: Joi.array()
+                .min(4)
+                .items(
+                    Joi.array()
+                        .length(2)
+                        .items(Joi.number().required())
+                )
+                .optional(),
+        }).required(),
+    }).unknown(false),
 };
 
-const getSingleResult = {
-    params: Joi.object({
-        id: Joi.required(),
-        obsId: Joi.number().required(),
-    }),
-};
-
-const getResults = {
-    query: Joi.object({
-        userId: Joi.optional(),
-        page: Joi.number().optional(),
-        limit: Joi.number().optional(),
-        sortBy: Joi.string().optional(),
-        order: Joi.string().valid('ASC', 'DESC').optional(),
+const getAllLahan = {
+    query: Joi.object().keys({
+        page: Joi.number().min(1).default(1),
+        limit: Joi.number().allow(null).default(null),
+        sortBy: Joi.string().default("createdAt"),
+        order: Joi.string().valid("ASC", "DESC").default("DESC"),
+        lahan_id: Joi.string().guid({ version: ['uuidv4'] }).optional(),
+        nama_lahan: Joi.string().optional(),
+        provinsi: Joi.string().optional(),
+        kabupaten: Joi.string().optional(),
+        kecamatan: Joi.string().optional(),
+        desa: Joi.string().optional(),
         hasil_penilaian: Joi.string().optional(),
         skor_min: Joi.number().optional(),
         skor_max: Joi.number().optional(),
-        date_start: Joi.date().optional(),
-        date_end: Joi.date().optional(),
-    }),
+        tanggal_kejadian_start: Joi.date().iso().optional(),
+        tanggal_kejadian_end: Joi.date().iso().optional(),
+        tanggal_penilaian_start: Joi.date().iso().optional(),
+        tanggal_penilaian_end: Joi.date().iso().optional(),
+    }).unknown(false),
 };
 
-const downloadPDF = {
-    params: Joi.object({
-        id: Joi.required(),
-        obsId: Joi.number().required(),
-    }),
+const editLahan = {
+    body: Joi.object().keys({
+        lokasi_region: Joi.object().keys({
+            provinsi: Joi.string(),
+            kabupaten: Joi.string(),
+            kecamatan: Joi.string(),
+            desa: Joi.string(),
+        }),
+        lahan: Joi.object().keys({
+            nama_lahan: Joi.string(),
+            tutupan_lahan: Joi.string(),
+            jenis_vegetasi: Joi.string(),
+            jenis_tanah: Joi.string(),
+            tinggi_muka_air_gambut: Joi.number(),
+            jenis_karhutla: Joi.string(),
+            penggunaan_lahan: Joi.string(),
+            latitude: Joi.string(),
+            longitude: Joi.string(),
+            coordinates: Joi.array().items(
+                Joi.array().items(Joi.number()).length(2)
+            ).min(4),
+        }),
+    }).unknown(false),
 };
 
-const editKarhutla = {
-    params: Joi.object({
-        id: Joi.required(),
-        obsId: Joi.number().required(),
-    }),
-    body: Joi.object({
-        data: Joi.object({
-            tutupan_lahan: Joi.string().required(),
-            jenis_vegetasi: Joi.string().required(),
-            luasan_karhutla: Joi.number().required(),
-            jenis_tanah: Joi.string().required(),
-            tinggi_muka_air_gambut: Joi.number().required(),
-            jenis_karhutla: Joi.string().required(),
-            penggunaan_lahan: Joi.string().required(),
-            latitude: Joi.number().required(),
-            longitude: Joi.number().required(),
-            temperatur: Joi.number().required(),
-            curah_hujan: Joi.number().required(),
-            kelembaban_udara: Joi.number().required(),
-            tanggal_kejadian: Joi.date().required(),
-            tanggal_penilaian: Joi.date().required(),
-            luas_plot: Joi.array().items(
-                Joi.object({
-                    plot_id: Joi.required(),
-                    coordinates: Joi.array()
-                        .min(4) 
-                        .items(
-                            Joi.array()
-                                .length(2)
-                                .items(Joi.number().required())
-                        )
-                        .required()
-                })
-            ).optional(),
-            data_indikator: Joi.array().items(
-                Joi.object({
-                    penilaianObservation_id: Joi.required(),
-                    penilaian_id: Joi.required(),
-                })
-            ).optional(),
-        }).required(),
-    }),
-};
-
-const deleteKarhutla = {
-    params: Joi.object({
-        id: Joi.required(),
-    }),
+const deleteLahan = {
+    params: Joi.object().keys({
+        lahan_id: Joi.string().guid({ version: ['uuidv4'] }).required(),
+    }).unknown(false),
 };
 
 module.exports = {
-    createLahanKarhutla,
-    getSingleResult,
-    getResults,
-    downloadPDF,
-    editKarhutla,
-    deleteKarhutla,
+    createLahan,
+    getAllLahan,
+    editLahan,
+    deleteLahan,
 };

@@ -7,9 +7,8 @@ const logger = require('./utils/logger');
 const dbGenerate = require('./config/dbGenerator');
 const errorHandler = require('./middlewares/error');
 const userRoute = require('./routes/userRoute');
-const LahanRoute = require('./routes/lahanRoute');
-const ObservasiRoute = require('./routes/observasiRoute');
-const karhutlaRoute = require('./routes/karhutlaRoute');
+const lahanRoute = require('./routes/lahanRoute');
+const observasiRoute = require('./routes/observasiRoute');
 const infoRoute = require('./routes/infoRoute');
 const authRoute = require('./routes/authRoute');
 const passport = require('./config/passport');
@@ -53,11 +52,10 @@ dbGenerate().catch((err) => {
 
 // Routes
 app.use('/user', userRoute);
-app.use(LahanRoute);
-app.use(ObservasiRoute);
+app.use('/lahan', lahanRoute);
+app.use('/observasi', observasiRoute);
 app.use('/auth', authRoute);
 app.use('/info', infoRoute);
-app.use('/karhutla', karhutlaRoute);
 
 // Error handler
 app.use(errorHandler);
