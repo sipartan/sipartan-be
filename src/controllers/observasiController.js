@@ -21,9 +21,8 @@ const createObservasi = async (req, res, next) => {
 
 const getObservasi = async (req, res, next) => {
     try {
-        const { user_id } = req.user;
         const filters = req.query;
-        const result = await observasiService.getObservasiData(user_id, filters);
+        const result = await observasiService.getObservasiData(filters);
         return res
             .status(200)
             .json({ status: 200, message: "Berhasil get observasi", data: result });
