@@ -117,7 +117,9 @@ const updateUser = async (userId, data, authenticatedUser) => {
     }
 
     try {
-        const user = await User.findByPk(userId);
+        const user = await User.findByPk(userId, 
+            { attributes: ['nama', 'instansi', 'email', 'username'] }
+        );
         if (!user) {
             logger.warn(`User not found with ID: ${userId}`);
             throw new NotFound('User not found.');
@@ -174,7 +176,7 @@ const verifyUserRole = async (userId, role, authenticatedUser) => {
 
     try {
         const user = await User.findByPk(userId, {
-            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role'],
+            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified'],
         });
         if (!user) {
             logger.warn(`User not found with ID: ${userId}`);

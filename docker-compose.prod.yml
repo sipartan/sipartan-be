@@ -2,6 +2,7 @@ version: "3.8"
 services:
   app:
     container_name: "sipartan-be"
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
@@ -35,6 +36,7 @@ services:
       - FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET}
       - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
       - GEOCODING_API_KEY=${GEOCODING_API_KEY}
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
     ports:
       - "9001:9001"
     depends_on:
@@ -42,6 +44,7 @@ services:
       - minio
     networks:
       - default
+    command: ["./wait-for-it.sh", "sipartan-db:5432", "--", "npm", "start"]
     volumes:
       - .:/app
       - /app/node_modules

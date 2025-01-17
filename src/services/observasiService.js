@@ -185,7 +185,7 @@ const getObservasiData = async (filters) => {
         logger.info("Transforming observasi data");
         result.results = result.results.map((observasi) => ({
             user: {
-                id: observasi.user.user_id,
+                user_id: observasi.user.user_id,
                 nama: observasi.user.nama,
                 email: observasi.user.email,
                 instansi: observasi.user.instansi,
@@ -299,8 +299,8 @@ const getObservasiDetailData = async (observasi_id) => {
                     skor_plot: plot.skor,
                     hasil_plot: getHasilFromSkor(plot.skor),
                     penilaianList: plot.penilaian_observasis.map((po) => ({
-                        penilaianObservasiId: po.penilaian_observasi_id,
-                        penilaianId: po.penilaian.penilaian_id,
+                        penilaian_observasi_id: po.penilaian_observasi_id,
+                        penilaian_id: po.penilaian.penilaian_id,
                         variable: po.penilaian.variable,
                         kategori: po.penilaian.kategori,
                         deskripsi: po.penilaian.deskripsi,

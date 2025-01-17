@@ -7,8 +7,8 @@ const createObservasi = {
         temperatur: Joi.number().required(),
         curah_hujan: Joi.number().required(),
         kelembapan_udara: Joi.number().required(),
-        tanggal_kejadian: Joi.date().required(),
-        tanggal_penilaian: Joi.date().required(),
+        tanggal_kejadian: Joi.date().iso().required(),
+        tanggal_penilaian: Joi.date().iso().required(),
         dataPlot: Joi.array().items(
             Joi.object().keys({
                 coordinates: Joi.array()
@@ -36,10 +36,10 @@ const getObservasi = {
         hasil_penilaian: Joi.string().optional(),
         skor_min: Joi.number().optional(),
         skor_max: Joi.number().optional(),
-        tanggal_kejadian_start: Joi.date().optional(),
-        tanggal_kejadian_end: Joi.date().optional(),
-        tanggal_penilaian_start: Joi.date().optional(),
-        tanggal_penilaian_end: Joi.date().optional(),
+        tanggal_kejadian_start: Joi.date().iso().optional(),
+        tanggal_kejadian_end: Joi.date().iso().optional(),
+        tanggal_penilaian_start: Joi.date().iso().optional(),
+        tanggal_penilaian_end: Joi.date().iso().optional(),
         jenis_karhutla: Joi.string().optional(),
     }).unknown(false),
 };
