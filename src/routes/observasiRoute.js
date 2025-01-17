@@ -16,7 +16,6 @@ router.route("/")
         observasiController.createObservasi
     )
     .get(
-        passport.authenticate("jwt", { session: false }),
         validate(observasiValidation.getObservasi),
         observasiController.getObservasi
     );
@@ -80,7 +79,6 @@ router.route("/plot/:plot_id")
 
 router.route("/:observasi_id")
     .get(
-        passport.authenticate("jwt", { session: false }),
         validate(observasiValidation.getObservasiDetail),
         observasiController.getObservasiDetail
     )

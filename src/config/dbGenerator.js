@@ -3,11 +3,15 @@ const { User, LokasiRegion, Lahan, Observasi, Plot, Penilaian, PenilaianObservas
 const seedUser = require('../seeders/seedUser');
 const seedPenilaian = require('../seeders/seedPenilaian');
 const logger = require('../utils/logger');
+const config = require('../config/config');
 
 const dbGenerate = async () => {
   try {
     await db.authenticate();
     logger.info('Database connected...');
+
+    // Create schema if not exists
+    await db.query(`CREATE SCHEMA IF NOT EXISTS ${config.database.schema};`);
 
     // Enable PostGIS extension
     await db.query('CREATE EXTENSION IF NOT EXISTS postgis;');

@@ -1,18 +1,32 @@
-FROM node:20 AS base
+# Stage 1: Build Stage
+FROM node:20 AS builder
 
+# Set working directory
 WORKDIR /app
 
-# Building
-FROM base AS builder
-RUN mkdir /uploads && chmod 777 /uploads
+# Install dependencies only for production
 COPY package*.json ./
-RUN npm install
-COPY ./src ./src
+RUN npm ci --only=production
 
-# Setup App Directory
-FROM base AS release
+# Copy application files
+COPY . .
+
+# Stage 2: Slim Runtime Stage
+FROM node:20-slim AS runtime
+
+# Set working directory
+WORKDIR /app
+
+# Copy only the necessary files from the build stage
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/src ./src
+COPY --from=builder /app/package*.json ./
 
-# Run
-CMD ["node", "./src/app"]
+# Create and set permissions for uploads folder
+# RUN mkdir -p /uploads && chmod 777 /uploads
+
+# Expose application port
+EXPOSE 9001
+
+# Run the application
+CMD ["node", "src/app.js"]

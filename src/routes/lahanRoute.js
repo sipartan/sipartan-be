@@ -15,7 +15,6 @@ router.route("/")
         lahanController.createLahan
     )
     .get(
-        passport.authenticate("jwt", { session: false }),
         validate(lahanValidation.getAllLahan),
         lahanController.getAllLahan
     );

@@ -57,6 +57,11 @@ app.use('/observasi', observasiRoute);
 app.use('/auth', authRoute);
 app.use('/info', infoRoute);
 
+// health check
+app.get('/ping', (req, res) => {
+  res.status(200).json({ message: 'pong', timestamp: new Date().toISOString() });
+});
+
 // Error handler
 app.use(errorHandler);
 
