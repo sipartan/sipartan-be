@@ -36,7 +36,7 @@ services:
       - FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET}
       - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
       - GEOCODING_API_KEY=${GEOCODING_API_KEY}
-      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
     ports:
       - "9001:9001"
     depends_on:

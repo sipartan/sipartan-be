@@ -7,7 +7,6 @@ const downloadPDFReport = async (dataPDF) => {
     const browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     });
 
     const page = await browser.newPage();
@@ -19,13 +18,13 @@ const downloadPDFReport = async (dataPDF) => {
     await page.setContent(content);
     logger.info('Content set in page');
 
-    const buffer = await page.pdf({ format: "A4", landscape: false, margin: { bottom: '24px', top: '24px' }, });
+    const buffer = await page.pdf({ format: "A4", landscape: false, margin: { bottom: '24px', top: '24px' } });
     logger.info('PDF generated');
 
     await browser.close();
     logger.info('Browser closed');
 
     return buffer;
-}
+};
 
 module.exports = downloadPDFReport;

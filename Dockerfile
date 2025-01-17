@@ -17,7 +17,7 @@ FROM node:20-slim AS runtime
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies required for Puppeteer
+# Install system dependencies required for Puppeteer and Chromium
 RUN apt-get update && apt-get install -y \
     libx11-xcb1 \
     libxcomposite1 \
@@ -45,8 +45,9 @@ RUN apt-get update && apt-get install -y \
     libappindicator3-1 \
     libnss3 \
     libxss1 \
-    wget && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    wget \
+    chromium \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy only the necessary files from the build stage
 COPY --from=builder /app/node_modules ./node_modules
