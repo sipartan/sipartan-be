@@ -3,6 +3,7 @@ const { NotFound } = require("../utils/response");
 const { Lahan, LokasiRegion, Observasi } = require("../models");
 const { mapHasilPenilaianToSkor, getHasilFromSkor } = require("../utils/karhutlaPenilaian");
 const paginate = require("../utils/pagination");
+const logger = require("../utils/logger");
 
 const createLahanData = async (data) => {
   try {
