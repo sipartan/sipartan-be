@@ -1,4 +1,9 @@
-const { S3Client, ListBucketsCommand } = require("@aws-sdk/client-s3");
+const {
+    S3Client,
+    ListBucketsCommand,
+    HeadBucketCommand,
+    CreateBucketCommand,
+} = require("@aws-sdk/client-s3");
 const logger = require('../utils/logger');
 const config = require('./config');
 
@@ -14,18 +19,34 @@ const s3Client = new S3Client({
 
 const bucketName = config.minio.bucket;
 
-// Test MinIO connection using AWS SDK v3
-async function testConnection() {
+// Initialize MinIO: Test connection and ensure bucket exists
+const initializeMinIO = async () => {
     try {
+        // Test connection
         const command = new ListBucketsCommand({});
         const data = await s3Client.send(command);
-        logger.info("Connected to MinIO. Buckets:", {buckets: data.Buckets});
-    } catch (err) {
-        logger.error("Error connecting to MinIO:", err);
-        process.exit(1);
-    }
-}
+        logger.info("Connected to MinIO. Buckets:", { buckets: data.Buckets });
 
-testConnection();
+        // Ensure the bucket exists
+        try {
+            await s3Client.send(new HeadBucketCommand({ Bucket: bucketName }));
+            logger.info(`Bucket "${bucketName}" exists.`);
+        } catch (error) {
+            if (error.name === 'NotFound') {
+                logger.info(`Bucket "${bucketName}" not found. Creating...`);
+                await s3Client.send(new CreateBucketCommand({ Bucket: bucketName }));
+                logger.info(`Bucket "${bucketName}" created.`);
+            } else {
+                throw error;
+            }
+        }
+    } catch (error) {
+        logger.error("Error initializing MinIO:", error);
+        process.exit(1); // Exit process on failure
+    }
+};
+
+// Initialize MinIO
+initializeMinIO();
 
 module.exports = { s3Client, bucketName };
