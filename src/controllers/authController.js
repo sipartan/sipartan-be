@@ -76,7 +76,7 @@ const verifyEmail = async (req, res, next) => {
 const oauthSuccess = async (req, res, next) => {
     try {
         const user = req.user;
-        const token = await authService.generateToken(user); 
+        const token = await authService.generateToken(user, config.jwt.authTokenExpiration); 
         logger.info(`OAuth login successful for user: ${user.email}`);
 
         // redirect to frontend with token // TODO: discuss in the future with FE and Mobile dev
