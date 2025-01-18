@@ -14,13 +14,13 @@ const getAllUsers = {
 
 const getUser = {
     params: Joi.object().keys({
-        user_id: Joi.guid({ version: ['uuidv4'] }).required(),
+        user_id: Joi.string().guid({ version: ['uuidv4'] }).required(),
     }).unknown(false),
 };
 
 const updateUser = {
     params: Joi.object().keys({
-        user_id: Joi.guid({ version: ['uuidv4'] }).required(),
+        user_id: Joi.string().guid({ version: ['uuidv4'] }).required(),
     }).unknown(false),
     body: Joi.object().keys({
         nama: Joi.string(),
@@ -32,13 +32,13 @@ const updateUser = {
 
 const deleteUser = {
     params: Joi.object().keys({
-        user_id: Joi.guid({ version: ['uuidv4'] }).required(),
+        user_id: Joi.string().guid({ version: ['uuidv4'] }).required(),
     }).unknown(false),
 };
 
 const verifyUserRole = {
     params: Joi.object().keys({
-        user_id: Joi.guid({ version: ['uuidv4'] }).required(),
+        user_id: Joi.string().guid({ version: ['uuidv4'] }).required(),
     }).unknown(false),
     body: Joi.object().keys({
         role: Joi.string().required().valid('guest', 'penilai'),
