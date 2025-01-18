@@ -304,7 +304,7 @@ const getDetailLahanData = async (lahan_id, filters) => {
 
     return transformedData;
   } catch (error) {
-    console.error("Error fetching lahan detail data:", error.message);
+    logger.error("Error fetching Lahan data", { lahan_id, error: error.message });
     throw error;
   }
 };

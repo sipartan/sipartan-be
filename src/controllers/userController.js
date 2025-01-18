@@ -81,10 +81,27 @@ const verifyUserRole = async (req, res, next) => {
   }
 };
 
+/**
+ * Get user profile
+ */
+const getProfile = async (req, res, next) => {
+  try {
+    const user = await userService.getUserById(req.user.user_id, req.user);
+    logger.info(`User profile retrieved successfully: ${req.user.user_id}`);
+    return res
+      .status(200)
+      .json({ status: 200, message: 'User profile retrieved successfully', data: user });
+  } catch (error) {
+    logger.error(`Failed to retrieve user profile: ${req.user.user_id}`, error);
+    return next(error);
+  }
+}
+
 module.exports = {
   getAllUsers,
   getUser,
   updateUser,
   deleteUser,
   verifyUserRole,
+  getProfile
 };

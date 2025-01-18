@@ -87,7 +87,7 @@ const getUserById = async (userId, authenticatedUser) => {
 
     try {
         const user = await User.findByPk(userId, {
-            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role'],
+            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified', 'createdAt', 'updatedAt'],
         });
 
         if (!user) {

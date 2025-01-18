@@ -67,7 +67,7 @@ const loginUser = async (email, password) => {
     try {
         const user = await User.findOne({
             where: { email },
-            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified']
+            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified', 'password']
         });
         if (!user) {
             logger.warn(`Login failed: Invalid email ${email}`);
@@ -81,10 +81,17 @@ const loginUser = async (email, password) => {
         }
 
         logger.info(`User logged in successfully: ${email}`);
-        // return generateToken({ id: user.user_id, email: user.email, role: user.role }, AUTH_TOKEN_EXPIRATION);
         const token = generateToken({ id: user.user_id, email: user.email, role: user.role }, AUTH_TOKEN_EXPIRATION);
         return {
-            user: user,
+            user: {
+                user_id: user.user_id,
+                nama: user.nama,
+                instansi: user.instansi,
+                email: user.email,
+                username: user.username,
+                role: user.role,
+                isEmailVerified: user.isEmailVerified
+            },
             token: token
         }
     } catch (error) {
