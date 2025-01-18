@@ -9,40 +9,40 @@ const getAllUsers = {
         nama: Joi.string(),
         role: Joi.string().valid('guest', 'penilai', 'admin'),
         email: Joi.string().email(),
-    }),
+    }).unknown(false),
 };
 
 const getUser = {
     params: Joi.object().keys({
-        id: Joi.required(),
-    }),
+        user_id: Joi.guid({ version: ['uuidv4'] }).required(),
+    }).unknown(false),
 };
 
 const updateUser = {
     params: Joi.object().keys({
-        id: Joi.required(),
-    }),
+        user_id: Joi.guid({ version: ['uuidv4'] }).required(),
+    }).unknown(false),
     body: Joi.object().keys({
         nama: Joi.string(),
         instansi: Joi.string(),
         email: Joi.string().email(),
         username: Joi.string()
-    }),
+    }).unknown(false),
 };
 
 const deleteUser = {
     params: Joi.object().keys({
-        id: Joi.required(),
-    }),
+        user_id: Joi.guid({ version: ['uuidv4'] }).required(),
+    }).unknown(false),
 };
 
 const verifyUserRole = {
     params: Joi.object().keys({
-        id: Joi.required(),
-    }),
+        user_id: Joi.guid({ version: ['uuidv4'] }).required(),
+    }).unknown(false),
     body: Joi.object().keys({
         role: Joi.string().required().valid('guest', 'penilai'),
-    }),
+    }).unknown(false),
 };
 
 module.exports = {

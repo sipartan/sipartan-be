@@ -2,7 +2,7 @@ const multer = require('multer');
 const { BadRequest } = require('../utils/response');
 
 const storage = multer.memoryStorage();
-// TODO: I CANNOT IN DOCKER
+
 const upload = multer({
     storage,
     limits: {

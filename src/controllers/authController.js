@@ -1,4 +1,5 @@
 const authService = require('../services/authService');
+const config = require('../config/config');
 const logger = require('../utils/logger');
 
 const login = async (req, res, next) => {
@@ -75,8 +76,13 @@ const verifyEmail = async (req, res, next) => {
 const oauthSuccess = async (req, res, next) => {
     try {
         const user = req.user;
-        const token = await authService.generateToken(user); // TODO: discuss in the future with FE and Mobile dev
+        const token = await authService.generateToken(user); 
         logger.info(`OAuth login successful for user: ${user.email}`);
+
+        // redirect to frontend with token // TODO: discuss in the future with FE and Mobile dev
+        // const redirectUrl = `${config.urls.frontend}/auth?token=${token}`;
+        // res.redirect(redirectUrl);
+
         res.status(200).json({ status: 200, message: 'Login successful', data: { user }, token });
     } catch (error) {
         logger.error('OAuth login failed:', error);

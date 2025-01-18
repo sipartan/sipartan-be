@@ -224,4 +224,5 @@ module.exports = {
     verifyEmail,
     forgotPassword,
     sendVerificationEmail,
+    generateToken,
 };
