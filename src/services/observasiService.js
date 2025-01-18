@@ -173,6 +173,14 @@ const getObservasiData = async (filters) => {
                     model: User,
                     attributes: ["user_id", "nama", "email", "instansi"],
                 },
+                {
+                    model: Lahan,
+                    include: [
+                        {
+                            model: LokasiRegion,
+                        },
+                    ],
+                }
             ],
             order: [[sortBy, order]],
             page: parseInt(page, 10),
@@ -190,17 +198,37 @@ const getObservasiData = async (filters) => {
                 email: observasi.user.email,
                 instansi: observasi.user.instansi,
             },
-            observasi_id: observasi.observasi_id,
-            lahan_id: observasi.lahan_id,
-            jenis_karhutla: observasi.jenis_karhutla,
-            temperatur: observasi.temperatur,
-            curah_hujan: observasi.curah_hujan,
-            kelembapan_udara: observasi.kelembapan_udara,
-            tanggal_kejadian: observasi.tanggal_kejadian,
-            tanggal_penilaian: observasi.tanggal_penilaian,
-            luasan_karhutla: observasi.luasan_karhutla,
-            skor_plot: observasi.skor_akhir,
-            hasil_penilaian: getHasilFromSkor(observasi.skor_akhir),
+            lokasi_region: {
+                provinsi: observasi.lahan.lokasi_region.provinsi,
+                kabupaten: observasi.lahan.lokasi_region.kabupaten,
+                kecamatan: observasi.lahan.lokasi_region.kecamatan,
+                desa: observasi.lahan.lokasi_region.desa,
+            },
+            lahan: {
+                nama_lahan: observasi.lahan.nama_lahan,
+                tutupan_lahan: observasi.lahan.tutupan_lahan,
+                jenis_vegetasi: observasi.lahan.jenis_vegetasi,
+                jenis_tanah: observasi.lahan.jenis_tanah,
+                tinggi_muka_air_gambut: observasi.lahan.tinggi_muka_air_gambut,
+                jenis_karhutla: observasi.lahan.jenis_karhutla,
+                penggunaan_lahan: observasi.lahan.penggunaan_lahan,
+                latitude: observasi.lahan.latitude,
+                longitude: observasi.lahan.longitude,
+                polygon: observasi.lahan.polygon,
+            },
+            observasi: {
+                observasi_id: observasi.observasi_id,
+                lahan_id: observasi.lahan_id,
+                jenis_karhutla: observasi.jenis_karhutla,
+                temperatur: observasi.temperatur,
+                curah_hujan: observasi.curah_hujan,
+                kelembapan_udara: observasi.kelembapan_udara,
+                tanggal_kejadian: observasi.tanggal_kejadian,
+                tanggal_penilaian: observasi.tanggal_penilaian,
+                luasan_karhutla: observasi.luasan_karhutla,
+                skor_plot: observasi.skor_akhir,
+                hasil_penilaian: getHasilFromSkor(observasi.skor_akhir),
+            },
         }));
 
         return result;

@@ -65,7 +65,10 @@ const registerUser = async (data) => {
  */
 const loginUser = async (email, password) => {
     try {
-        const user = await User.findOne({ where: { email } });
+        const user = await User.findOne({
+            where: { email },
+            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified']
+        });
         if (!user) {
             logger.warn(`Login failed: Invalid email ${email}`);
             throw new BadRequest('Invalid email or password.');
@@ -78,7 +81,12 @@ const loginUser = async (email, password) => {
         }
 
         logger.info(`User logged in successfully: ${email}`);
-        return generateToken({ id: user.user_id, email: user.email, role: user.role }, AUTH_TOKEN_EXPIRATION);
+        // return generateToken({ id: user.user_id, email: user.email, role: user.role }, AUTH_TOKEN_EXPIRATION);
+        const token = generateToken({ id: user.user_id, email: user.email, role: user.role }, AUTH_TOKEN_EXPIRATION);
+        return {
+            user: user,
+            token: token
+        }
     } catch (error) {
         logger.error('An error occurred during login:', error);
         throw error;

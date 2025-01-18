@@ -5,9 +5,9 @@ const logger = require('../utils/logger');
 const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        const token = await authService.loginUser(email, password);
+        const data = await authService.loginUser(email, password);
         logger.info(`User logged in successfully: ${email}`);
-        res.status(200).json({ status: 200, message: 'Login successful', token: token });
+        res.status(200).json({ status: 200, message: 'Login successful', data: data.user, token: data.token });
     } catch (error) {
         logger.error('Login failed:', error);
         next(error);
