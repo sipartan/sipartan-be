@@ -11,6 +11,8 @@ const mapHasilPenilaianToSkor = async (hasil_penilaian) => {
 
 const getHasilFromSkor = (skor) => {
     switch (true) {
+        case skor === null || skor === undefined:
+            return "Tidak Diketahui";
         case skor >= 0 && skor <= 20:
             return "Sangat Ringan";
         case skor > 20 && skor <= 40:

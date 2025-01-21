@@ -18,6 +18,25 @@ const upload = multer({
     },
 });
 
+// Error-handling wrapper function
+const uploadHandler = (req, res, next) => {
+    upload.array('files', 3)(req, res, (err) => {
+        if (err) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({ status: 400, message: 'File size too large. Max 10MB per file allowed.' });
+            }
+            if (err.code === 'LIMIT_FILE_COUNT') {
+                return res.status(400).json({ status: 400, message: 'Too many files. Maximum 3 files allowed.' });
+            }
+            if (err instanceof BadRequest) {
+                return res.status(400).json({ status: 400, message: err.message });
+            }
+            return res.status(500).json({ status: 500, message: 'File upload failed.' });
+        }
+        next();
+    });
+};
+
 module.exports = {
-    uploadFiles: upload.array('files', 3),
+    uploadFiles: uploadHandler,
 };

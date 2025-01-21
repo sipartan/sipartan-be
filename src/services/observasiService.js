@@ -30,6 +30,13 @@ const createObservasiData = async (newDataObservasi) => {
 
         logger.info("Creating new observasi data", { lahan_id, user_id, jenis_karhutla });
 
+        // check if lahan_id exists
+        const lahan = await Lahan.findByPk(lahan_id, { transaction });
+        if (!lahan) {
+            logger.warn("Lahan not found", { lahan_id });
+            throw new NotFound(`Lahan with ID ${lahan_id} not found`);
+        }
+
         // Create the observation
         const observasi = await Observasi.create(
             {
@@ -62,23 +69,29 @@ const createObservasiData = async (newDataObservasi) => {
             totalLuasanKarhutla += luasan_plot;
 
             const newPlot = await Plot.create(
-                { observasi_id: observasi.observasi_id, luasan_plot, polygon: polygonGeoJSON },
-                { transaction }
+            { observasi_id: observasi.observasi_id, luasan_plot, polygon: polygonGeoJSON },
+            { transaction }
             );
 
             logger.info("Plot created", { plot_id: newPlot.plot_id });
 
             let penilaianObservasiIds = [];
             if (Array.isArray(plot.penilaian_id)) {
-                penilaianObservasiIds = await Promise.all(
-                    plot.penilaian_id.map(async (penilaian_id) => {
-                        const penilaianObservasi = await PenilaianObservasi.create(
-                            { plot_id: newPlot.plot_id, penilaian_id },
-                            { transaction }
-                        );
-                        return { penilaian_observasi_id: penilaianObservasi.penilaian_observasi_id, penilaian_id };
-                    })
+            penilaianObservasiIds = await Promise.all(
+                plot.penilaian_id.map(async (penilaian_id) => {
+                const penilaian = await Penilaian.findByPk(penilaian_id, { transaction });
+                if (!penilaian) {
+                    logger.warn("Penilaian not found", { penilaian_id });
+                    throw new NotFound(`Penilaian with ID ${penilaian_id} not found`);
+                }
+
+                const penilaianObservasi = await PenilaianObservasi.create(
+                    { plot_id: newPlot.plot_id, penilaian_id },
+                    { transaction }
                 );
+                return { penilaian_observasi_id: penilaianObservasi.penilaian_observasi_id, penilaian_id };
+                })
+            );
             }
 
             const updatedPlot = await calculateScore(newPlot.plot_id, transaction);
@@ -453,30 +466,37 @@ const editPlotData = async (plot_id, updatedData) => {
         if (penilaianList) {
             logger.info("Updating penilaian list for plot", { plot_id, penilaianList });
             for (const penilaian of penilaianList) {
-                const { penilaian_observasi_id, penilaian_id } = penilaian;
+            const { penilaian_observasi_id, penilaian_id } = penilaian;
 
-                if (penilaian_observasi_id) {
-                    // Update existing PenilaianObservasi
-                    const existingPenilaianObservasi = await PenilaianObservasi.findOne({
-                        where: { penilaian_observasi_id, plot_id },
-                        transaction,
-                    });
-                    if (existingPenilaianObservasi) {
-                        await existingPenilaianObservasi.update({ penilaian_id }, { transaction });
-                    } else {
-                        logger.warn("PenilaianObservasi not found", { penilaian_observasi_id, plot_id });
-                        throw new NotFound(`PenilaianObservasi with id ${penilaian_observasi_id} and plot_id ${plot_id} not found`);
-                    }
+            // Check if penilaian_id exists
+            const penilaianExists = await Penilaian.findByPk(penilaian_id, { transaction });
+            if (!penilaianExists) {
+                logger.warn("Penilaian not found", { penilaian_id });
+                throw new NotFound(`Penilaian with ID ${penilaian_id} not found`);
+            }
+
+            if (penilaian_observasi_id) {
+                // Update existing PenilaianObservasi
+                const existingPenilaianObservasi = await PenilaianObservasi.findOne({
+                where: { penilaian_observasi_id, plot_id },
+                transaction,
+                });
+                if (existingPenilaianObservasi) {
+                await existingPenilaianObservasi.update({ penilaian_id }, { transaction });
                 } else {
-                    // Create a new PenilaianObservasi if penilaian_observasi_id is not provided
-                    await PenilaianObservasi.create(
-                        {
-                            plot_id,
-                            penilaian_id,
-                        },
-                        { transaction }
-                    );
+                logger.warn("PenilaianObservasi not found", { penilaian_observasi_id, plot_id });
+                throw new NotFound(`PenilaianObservasi with id ${penilaian_observasi_id} and plot_id ${plot_id} not found`);
                 }
+            } else {
+                // Create a new PenilaianObservasi if penilaian_observasi_id is not provided
+                await PenilaianObservasi.create(
+                {
+                    plot_id,
+                    penilaian_id,
+                },
+                { transaction }
+                );
+            }
             }
 
             // Recalculate the overall score
@@ -531,6 +551,12 @@ const deletePlotData = async (plot_id, transaction = null) => {
             throw new NotFound(`Plot with id ${plot_id} not found`);
         }
 
+        const observasi = await Observasi.findByPk(plot.observasi_id, { transaction });
+        if (!observasi) {
+            logger.warn("Observasi not found for plot", { plot_id });
+            throw new NotFound(`Observasi not found for plot with id ${plot_id}`);
+        }
+
         logger.info("Fetching associated PenilaianObservasi records", { plot_id });
         const penilaianObservasiRecords = await PenilaianObservasi.findAll({
             where: { plot_id },
@@ -549,7 +575,7 @@ const deletePlotData = async (plot_id, transaction = null) => {
                 logger.info("Deleting associated Dokumentasi records", { penilaian_observasi_id: penilaianObservasi.penilaian_observasi_id });
                 await Promise.all(
                     dokumentasiRecords.map(async (dokumentasi) => {
-                        await deleteDokumentasiData(dokumentasi.dokumentasi_id);
+                        await deleteDokumentasiData(dokumentasi.dokumentasi_id, transaction);
                     })
                 );
 
@@ -564,7 +590,37 @@ const deletePlotData = async (plot_id, transaction = null) => {
         logger.info("Deleting plot record", { plot_id });
         await Plot.destroy({ where: { plot_id }, transaction });
 
-        logger.info("Successfully deleted plot data", { plot_id });
+        // Recalculate skor_akhir and luasan_karhutla
+        logger.info("Recalculating Observasi data", { observasi_id: observasi.observasi_id });
+
+        const remainingPlots = await Plot.findAll({
+            where: { observasi_id: observasi.observasi_id },
+            attributes: ["skor", "luasan_plot"],
+            transaction,
+        });
+
+        let skorAkhir = null;
+        let luasanKarhutla = null;
+
+        if (remainingPlots.length > 0) {
+            // Calculate total skor_akhir and luasan_karhutla
+            skorAkhir = remainingPlots.reduce((acc, plot) => acc + (plot.skor || 0), 0);
+            luasanKarhutla = remainingPlots.reduce((acc, plot) => acc + (plot.luasan || 0), 0);
+        }
+
+        logger.info("Updating Observasi", {
+            observasi_id: observasi.observasi_id,
+            skor_akhir: skorAkhir,
+            luasan_karhutla: luasanKarhutla,
+        });
+
+        await Observasi.update(
+            { skor_akhir: skorAkhir, luasan_karhutla: luasanKarhutla },
+            { where: { observasi_id: observasi.observasi_id }, transaction }
+        );
+
+        logger.info("Successfully deleted plot data and recalculated observasi", { plot_id });
+
     } catch (error) {
         logger.error("Error deleting plot data", { plot_id, error: error.message });
         throw error;

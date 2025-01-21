@@ -44,8 +44,9 @@ router.route("/dokumentasi")
 
 router.route("/pdf/:observasi_id")
     .get(
-        // passport.authenticate("jwt", { session: false }),
-        // authorizeRoles("penilai", "admin"),
+        passport.authenticate("jwt", { session: false }),
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.convertToPDF),
         observasiController.convertToPDF
     );
 

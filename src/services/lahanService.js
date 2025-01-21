@@ -318,7 +318,7 @@ const editLahanData = async (lahan_id, data) => {
       include: [
         {
           model: LokasiRegion,
-          attributes: ["provinsi", "kabupaten", "kecamatan", "desa"],
+          attributes: ["lokasi_region_id", "provinsi", "kabupaten", "kecamatan", "desa"],
         },
       ],
     });

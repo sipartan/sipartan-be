@@ -1,4 +1,4 @@
-const Dokumentasi = require("../models/dokumentasi");
+const { Dokumentasi, PenilaianObservasi } = require("../models");
 const { DeleteObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { s3Client, bucketName } = require("../config/minioClient");
 const { NotFound } = require("../utils/response");
@@ -6,6 +6,17 @@ const logger = require("../utils/logger");
 
 const uploadDokumentasiData = async (files, fields) => {
     logger.info("Starting upload of dokumentasi data");
+
+    // Check if penilaian_observasi_id exists
+    const penilaianObservasi = await PenilaianObservasi.findOne({
+        where: { penilaian_observasi_id: fields.penilaian_observasi_id },
+    });
+
+    if (!penilaianObservasi) {
+        logger.warn(`Penilaian Observasi with ID ${fields.penilaian_observasi_id} not found`);
+        throw new NotFound(`Penilaian Observasi with ID ${fields.penilaian_observasi_id} not found`);
+    }
+
     const uploadResults = await Promise.all(
         files.map(async ({ uploadPromise, s3Key }) => {
             try {

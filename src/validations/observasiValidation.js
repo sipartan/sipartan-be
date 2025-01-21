@@ -70,6 +70,12 @@ const deleteObservasi = {
     }).unknown(false),
 };
 
+const convertToPDF = {
+    params: Joi.object().keys({
+        observasi_id: Joi.string().guid({ version: ['uuidv4'] }).required(),
+    }).unknown(false),
+};
+
 const uploadDokumentasi = {
     body: Joi.object().keys({
         penilaian_observasi_id: Joi.string().guid({ version: ['uuidv4'] }).required(),
@@ -134,7 +140,7 @@ const createPenilaian = {
         variable: Joi.string().required(),
         type: Joi.string().required(),
         kategori: Joi.string().required(),
-        deskripsi: Joi.string().required(),
+        deskripsi: Joi.string().optional(),
         bobot: Joi.number().required(),
         nilai: Joi.number().required(),
     }).unknown(false),
@@ -146,6 +152,7 @@ module.exports = {
     getObservasiDetail,
     editObservasi,
     deleteObservasi,
+    convertToPDF,
     uploadDokumentasi,
     getDokumentasi,
     deleteDokumentasi,
