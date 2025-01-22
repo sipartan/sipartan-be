@@ -1,164 +1,8 @@
 const axiosClient = require('../utils/axiosClient');
 const config = require('../config/config');
 const logger = require('../utils/logger');
+const { BadRequest, NotFound } = require('../utils/response');
 
-// class InfoService {
-//     constructor() {
-//         this.wilayahBaseUrl = 'https://emsifa.github.io/api-wilayah-indonesia/api';
-//     }
-
-//     /**
-//      * Retrieves all provinces.
-//      * @returns {Promise<Array>} List of provinces.
-//      */
-//     async getProvinces() {
-//         try {
-//             const response = await axiosClient.get(`${this.wilayahBaseUrl}/provinces.json`);
-//             logger.info('Provinces retrieved successfully');
-//             return response.data;
-//         } catch (error) {
-//             logger.error('Failed to retrieve provinces:', error);
-//             throw error;
-//         }
-//     }
-
-//     /**
-//      * Retrieves regencies based on a province ID.
-//      * @param {number|string} province_id - The ID of the province.
-//      * @returns {Promise<Array>} List of regencies.
-//      */
-//     async getRegencies(province_id) {
-//         try {
-//             const response = await axiosClient.get(`${this.wilayahBaseUrl}/regencies/${province_id}.json`);
-//             logger.info(`Regencies retrieved successfully for province ID: ${province_id}`);
-//             return response.data;
-//         } catch (error) {
-//             logger.error(`Failed to retrieve regencies for province ID: ${province_id}`, error);
-//             throw error;
-//         }
-//     }
-
-//     /**
-//      * Retrieves districts based on a regency ID.
-//      * @param {number|string} regency_id - The ID of the regency.
-//      * @returns {Promise<Array>} List of districts.
-//      */
-//     async getDistricts(regency_id) {
-//         try {
-//             const response = await axiosClient.get(`${this.wilayahBaseUrl}/districts/${regency_id}.json`);
-//             logger.info(`Districts retrieved successfully for regency ID: ${regency_id}`);
-//             return response.data;
-//         } catch (error) {
-//             logger.error(`Failed to retrieve districts for regency ID: ${regency_id}`, error);
-//             throw error;
-//         }
-//     }
-
-//     /**
-//      * Retrieves villages based on a district ID.
-//      * @param {number|string} district_id - The ID of the district.
-//      * @returns {Promise<Array>} List of villages.
-//      */
-//     async getVillages(district_id) {
-//         try {
-//             const response = await axiosClient.get(`${this.wilayahBaseUrl}/villages/${district_id}.json`);
-//             logger.info(`Villages retrieved successfully for district ID: ${district_id}`);
-//             return response.data;
-//         } catch (error) {
-//             logger.error(`Failed to retrieve villages for district ID: ${district_id}`, error);
-//             throw error;
-//         }
-//     }
-
-//     /**
-//      * Retrieves weather data from OpenWeather by coordinates.
-//      * @param {number} lat - Latitude.
-//      * @param {number} lon - Longitude.
-//      * @returns {Promise<Object>} Weather data.
-//      */
-//     async getWeatherByCoordinates(lat, lon) {
-//         try {
-//             const response = await axiosClient.get('https://api.openweathermap.org/data/2.5/weather', {
-//                 params: {
-//                     lat,
-//                     lon,
-//                     appid: config.apiKeys.openWeather,
-//                 },
-//             });
-//             logger.info(`Weather data retrieved successfully for coordinates: (${lat}, ${lon})`);
-//             return response.data;
-//         } catch (error) {
-//             logger.error(`Failed to retrieve weather data for coordinates: (${lat}, ${lon})`, error);
-//             throw error;
-//         }
-//     }
-
-//     /**
-//      * Retrieves weather data from BMKG by city ID.
-//      * @param {number|string} city_id - ID of the city/region.
-//      * @returns {Promise<Object>} Weather data.
-//      */
-//     async getWeatherByCityId(city_id) {
-//         try {
-//             const response = await axiosClient.get('https://api.bmkg.go.id/publik/prakiraan-cuaca', {
-//                 params: {
-//                     adm4: city_id,
-//                 },
-//             });
-//             logger.info(`Weather data retrieved successfully for city ID: ${city_id}`);
-//             return response.data;
-//         } catch (error) {
-//             logger.error(`Failed to retrieve weather data for city ID: ${city_id}`, error);
-//             throw error;
-//         }
-//     }
-
-//     /**
-//      * Performs reverse geocoding using Nominatim.
-//      * @param {number} lat - Latitude.
-//      * @param {number} lon - Longitude.
-//      * @returns {Promise<Object>} Location details.
-//      */
-//     async reverseGeocodeNomatim(lat, lon) {
-//         try {
-//             const response = await axiosClient.get('https://nominatim.openstreetmap.org/reverse', {
-//                 params: {
-//                     lat,
-//                     lon,
-//                     format: 'json',
-//                 },
-//             });
-//             logger.info(`Reverse geocoding (Nominatim) successful for coordinates: (${lat}, ${lon})`);
-//             return response.data;
-//         } catch (error) {
-//             logger.error(`Failed to perform reverse geocoding (Nominatim) for coordinates: (${lat}, ${lon})`, error);
-//             throw error;
-//         }
-//     }
-
-//     /**
-//      * Performs reverse geocoding using geocode.maps.co.
-//      * @param {number} lat - Latitude.
-//      * @param {number} lon - Longitude.
-//      * @returns {Promise<Object>} Location details.
-//      */
-//     async reverseGeocodeGeocode(lat, lon) {
-//         try {
-//             const response = await axiosClient.get('https://geocode.maps.co/reverse', {
-//                 params: {
-//                     lat,
-//                     lon,
-//                     api_key: config.apiKeys.geocoding,
-//                 },
-//             });
-//             logger.info(`Reverse geocoding (geocode.maps.co) successful for coordinates: (${lat}, ${lon})`);
-//             return response.data;
-//         } catch (error) {
-//             logger.error(`Failed to perform reverse geocoding (geocode.maps.co) for coordinates: (${lat}, ${lon})`, error);
-//             throw error;
-//         }
-//     }
-// }
 const wilayahBaseUrl = 'https://emsifa.github.io/api-wilayah-indonesia/api';
 const openWeatherBaseUrl = 'https://api.openweathermap.org/data/2.5';
 const bmkgBaseUrl = 'https://api.bmkg.go.id/publik/prakiraan-cuaca';
@@ -171,46 +15,55 @@ const GEOCODE_API_KEY = config.apiKeys.geocoding;
 const getProvinces = async () => {
     try {
         const response = await axiosClient.get(`${wilayahBaseUrl}/provinces.json`);
-        logger.info('Provinces retrieved successfully');
         return response.data;
     } catch (error) {
-        logger.error('Failed to retrieve provinces:', error);
-        throw error;
+        logger.error('Failed to retrieve provinces', error.message);
+        if (error.status === 404) {
+            throw new NotFound(`Provinces with province ID ${province_id} not found`);
+        }
+        throw new BadRequest('Failed to retrieve provinces');
     }
-}
+};
 
 const getRegencies = async (province_id) => {
     try {
         const response = await axiosClient.get(`${wilayahBaseUrl}/regencies/${province_id}.json`);
-        logger.info(`Regencies retrieved successfully for province ID: ${province_id}`);
         return response.data;
     } catch (error) {
-        logger.error(`Failed to retrieve regencies for province ID: ${province_id}`, error);
-        throw error;
+        logger.error(`Failed to retrieve regencies for province ID: ${province_id}`, error.message);
+        if (error.status === 404) {
+            throw new NotFound(`Regencies with province ID ${province_id} not found`);
+        } 
+        throw new BadRequest('Failed to retrieve regencies');
     }
-}
+};
+
 
 const getDistricts = async (regency_id) => {
     try {
         const response = await axiosClient.get(`${wilayahBaseUrl}/districts/${regency_id}.json`);
-        logger.info(`Districts retrieved successfully for regency ID: ${regency_id}`);
-        return response.data;
+        response.data;
     } catch (error) {
-        logger.error(`Failed to retrieve districts for regency ID: ${regency_id}`, error);
-        throw error;
+        logger.error(`Failed to retrieve districts for regency ID: ${regency_id}`, error.message);
+        if (error.status === 404) {
+            throw new NotFound(`Districts with regency ID ${regency_id} not found`);
+        }
+        throw new BadRequest('Failed to retrieve districts');
     }
-}
+};
 
 const getVillages = async (district_id) => {
     try {
         const response = await axiosClient.get(`${wilayahBaseUrl}/villages/${district_id}.json`);
-        logger.info(`Villages retrieved successfully for district ID: ${district_id}`);
         return response.data;
     } catch (error) {
         logger.error(`Failed to retrieve villages for district ID: ${district_id}`, error);
-        throw error;
+        if (error.status === 404) {
+            throw new NotFound(`Villages with district ID ${district_id} not found`);
+        }
+        throw new BadRequest('Failed to retrieve villages');
     }
-}
+};
 
 const getWeatherByCoordinates = async (lat, lon) => {
     try {
@@ -219,15 +72,21 @@ const getWeatherByCoordinates = async (lat, lon) => {
                 lat,
                 lon,
                 appid: OPEN_WEATHER_API_KEY,
+                units: 'metric',
+                lang: 'id',
             },
         });
+        if (response.status === 200) {
         logger.info(`Weather data retrieved successfully for coordinates: (${lat}, ${lon})`);
         return response.data;
+        } else {
+            throw new BadRequest('Failed to retrieve weather data');
+        }
     } catch (error) {
         logger.error(`Failed to retrieve weather data for coordinates: (${lat}, ${lon})`, error);
-        throw error;
+        throw new BadRequest(error.response?.data?.message || 'Failed to retrieve weather data');
     }
-}
+};
 
 const getWeatherByCityId = async (city_id) => {
     try {
@@ -236,13 +95,17 @@ const getWeatherByCityId = async (city_id) => {
                 adm4: city_id,
             },
         });
-        logger.info(`Weather data retrieved successfully for city ID: ${city_id}`);
-        return response.data;
+        if (response.status === 200) {
+            logger.info(`Weather data retrieved successfully for city ID: ${city_id}`);
+            return response.data;
+        } else {
+            throw new BadRequest('Failed to retrieve weather data');
+        }
     } catch (error) {
         logger.error(`Failed to retrieve weather data for city ID: ${city_id}`, error);
-        throw error;
+        throw new BadRequest(error.response?.data?.message || 'Failed to retrieve weather data');
     }
-}
+};
 
 const reverseGeocodeNomatim = async (lat, lon) => {
     try {
@@ -251,33 +114,18 @@ const reverseGeocodeNomatim = async (lat, lon) => {
                 lat,
                 lon,
                 format: 'json',
-                'accept-language': 'id', // Use Indonesian for better localization
+                'accept-language': 'id',
             },
         });
 
         if (response.status === 200) {
-            // const data = response.data.address;
-
-            // // Custom interpretation of the response
-            // const result = {
-            //     provinsi: data.state || null, // Provinsi
-            //     kabupaten: data.city || (data.city_district && !data.city ? data.city_district : null) || null, // Kabupaten/Kota
-            //     kecamatan: data.suburb || (data.city_district && data.city ? data.city_district : null) || null, // Kecamatan
-            //     desa: data.neighbourhood || data.village || null, // Desa
-            // };
-
-            // logger.info(`Reverse geocoding (Nominatim) successful for coordinates: (${lat}, ${lon})`);
-            // return {
-            //     asli: response.data.address, // Original response
-            //     edit: result, // Edited response
-            // };
             return response.data;
         } else {
-            throw new Error(`Unexpected response: ${response.message}`);
+            throw new BadRequest('Unexpected response from Nominatim');
         }
     } catch (error) {
         logger.error(`Failed to perform reverse geocoding (Nominatim)`, error);
-        throw error;
+        throw new BadRequest(error.response?.data?.message || 'Failed to perform reverse geocoding');
     }
 };
 
@@ -290,13 +138,18 @@ const reverseGeocodeGeocode = async (lat, lon) => {
                 api_key: GEOCODE_API_KEY,
             },
         });
-        logger.info(`Reverse geocoding (geocode.maps.co) successful for coordinates: (${lat}, ${lon})`);
-        return response.data;
+        if (response.status === 200) {
+            logger.info(`Reverse geocoding (geocode.maps.co) successful for coordinates: (${lat}, ${lon})`);
+            return response.data;
+        } else {
+            throw new BadRequest('Failed to perform reverse geocoding');
+        }
     } catch (error) {
         logger.error(`Failed to perform reverse geocoding (geocode.maps.co)`, error);
-        throw error;
+        throw new BadRequest(error.response?.data?.message || 'Failed to perform reverse geocoding');
     }
-}
+};
+
 
 module.exports = {
     getProvinces,

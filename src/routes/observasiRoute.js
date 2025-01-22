@@ -42,14 +42,6 @@ router.route("/dokumentasi")
         observasiController.uploadDokumentasi
     );
 
-router.route("/pdf/:observasi_id")
-    .get(
-        passport.authenticate("jwt", { session: false }),
-        authorizeRoles("penilai", "admin"),
-        validate(observasiValidation.convertToPDF),
-        observasiController.convertToPDF
-    );
-
 router.route("/dokumentasi/:dokumentasi_id")
     .get(
         passport.authenticate("jwt", { session: false }),
@@ -96,5 +88,12 @@ router.route("/:observasi_id")
         observasiController.deleteObservasi
     );
 
+router.route("/:observasi_id/pdf")
+    .get(
+        passport.authenticate("jwt", { session: false }),
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.convertToPDF),
+        observasiController.convertToPDF
+    );
 
 module.exports = router;
