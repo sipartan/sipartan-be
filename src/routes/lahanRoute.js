@@ -1,5 +1,5 @@
 const express = require("express");
-const passport = require("passport");
+const passport = require('../config/passport');
 const { authorizeRoles } = require("../middlewares/auth");
 const lahanController = require("../controllers/lahanController");
 const lahanValidation = require("../validations/lahanValidation");
@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.route("/")
     .post(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         validate(lahanValidation.createLahan),
         lahanController.createLahan
@@ -21,19 +21,19 @@ router.route("/")
 
 router.route("/:lahan_id")
     // .get(
-    //     passport.authenticate("jwt", { session: false }),
+    //     passport.authenticateJwt,
     //     authorizeRoles("penilai", "admin"),
     //     validate(lahanValidation.getDetailLahan),
     //     lahanController.getDetailLahan
     // )
     .patch(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         validate(lahanValidation.editLahan),
         lahanController.editLahan
     )
     .delete(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         validate(lahanValidation.deleteLahan),
         lahanController.deleteLahan

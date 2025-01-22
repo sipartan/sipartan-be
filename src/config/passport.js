@@ -16,16 +16,32 @@ const jwtOpts = {
 passport.use(
     new JwtStrategy(jwtOpts, async (jwt_payload, done) => {
         try {
-            const user = await User.findByPk(jwt_payload.id);
+            const user = await User.findByPk(jwt_payload.id,
+                { attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified'] }
+            );
             if (user) {
                 return done(null, user);
             }
-            return done(null, false);
+            return done(null, false, { message: 'Invalid token or user not found' });
         } catch (err) {
             return done(err, false);
         }
     })
 );
+
+// Middleware to handle unauthorized requests
+passport.authenticateJwt = (req, res, next) => {
+    passport.authenticate('jwt', { session: false }, (err, user, info) => {
+        if (err || !user) {
+            return res.status(401).json({
+                status: 401,
+                message: info?.message || 'Unauthorized access. Please provide a valid token.',
+            });
+        }
+        req.user = user;
+        next();
+    })(req, res, next);
+};
 
 // Google Strategy
 passport.use(
@@ -37,7 +53,7 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                let user = await User.findOne({ where: { googleId: profile.id } });
+                let user = await User.findOne({ where: { googleId: profile.id }, attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified'] });
                 if (!user) {
                     user = await User.create({
                         nama: profile.displayName,
@@ -67,7 +83,7 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                let user = await User.findOne({ where: { facebookId: profile.id } });
+                let user = await User.findOne({ where: { facebookId: profile.id }, attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified'] });
                 if (!user) {
                     user = await User.create({
                         nama: profile.displayName,

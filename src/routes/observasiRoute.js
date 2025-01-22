@@ -1,5 +1,5 @@
 const express = require("express");
-const passport = require("passport");
+const passport = require('../config/passport');
 const { authorizeRoles } = require("../middlewares/auth");
 const { uploadFiles } = require("../middlewares/multer");
 const observasiController = require("../controllers/observasiController");
@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.route("/")
     .post(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         validate(observasiValidation.createObservasi),
         observasiController.createObservasi
@@ -22,20 +22,20 @@ router.route("/")
 
 router.route("/penilaian")
     .post(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         validate(observasiValidation.createPenilaian),
         observasiController.createPenilaian
     )
     .get(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         observasiController.getAllPenilaian
     );
 
 router.route("/dokumentasi")
     .post(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         uploadFiles,
         validate(observasiValidation.uploadDokumentasi),
@@ -44,13 +44,13 @@ router.route("/dokumentasi")
 
 router.route("/dokumentasi/:dokumentasi_id")
     .get(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         validate(observasiValidation.getDokumentasi),
         observasiController.getDokumentasi
     )
     .delete(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         validate(observasiValidation.deleteDokumentasi),
         observasiController.deleteDokumentasi
@@ -58,13 +58,13 @@ router.route("/dokumentasi/:dokumentasi_id")
 
 router.route("/plot/:plot_id")
     .patch(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         validate(observasiValidation.editPlot),
         observasiController.editPlot
     )
     .delete(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         validate(observasiValidation.deletePlot),
         observasiController.deletePlot
@@ -76,13 +76,13 @@ router.route("/:observasi_id")
         observasiController.getObservasiDetail
     )
     .patch(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         validate(observasiValidation.editObservasi),
         observasiController.editObservasi
     )
     .delete(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         validate(observasiValidation.deleteObservasi),
         observasiController.deleteObservasi
@@ -90,7 +90,7 @@ router.route("/:observasi_id")
 
 router.route("/:observasi_id/pdf")
     .get(
-        passport.authenticate("jwt", { session: false }),
+        passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),
         validate(observasiValidation.convertToPDF),
         observasiController.convertToPDF
