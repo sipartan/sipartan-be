@@ -29,6 +29,7 @@ const envSchema = Joi.object({
     FACEBOOK_APP_SECRET: Joi.string().required(),
     OPENWEATHER_API_KEY: Joi.string().required(),
     GEOCODING_API_KEY: Joi.string().required(),
+    GOOGLE_MAPS_API_KEY: Joi.string().required(),
     MINIO_ENDPOINT: Joi.string().uri().required(),
     MINIO_ROOT_USER: Joi.string().required(),
     MINIO_ROOT_PASSWORD: Joi.string().required(),
@@ -93,5 +94,6 @@ module.exports = {
     apiKeys: {
         openWeather: envVars.OPENWEATHER_API_KEY,
         geocoding: envVars.GEOCODING_API_KEY,
+        googleMaps: envVars.GOOGLE_MAPS_API_KEY,
     },
 };

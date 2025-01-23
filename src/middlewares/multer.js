@@ -1,5 +1,6 @@
 const multer = require('multer');
-const { BadRequest } = require('../utils/response');
+const logger = require('../utils/logger');
+const { UnsupportedMediaType } = require('../utils/response');
 
 const storage = multer.memoryStorage();
 
@@ -12,8 +13,10 @@ const upload = multer({
     fileFilter: (req, file, cb) => {
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         if (!allowedTypes.includes(file.mimetype)) {
-            return cb(new BadRequest('Only jpeg, jpg, or png files are allowed'));
+            logger.warn(`File rejected: Invalid type ${file.mimetype}`);
+            return cb(new UnsupportedMediaType('Invalid file type. Only JPEG, JPG, or PNG files are allowed.'));
         }
+        logger.info(`File accepted: ${file.originalname}, Type: ${file.mimetype}`);
         cb(null, true);
     },
 });
@@ -23,16 +26,34 @@ const uploadHandler = (req, res, next) => {
     upload.array('files', 3)(req, res, (err) => {
         if (err) {
             if (err.code === 'LIMIT_FILE_SIZE') {
-                return res.status(400).json({ status: 400, message: 'File size too large. Max 10MB per file allowed.' });
+                logger.error(`File upload error: File size too large for ${req.files?.map(f => f.originalname).join(', ') || 'unknown file'}`);
+                return res.status(413).json({
+                    status: 413,
+                    message: 'File size too large. Maximum allowed size is 10MB per file.',
+                });
             }
             if (err.code === 'LIMIT_FILE_COUNT') {
-                return res.status(400).json({ status: 400, message: 'Too many files. Maximum 3 files allowed.' });
+                logger.error(`File upload error: Too many files uploaded`);
+                return res.status(400).json({
+                    status: 400,
+                    message: 'Too many files. Maximum 3 files are allowed.',
+                });
             }
-            if (err instanceof BadRequest) {
-                return res.status(400).json({ status: 400, message: err.message });
+            if (err instanceof UnsupportedMediaType) {
+                logger.warn(`File upload error: ${err.message}`);
+                return res.status(415).json({
+                    status: 415,
+                    message: err.message,
+                });
             }
-            return res.status(500).json({ status: 500, message: 'File upload failed.' });
+            logger.error(`Unexpected error during file upload: ${err.message}`);
+            return res.status(500).json({
+                status: 500,
+                message: 'Internal server error during file upload.',
+            });
         }
+
+        logger.info(`File upload successful: ${req.files.map(f => f.originalname).join(', ')}`);
         next();
     });
 };

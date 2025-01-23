@@ -45,6 +45,13 @@ const reverseGeocodeGeocode = {
     }).unknown(false)
 };
 
+const reverseGeocodeGoogle = {
+    query: Joi.object().keys({
+        lat: Joi.number().required(),
+        lon: Joi.number().required()
+    }).unknown(false)
+};
+
 module.exports = {
     getRegencies,
     getDistricts,
@@ -52,5 +59,6 @@ module.exports = {
     getWeatherByCoordinates,
     reverseGeocodeNomatim,
     getWeatherByCityId,
-    reverseGeocodeGeocode
+    reverseGeocodeGeocode,
+    reverseGeocodeGoogle
 };

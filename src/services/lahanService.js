@@ -59,7 +59,7 @@ const createLahanData = async (data) => {
       tutupan_lahan,
       jenis_vegetasi,
       jenis_tanah,
-      tinggi_muka_air_gambut,
+      tinggi_muka_air_gambut: tinggi_muka_air_gambut || 0,
       penggunaan_lahan,
       latitude,
       longitude,

@@ -13,6 +13,7 @@ router.get('/districts/:regency_id', passport.authenticateJwt, authorizeRoles('p
 router.get('/villages/:district_id', passport.authenticateJwt, authorizeRoles('penilai', 'admin'), validate(infoValidation.getVillages), infoController.getVillages);
 router.get('/weather/coordinates', passport.authenticateJwt, authorizeRoles('penilai', 'admin'), validate(infoValidation.getWeatherByCoordinates), infoController.getWeatherByCoordinates);
 router.get('/reverse-geocode/nomatim', passport.authenticateJwt, authorizeRoles('penilai', 'admin'), validate(infoValidation.reverseGeocodeNomatim), infoController.reverseGeocodeNomatim);
+router.get('/reverse-geocode/google', passport.authenticateJwt, authorizeRoles('penilai', 'admin'), validate(infoValidation.reverseGeocodeGoogle), infoController.reverseGeocodeGoogle);
 
 router.get('/weather/city/:city_id', passport.authenticateJwt, authorizeRoles('penilai', 'admin'), validate(infoValidation.getWeatherByCityId), infoController.getWeatherByCityId);
 router.get('/reverse-geocode/geocode', passport.authenticateJwt, authorizeRoles('penilai', 'admin'), validate(infoValidation.reverseGeocodeGeocode), infoController.reverseGeocodeGeocode);

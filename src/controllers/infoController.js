@@ -120,6 +120,21 @@ const reverseGeocodeGeocode = async (req, res, next) => {
     }
 };
 
+/**
+ * Reverse geocoding using google maps api.
+ */
+const reverseGeocodeGoogle = async (req, res, next) => {
+    const { lat, lon } = req.query;
+    try {
+        const location = await infoService.reverseGeocodeGoogle(lat, lon);
+        logger.info(`Location retrieved successfully for coordinates: (${lat}, ${lon})`);
+        return res.status(200).json({ status: 200, message: 'Location retrieved successfully', data: location });
+    } catch (error) {
+        logger.error(`Failed to retrieve location for coordinates: (${lat}, ${lon})`, error);
+        return next(error);
+    }
+};
+
 module.exports = {
     getProvinces,
     getRegencies,
@@ -128,5 +143,6 @@ module.exports = {
     getWeatherByCoordinates,
     getWeatherByCityId,
     reverseGeocodeNomatim,
-    reverseGeocodeGeocode
+    reverseGeocodeGeocode,
+    reverseGeocodeGoogle,
 };

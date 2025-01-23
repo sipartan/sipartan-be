@@ -1,4 +1,4 @@
-const { Unauthorized } = require('../utils/response');
+const { Forbidden } = require('../utils/response');
 
 const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
@@ -7,7 +7,7 @@ const authorizeRoles = (...allowedRoles) => {
     if (user && allowedRoles.includes(user.role)) {
       next();
     } else {
-      next(new Unauthorized('Access denied: insufficient privileges'));
+      next(new Forbidden('Access denied: insufficient privileges'));
     }
   };
 };

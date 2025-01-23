@@ -8,9 +8,11 @@ const openWeatherBaseUrl = 'https://api.openweathermap.org/data/2.5';
 const bmkgBaseUrl = 'https://api.bmkg.go.id/publik/prakiraan-cuaca';
 const nominatimBaseUrl = 'https://nominatim.openstreetmap.org/reverse';
 const geocodeBaseUrl = 'https://geocode.maps.co/reverse';
+const googleGeocodeBaseUrl = 'https://maps.googleapis.com/maps/api/geocode/json';
 
 const OPEN_WEATHER_API_KEY = config.apiKeys.openWeather;
 const GEOCODE_API_KEY = config.apiKeys.geocoding;
+const GOOGLE_MAPS_API_KEY = config.apiKeys.googleMaps;
 
 const getProvinces = async () => {
     try {
@@ -33,7 +35,7 @@ const getRegencies = async (province_id) => {
         logger.error(`Failed to retrieve regencies for province ID: ${province_id}`, error.message);
         if (error.status === 404) {
             throw new NotFound(`Regencies with province ID ${province_id} not found`);
-        } 
+        }
         throw new BadRequest('Failed to retrieve regencies');
     }
 };
@@ -42,7 +44,7 @@ const getRegencies = async (province_id) => {
 const getDistricts = async (regency_id) => {
     try {
         const response = await axiosClient.get(`${wilayahBaseUrl}/districts/${regency_id}.json`);
-        response.data;
+        return response.data;
     } catch (error) {
         logger.error(`Failed to retrieve districts for regency ID: ${regency_id}`, error.message);
         if (error.status === 404) {
@@ -57,7 +59,7 @@ const getVillages = async (district_id) => {
         const response = await axiosClient.get(`${wilayahBaseUrl}/villages/${district_id}.json`);
         return response.data;
     } catch (error) {
-        logger.error(`Failed to retrieve villages for district ID: ${district_id}`, error);
+        logger.error(`Failed to retrieve villages for district ID: ${district_id}`, error.message);
         if (error.status === 404) {
             throw new NotFound(`Villages with district ID ${district_id} not found`);
         }
@@ -77,8 +79,8 @@ const getWeatherByCoordinates = async (lat, lon) => {
             },
         });
         if (response.status === 200) {
-        logger.info(`Weather data retrieved successfully for coordinates: (${lat}, ${lon})`);
-        return response.data;
+            logger.info(`Weather data retrieved successfully for coordinates: (${lat}, ${lon})`);
+            return response.data;
         } else {
             throw new BadRequest('Failed to retrieve weather data');
         }
@@ -150,6 +152,55 @@ const reverseGeocodeGeocode = async (lat, lon) => {
     }
 };
 
+const reverseGeocodeGoogle = async (lat, lon) => {
+    try {
+        const response = await axiosClient.get(googleGeocodeBaseUrl, {
+            params: {
+                latlng: `${lat},${lon}`,
+                key: GOOGLE_MAPS_API_KEY,
+                language: 'id',  // Indonesian language for responses
+            },
+        });
+
+        if (response.status === 200 && response.data.status === 'OK') {
+            logger.info(`Google reverse geocoding successful for coordinates: (${lat}, ${lon})`);
+
+            // Extract address components
+            const addressComponents = response.data.results[0].address_components;
+
+            const getComponent = (type) => {
+                const component = addressComponents.find((comp) => comp.types.includes(type));
+                return component ? component.long_name.toUpperCase() : null;
+            };
+
+            // Extract required fields and process kecamatan
+            const desa = getComponent('administrative_area_level_4');
+            let kecamatan = getComponent('administrative_area_level_3');
+            const kabupaten = getComponent('administrative_area_level_2');
+            const provinsi = getComponent('administrative_area_level_1');
+
+            // Remove the word 'KECAMATAN' if present and trim the result
+            if (kecamatan) {
+                kecamatan = kecamatan.replace(/\bKECAMATAN\b/gi, '').trim();
+            }
+
+            const result = {
+                desa,
+                kecamatan,
+                kabupaten,
+                provinsi,
+            };
+
+            return result;
+        } else {
+            throw new BadRequest('Failed to perform reverse geocoding with Google Maps API');
+        }
+    } catch (error) {
+        logger.error(`Failed to perform reverse geocoding (Google Maps API)`, error);
+        throw new BadRequest(error.response?.data?.error_message || 'Failed to perform reverse geocoding with Google Maps API');
+    }
+};
+
 
 module.exports = {
     getProvinces,
@@ -160,4 +211,5 @@ module.exports = {
     getWeatherByCityId,
     reverseGeocodeNomatim,
     reverseGeocodeGeocode,
+    reverseGeocodeGoogle,
 };
