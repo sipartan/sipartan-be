@@ -42,7 +42,16 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(compression());
 app.use(passport.initialize());
-app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+app.use(rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 100,
+  keyGenerator: (req) => req.ip,
+  handler: (req, res) => {
+    logger.warn('Rate limit exceeded:', { ip: req.ip });
+    res.status(429).json({ status: 429, message: 'Too many requests. Please try again in 15 minutes.' });
+  },
+  skip: (req) => process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development',
+}));
 
 // Database initialization
 dbGenerate().catch((err) => {

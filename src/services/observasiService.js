@@ -227,6 +227,7 @@ const getObservasiData = async (filters) => {
                 penggunaan_lahan: observasi.lahan.penggunaan_lahan,
                 latitude: observasi.lahan.latitude,
                 longitude: observasi.lahan.longitude,
+                luasan_lahan: observasi.lahan.luasan_lahan,
                 polygon: observasi.lahan.polygon,
             },
             observasi: {
@@ -318,6 +319,7 @@ const getObservasiDetailData = async (observasi_id) => {
                 penggunaan_lahan: observasi.lahan.penggunaan_lahan,
                 latitude: observasi.lahan.latitude,
                 longitude: observasi.lahan.longitude,
+                luasan_lahan: observasi.lahan.luasan_lahan,
                 polygon: observasi.lahan.polygon,
             },
             observasi: {

@@ -79,6 +79,10 @@ const Lahan = db.define(
         notEmpty: true,
       },
     },
+    luasan_lahan: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
     polygon: {
       type: DataTypes.GEOMETRY("POLYGON"),
       allowNull: true,

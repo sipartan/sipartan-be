@@ -1,34 +1,69 @@
 const User = require("../models/user");
-const bcrypt = require('bcrypt');
-const config = require('../config/config');
-const logger = require('../utils/logger');
+const bcrypt = require("bcrypt");
+const config = require("../config/config");
+const logger = require("../utils/logger");
 
-let users = {
-    nama: config.admin.username,
-    username: config.admin.username,
-    password: config.admin.password,
-    role: 'admin',
-    email: config.admin.email
-};
+const SALT_ROUNDS = parseInt(config.jwt.bcryptSaltRounds, 10);
 
-const seedAdminUser = async () => {
+const users = [
+    {
+        nama: config.seedAccount.admin.username,
+        username: config.seedAccount.admin.username,
+        password: config.seedAccount.admin.password,
+        role: "admin",
+        email: config.seedAccount.admin.email,
+    },
+    {
+        nama: config.seedAccount.penilai.username,
+        username: config.seedAccount.penilai.username,
+        password: config.seedAccount.penilai.password,
+        role: "penilai",
+        email: config.seedAccount.penilai.email,
+    },
+    {
+        nama: config.seedAccount.guest.username,
+        username: config.seedAccount.guest.username,
+        password: config.seedAccount.guest.password,
+        role: "guest",
+        email: config.seedAccount.guest.email,
+    },
+];
+
+const seedUsers = async () => {
     try {
-        const existingUser = await User.findOne({ where: { username: users.username } });
+        // Fetch all existing users in one query
+        const existingUsers = await User.findAll({
+            where: {
+                username: users.map((u) => u.username),
+                email: users.map((u) => u.email),
+            },
+            attributes: ["username", "email"],
+        });
 
-        if (existingUser) {
-            logger.info('Admin user already exists');
-            return;
+        const existingUsernames = new Set(existingUsers.map((u) => u.username));
+        const existingEmails = new Set(existingUsers.map((u) => u.email));
+
+        // Filter out existing users and hash passwords in parallel
+        const newUsers = users
+            .filter((user) => !existingUsernames.has(user.username) && !existingEmails.has(user.email))
+            .map(async (user) => {
+                user.password = await bcrypt.hash(user.password, SALT_ROUNDS);
+                return user;
+            });
+
+        // Wait for password hashing to complete
+        const usersToCreate = await Promise.all(newUsers);
+
+        // Bulk insert new users
+        if (usersToCreate.length > 0) {
+            await User.bulkCreate(usersToCreate);
+            usersToCreate.forEach((user) => logger.info(`${user.role} user seeded successfully`));
+        } else {
+            logger.info("No new users to seed.");
         }
-
-        const salt = bcrypt.genSaltSync(10);
-        users.password = bcrypt.hashSync(users.password, salt);
-
-        await User.create(users);
-
-        logger.info('Admin user seeded successfully');
     } catch (error) {
-        logger.error('Error seeding admin user:', error);
+        logger.error("Error seeding users:", error);
     }
 };
 
-module.exports = seedAdminUser;
+module.exports = seedUsers;

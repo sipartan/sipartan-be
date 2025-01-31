@@ -28,8 +28,7 @@ const getAllLahan = async (req, res, next) => {
 const getDetailLahan = async (req, res, next) => {
     try {
         const { lahan_id } = req.params;
-        const filters = req.query;
-        const result = await lahanService.getDetailLahanData(lahan_id, filters);
+        const result = await lahanService.getDetailLahanData(lahan_id);
         return res
             .status(200)
             .json({ status: 200, message: "Berhasil get single result", data: result });

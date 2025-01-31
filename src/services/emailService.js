@@ -33,7 +33,7 @@ const sendEmail = async (mailOptions) => {
  */
 const sendVerificationEmail = async (user, verificationLink) => {
     const mailOptions = {
-        from: '"sipartan" <sipartan@gmail.com>',
+        from: '"sipartan" <sipartan.dev@gmail.com>',
         to: user.email,
         subject: 'Email Verification',
         html: `
@@ -58,7 +58,7 @@ const sendVerificationEmail = async (user, verificationLink) => {
                         <p style="margin:0;color:#212121;font-size:16px;line-height:24px">
                             Jika Kamu mempunyai pertanyaan atau mengalami kendala, hubungi
                             <a style="text-decoration:none;color:#212121;font-weight:bold" href="mailto:sipartan_support@gmail.com" target="_blank">
-                                sipartan_support@gmail.com
+                                sipartan.dev@gmail.com
                             </a>
                         </p>
                         <div style="font-size:16px;line-height:24px;font-weight:400;color:#424242;margin:32px 0">
@@ -96,7 +96,7 @@ this electronic mail.</span></font></span></em></div></div></div>
  */
 const sendResetPasswordEmail = async (user, resetLink) => {
     const mailOptions = {
-        from: '"sipartan" <sipartan@gmail.com>',
+        from: '"sipartan" <sipartan.dev@gmail.com>',
         to: user.email,
         subject: 'Reset Password',
         html: `
@@ -121,7 +121,7 @@ const sendResetPasswordEmail = async (user, resetLink) => {
                         <p style="margin:0;color:#212121;font-size:16px;line-height:24px">
                             Jika Kamu mempunyai pertanyaan atau mengalami kendala, hubungi
                             <a style="text-decoration:none;color:#212121;font-weight:bold" href="mailto:sipartan_support@gmail.com" target="_blank">
-                                sipartan_support@gmail.com
+                                sipartan.dev@gmail.com
                             </a>
                         </p>
                         <div style="font-size:16px;line-height:24px;font-weight:400;color:#424242;margin:32px 0">

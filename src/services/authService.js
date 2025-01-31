@@ -7,11 +7,11 @@ const config = require('../config/config');
 const logger = require('../utils/logger');
 const { BadRequest, NotFound } = require('../utils/response');
 
-const SALT_ROUNDS = parseInt(config.jwt.bcryptSaltRounds, 10) || 10;
-const SECRET_KEY = config.jwt.secretKey || 'default_secret_key';
-const AUTH_TOKEN_EXPIRATION = config.jwt.authTokenExpiration || '1d';
-const RESET_PASSWORD_TOKEN_EXPIRATION = config.jwt.resetPasswordTokenExpiration || '1h';
-const VERIFY_EMAIL_TOKEN_EXPIRATION = config.jwt.verifyEmailTokenExpiration || '1d';
+const SALT_ROUNDS = parseInt(config.jwt.bcryptSaltRounds, 10);
+const SECRET_KEY = config.jwt.secretKey;
+const AUTH_TOKEN_EXPIRATION = config.jwt.authTokenExpiration;
+const RESET_PASSWORD_TOKEN_EXPIRATION = config.jwt.resetPasswordTokenExpiration;
+const VERIFY_EMAIL_TOKEN_EXPIRATION = config.jwt.verifyEmailTokenExpiration;
 
 /**
  * Registers a new user.
@@ -67,7 +67,7 @@ const loginUser = async (email, password) => {
     try {
         const user = await User.findOne({
             where: { email },
-            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified', 'password']
+            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'is_email_verified', 'password']
         });
         if (!user) {
             logger.warn(`Login failed: Invalid email ${email}`);
@@ -90,7 +90,7 @@ const loginUser = async (email, password) => {
                 email: user.email,
                 username: user.username,
                 role: user.role,
-                isEmailVerified: user.isEmailVerified
+                is_email_verified: user.is_email_verified
             },
             token: token
         }
@@ -142,7 +142,7 @@ const verifyEmail = async (token) => {
             throw new NotFound('User not found.');
         }
 
-        user.isEmailVerified = true;
+        user.is_email_verified = true;
         await user.save();
         logger.info(`Email verified successfully for user ID: ${user.user_id}`);
     } catch (error) {
@@ -183,12 +183,8 @@ const getUserByEmail = async (email) => {
     try {
         const user = await User.findOne({
             where: { email },
-            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified']
+            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'is_email_verified']
         });
-        if (!user) {
-            logger.warn(`User not found with email: ${email}`);
-            throw new NotFound('User not found.');
-        }
 
         return user;
     } catch (error) {
@@ -200,17 +196,30 @@ const getUserByEmail = async (email) => {
 /**
  * Sends a password reset email to the user.
  * @param {string} email - The email address of the user who requested the password reset.
- * @returns {Promise<void>} Resolves when the email has been sent successfully.
+ * @returns {Promise<void>} Resolves when the password reset email has been sent successfully.
  */
 const forgotPassword = async (email) => {
     try {
         const user = await getUserByEmail(email);
+        if (!user) {
+            logger.warn(`Password reset attempt for non-registered email: ${email}`);
+            return;
+        }
+
         const token = generateToken({ id: user.user_id }, RESET_PASSWORD_TOKEN_EXPIRATION);
-        const forgotPasswordLink = `${config.urls.frontend}/auth/reset-password?token=${token}`;
-        await emailService.sendResetPasswordEmail(user, forgotPasswordLink);
-        // logger.info(`Password reset email sent to: ${email}`);
+        const forgotPasswordLink = `${config.urls.frontend}/reset-password?token=${token}`;
+
+        // Fire-and-forget the email sending process
+        emailService.sendResetPasswordEmail(user, forgotPasswordLink)
+            .then(() => {
+                logger.info(`Password reset email sent to: ${email}`);
+            })
+            .catch((error) => {
+                logger.error(`Failed to send password reset email to ${email}:`, error);
+            });
+
     } catch (error) {
-        logger.error('An error occurred while sending the reset password email:', error);
+        logger.error('An error occurred during the forgot password process:', error);
         throw error;
     }
 };
@@ -223,14 +232,30 @@ const forgotPassword = async (email) => {
 const sendVerificationEmail = async (email) => {
     try {
         const user = await getUserByEmail(email);
+
+        if (user.is_email_verified) {
+            logger.warn(`Email ${email} is already verified.`);
+            return { message: 'Email is already verified.' };
+        }
+
         const token = generateToken({ id: user.user_id }, VERIFY_EMAIL_TOKEN_EXPIRATION);
-        const verificationLink = `${config.urls.frontend}/auth/verify-email?token=${token}`;
-        await emailService.sendVerificationEmail(user, verificationLink);
+        const verificationLink = `${config.urls.frontend}/verify-email?token=${token}`;
+
+        // Fire-and-forget the email sending process
+        emailService.sendVerificationEmail(user, verificationLink)
+            .then(() => {
+                logger.info(`Verification email sent to: ${email}`);
+            })
+            .catch((error) => {
+                logger.error(`Failed to send verification email to ${email}:`, error);
+            });
+        return { message: 'Verification email sent. Please check your email to verify your account.' };
     } catch (error) {
-        logger.error('An error occurred while sending the verification email:', error);
+        logger.error('An error occurred during the verification email process:', error);
         throw error;
     }
 };
+
 
 module.exports = {
     registerUser,

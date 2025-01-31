@@ -3,7 +3,7 @@ const Joi = require('joi');
 require('dotenv').config();
 
 const envSchema = Joi.object({
-    // NODE_ENV: Joi.string().valid('development', 'production', 'test').required(),
+    NODE_ENV: Joi.string().valid('development', 'production', 'test').required(),
     PORT: Joi.number().default(3000),
     BASE_URL: Joi.string().uri().required(),
     ADMIN_USERNAME: Joi.string().required(),
@@ -48,10 +48,22 @@ module.exports = {
         port: envVars.PORT,
         baseUrl: envVars.BASE_URL,
     },
-    admin: {
-        username: envVars.ADMIN_USERNAME,
-        password: envVars.ADMIN_PASSWORD,
-        email: envVars.ADMIN_EMAIL,
+    seedAccount: {
+        admin: {
+            username: envVars.ADMIN_USERNAME,
+            password: envVars.ADMIN_PASSWORD,
+            email: envVars.ADMIN_EMAIL,
+        },
+        penilai: {
+            username: envVars.PENILAI_USERNAME,
+            password: envVars.PENILAI_PASSWORD,
+            email: envVars.PENILAI_EMAIL,
+        },
+        guest: {
+            username: envVars.GUEST_USERNAME,
+            password: envVars.GUEST_PASSWORD,
+            email: envVars.GUEST_EMAIL,
+        }
     },
     jwt: {
         secretKey: envVars.SECRETKEY,

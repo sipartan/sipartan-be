@@ -31,14 +31,8 @@ const resetPassword = {
     }).unknown(false),
 };
 
-const sendVerificationEmail = {
-    body: Joi.object().keys({
-        email: Joi.string().email().required(),
-    }).unknown(false),
-};
-
 const verifyEmail = {
-    query: Joi.object().keys({
+    body: Joi.object().keys({
         token: Joi.string().required(),
     }).unknown(false),
 };
@@ -48,6 +42,5 @@ module.exports = {
     login,
     forgotPassword,
     resetPassword,
-    sendVerificationEmail,
     verifyEmail,
 };

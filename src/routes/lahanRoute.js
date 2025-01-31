@@ -20,12 +20,12 @@ router.route("/")
     );
 
 router.route("/:lahan_id")
-    // .get(
-    //     passport.authenticateJwt,
-    //     authorizeRoles("penilai", "admin"),
-    //     validate(lahanValidation.getDetailLahan),
-    //     lahanController.getDetailLahan
-    // )
+    .get(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(lahanValidation.getDetailLahan),
+        lahanController.getDetailLahan
+    )
     .patch(
         passport.authenticateJwt,
         authorizeRoles("penilai", "admin"),

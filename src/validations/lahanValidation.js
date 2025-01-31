@@ -51,6 +51,12 @@ const getAllLahan = {
     }).unknown(false),
 };
 
+const getDetailLahan = {
+    params: Joi.object().keys({
+        lahan_id: Joi.string().guid({ version: ['uuidv4'] }).required(),
+    }).unknown(false),
+};
+
 const editLahan = {
     body: Joi.object().keys({
         lokasi_region: Joi.object().keys({
@@ -90,6 +96,7 @@ const deleteLahan = {
 module.exports = {
     createLahan,
     getAllLahan,
+    getDetailLahan,
     editLahan,
     deleteLahan,
 };

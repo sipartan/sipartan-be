@@ -47,7 +47,7 @@ const User = db.define(
       type: DataTypes.STRING,
       allowNull: true, // Allow null for OAuth users
     },
-    isEmailVerified: {
+    is_email_verified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
@@ -58,11 +58,11 @@ const User = db.define(
         isIn: [['admin', 'penilai', 'guest']],
       },
     },
-    googleId: {
+    google_id: {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    facebookId: {
+    facebook_id: {
       type: DataTypes.STRING,
       allowNull: true,
     },

@@ -29,8 +29,7 @@ const forgotPassword = async (req, res, next) => {
     try {
         const { email } = req.body;
         await authService.forgotPassword(email);
-        logger.info(`Password reset email sent to: ${email}`);
-        res.status(200).json({ status: 200, message: 'Password reset email sent. Please check your email' });
+        res.status(200).json({ status: 200, message: 'If an account exists with this email, a password reset link has been sent' });
     } catch (error) {
         logger.error('Forgot password failed:', error);
         next(error);
@@ -41,7 +40,6 @@ const resetPassword = async (req, res, next) => {
     try {
         const { token, password } = req.body;
         await authService.resetPassword(token, password);
-        logger.info('Password reset successful');
         res.status(200).json({ status: 200, message: 'Password reset successful please log in to your account using your new password' });
     } catch (error) {
         logger.error('Reset password failed:', error);
@@ -51,10 +49,9 @@ const resetPassword = async (req, res, next) => {
 
 const sendVerificationEmail = async (req, res, next) => {
     try {
-        const { email } = req.body;
-        await authService.sendVerificationEmail(email);
-        logger.info(`Verification email sent to: ${email}`);
-        res.status(200).json({ status: 200, message: 'Verification email sent. Please check your email to verify your account.' });
+        const email = req.user.email;
+        const result = await authService.sendVerificationEmail(email);
+        res.status(200).json({ status: 200, message: result.message });
     } catch (error) {
         logger.error('Send verification email failed:', error);
         next(error);
@@ -63,7 +60,7 @@ const sendVerificationEmail = async (req, res, next) => {
 
 const verifyEmail = async (req, res, next) => {
     try {
-        const { token } = req.query;
+        const { token } = req.body;
         await authService.verifyEmail(token);
         logger.info('Email verification successful');
         res.status(200).json({ status: 200, message: 'Email verification successful' });

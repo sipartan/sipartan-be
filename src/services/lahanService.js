@@ -3,6 +3,7 @@ const { NotFound } = require("../utils/response");
 const { Lahan, LokasiRegion, Observasi } = require("../models");
 const { mapHasilPenilaianToSkor, getHasilFromSkor } = require("../utils/karhutlaPenilaian");
 const paginate = require("../utils/pagination");
+const turf = require("@turf/turf");
 const logger = require("../utils/logger");
 
 const createLahanData = async (data) => {
@@ -32,11 +33,14 @@ const createLahanData = async (data) => {
 
     // Prepare polygon if coordinates are provided
     let polygon = null;
+    let luasan_lahan = 0;
     if (coordinates && Array.isArray(coordinates)) {
       logger.info("Formatting coordinates for polygon", { coordinates });
       // lat, long to long, lat
       const formattedCoordinates = coordinates.map((coordinate) => [coordinate[1], coordinate[0]]);
       polygon = { type: "Polygon", coordinates: [formattedCoordinates] };
+      const area = turf.area(polygon);
+      luasan_lahan = area / 10000;
     }
 
     logger.info("Creating new Lahan record", {
@@ -49,9 +53,10 @@ const createLahanData = async (data) => {
       penggunaan_lahan,
       latitude,
       longitude,
+      luasan_lahan,
       polygon,
     });
-    
+
     // Create Lahan record
     const newLahan = await Lahan.create({
       lokasi_region_id: lokasiRegion.lokasi_region_id,
@@ -63,11 +68,32 @@ const createLahanData = async (data) => {
       penggunaan_lahan,
       latitude,
       longitude,
+      luasan_lahan,
       ...(polygon && { polygon }), // Add polygon only if it exists
     });
 
     logger.info("Successfully created Lahan", { lahan_id: newLahan.lahan_id });
-    return newLahan;
+    return {
+      lokasi_region: {
+        provinsi: lokasiRegion.provinsi,
+        kabupaten: lokasiRegion.kabupaten,
+        kecamatan: lokasiRegion.kecamatan,
+        desa: lokasiRegion.desa,
+      },
+      lahan: {
+        lahan_id: newLahan.lahan_id,
+        nama_lahan: newLahan.nama_lahan,
+        tutupan_lahan: newLahan.tutupan_lahan,
+        jenis_vegetasi: newLahan.jenis_vegetasi,
+        jenis_tanah: newLahan.jenis_tanah,
+        tinggi_muka_air_gambut: newLahan.tinggi_muka_air_gambut,
+        penggunaan_lahan: newLahan.penggunaan_lahan,
+        latitude: newLahan.latitude,
+        longitude: newLahan.longitude,
+        luasan_lahan: newLahan.luasan_lahan,
+        polygon: newLahan.polygon || null,
+      },
+    };
   } catch (error) {
     logger.error("Error creating Lahan", { error: error.message });
     throw error;
@@ -188,6 +214,7 @@ const getAllLahanData = async (filters) => {
           penggunaan_lahan: lahan.penggunaan_lahan,
           latitude: lahan.latitude,
           longitude: lahan.longitude,
+          luasan_lahan: lahan.luasan_lahan,
           polygon: lahan.polygon || null,
           observasiTerakhir: latestObservasi
             ? {
@@ -213,54 +240,13 @@ const getAllLahanData = async (filters) => {
   }
 };
 
-const getDetailLahanData = async (lahan_id, filters) => {
+const getDetailLahanData = async (lahan_id) => {
   try {
-    const {
-      page = 1,
-      limit = 10,
-      sortBy = "tanggal_penilaian",
-      order = "DESC",
-      hasil_penilaian,
-      skor_min,
-      skor_max,
-      date_start,
-      date_end,
-    } = filters;
-
-    // Filtering for Observasi
-    const observasiWhere = { lahan_id };
-    if (skor_min && skor_max) {
-      observasiWhere.skor_akhir = { [Op.between]: [parseFloat(skor_min), parseFloat(skor_max)] };
-    } else if (skor_min) {
-      observasiWhere.skor_akhir = { [Op.gte]: parseFloat(skor_min) };
-    } else if (skor_max) {
-      observasiWhere.skor_akhir = { [Op.lte]: parseFloat(skor_max) };
-    }
-    if (hasil_penilaian) {
-      const range = await mapHasilPenilaianToSkor(hasil_penilaian);
-      if (range) {
-        observasiWhere.skor_akhir = { [Op.between]: [range.min, range.max] };
-      }
-    }
-    if (date_start && date_end) {
-      observasiWhere.createdAt = { [Op.between]: [new Date(date_start), new Date(date_end)] };
-    }
-
-    // Query to fetch data
-    const lahan = await Lahan.findOne({
-      where: { lahan_id },
+    const lahan = await Lahan.findByPk(lahan_id, {
       include: [
         {
           model: LokasiRegion,
-          attributes: ["provinsi", "kabupaten", "kecamatan", "desa"],
-        },
-        {
-          model: Observasi,
-          where: observasiWhere,
-          required: false,
-          order: [[sortBy, order]],
-          offset: (page - 1) * limit,
-          limit: parseInt(limit),
+          attributes: ["lokasi_region_id", "provinsi", "kabupaten", "kecamatan", "desa"],
         },
       ],
     });
@@ -270,8 +256,7 @@ const getDetailLahanData = async (lahan_id, filters) => {
       throw new NotFound(`Lahan with ID ${lahan_id} not found`);
     }
 
-    // Transforming the data
-    const transformedData = {
+    return {
       lokasi_region: {
         provinsi: lahan.lokasi_region.provinsi,
         kabupaten: lahan.lokasi_region.kabupaten,
@@ -279,6 +264,7 @@ const getDetailLahanData = async (lahan_id, filters) => {
         desa: lahan.lokasi_region.desa,
       },
       lahan: {
+        lahan_id: lahan.lahan_id,
         nama_lahan: lahan.nama_lahan,
         tutupan_lahan: lahan.tutupan_lahan,
         jenis_vegetasi: lahan.jenis_vegetasi,
@@ -288,22 +274,12 @@ const getDetailLahanData = async (lahan_id, filters) => {
         penggunaan_lahan: lahan.penggunaan_lahan,
         latitude: lahan.latitude,
         longitude: lahan.longitude,
-        polygon: lahan.polygon,
-        observasiList: lahan.observasis.map((observasi) => ({
-          jenis_karhutla: observasi.jenis_karhutla,
-          temperatur: observasi.temperatur,
-          curah_hujan: observasi.curah_hujan,
-          kelembapan_udara: observasi.kelembapan_udara,
-          tanggal_kejadian: observasi.tanggal_kejadian,
-          tanggal_penilaian: observasi.tanggal_penilaian,
-          skor_akhir: observasi.skor_akhir,
-          hasil_penilaian: getHasilFromSkor(observasi.skor_akhir),
-        })),
+        luasan_lahan: lahan.luasan_lahan,
+        polygon: lahan.polygon || null,
       },
     };
-
-    return transformedData;
-  } catch (error) {
+  }
+  catch (error) {
     logger.error("Error fetching Lahan data", { lahan_id, error: error.message });
     throw error;
   }
@@ -337,20 +313,59 @@ const editLahanData = async (lahan_id, data) => {
       // convert coordinates to a Polygon
       const formattedCoordinates = lahanData.coordinates.map((coord) => [coord[1], coord[0]]);
       lahanData.polygon = { type: "Polygon", coordinates: [formattedCoordinates] };
+      const area = turf.area(lahanData.polygon);
+      lahanData.luasan_lahan = area / 10000;
       delete lahanData.coordinates; // remove coordinates to avoid Sequelize error
+    }
+
+    
+    // step 3: Update related LokasiRegion if provided
+    if (data.lokasi_region) {
+      logger.info("Updating LokasiRegion", { lahan_id, lokasi_region: data.lokasi_region });
+      
+      const existingRegion = lahan.lokasi_region;
+
+      const updatedRegion = {
+        provinsi: data.lokasi_region.provinsi || existingRegion.provinsi,
+        kabupaten: data.lokasi_region.kabupaten || existingRegion.kabupaten,
+        kecamatan: data.lokasi_region.kecamatan || existingRegion.kecamatan,
+        desa: data.lokasi_region.desa || existingRegion.desa,
+      }
+
+      const [lokasiRegion] = await LokasiRegion.findOrCreate({
+        where: updatedRegion,
+        defaults: updatedRegion,
+      });
+
+      lahanData.lokasi_region_id = lokasiRegion.lokasi_region_id;
     }
 
     await lahan.update(lahanData);
     logger.info("Updated Lahan data", { lahan_id });
 
-    // step 3: Update related LokasiRegion if provided
-    if (data.lokasi_region) {
-      logger.info("Updating LokasiRegion", { lahan_id, lokasi_region: data.lokasi_region });
-      await lahan.lokasi_region.update(data.lokasi_region);
-    }
-
     logger.info("Successfully edited Lahan", { lahan_id });
-    return lahan;
+    return {
+      lokasi_region: {
+        provinsi: lahan.lokasi_region.provinsi,
+        kabupaten: lahan.lokasi_region.kabupaten,
+        kecamatan: lahan.lokasi_region.kecamatan,
+        desa: lahan.lokasi_region.desa,
+      },
+      lahan: {
+        lahan_id: lahan.lahan_id,
+        nama_lahan: lahan.nama_lahan,
+        tutupan_lahan: lahan.tutupan_lahan,
+        jenis_vegetasi: lahan.jenis_vegetasi,
+        jenis_tanah: lahan.jenis_tanah,
+        tinggi_muka_air_gambut: lahan.tinggi_muka_air_gambut,
+        jenis_karhutla: lahan.jenis_karhutla,
+        penggunaan_lahan: lahan.penggunaan_lahan,
+        latitude: lahan.latitude,
+        longitude: lahan.longitude,
+        luasan_lahan: lahan.luasan_lahan,
+        polygon: lahan.polygon || null,
+      },
+    }
   } catch (error) {
     logger.error("Error updating Lahan", { lahan_id, error: error.message });
     throw error;

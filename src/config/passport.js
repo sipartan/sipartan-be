@@ -17,7 +17,7 @@ passport.use(
     new JwtStrategy(jwtOpts, async (jwt_payload, done) => {
         try {
             const user = await User.findByPk(jwt_payload.id,
-                { attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified'] }
+                { attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'is_email_verified'] }
             );
             if (user) {
                 return done(null, user);
@@ -49,18 +49,22 @@ passport.use(
         {
             clientID: config.oauth.google.clientId,
             clientSecret: config.oauth.google.clientSecret,
-            callbackURL: `${config.env.baseUrl}/auth/google/callback`, // TODO: Change this in the future with the actual baseUrl
+            callbackURL: `${config.env.baseUrl}/auth/google/callback`,
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                let user = await User.findOne({ where: { googleId: profile.id }, attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified'] });
+                let user = await User.findOne({
+                    where: { google_id: profile.id },
+                    attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'is_email_verified'],
+                });
+
                 if (!user) {
                     user = await User.create({
                         nama: profile.displayName,
                         username: profile.displayName,
                         email: profile.emails[0].value,
-                        googleId: profile.id,
-                        isEmailVerified: true,
+                        google_id: profile.id,
+                        is_email_verified: true,
                         role: 'guest',
                     });
                 }
@@ -71,6 +75,7 @@ passport.use(
         }
     )
 );
+
 
 // Facebook Strategy
 passport.use(
@@ -83,14 +88,17 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                let user = await User.findOne({ where: { facebookId: profile.id }, attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified'] });
+                let user = await User.findOne({
+                    where: { facebook_id: profile.id },
+                    attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'is_email_verified'],
+                });
                 if (!user) {
                     user = await User.create({
                         nama: profile.displayName,
                         username: profile.displayName,
                         email: profile.emails[0].value,
-                        facebookId: profile.id,
-                        isEmailVerified: true,
+                        facebook_id: profile.id,
+                        is_email_verified: true,
                         role: 'guest',
                     });
                 }

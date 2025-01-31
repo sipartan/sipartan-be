@@ -1,7 +1,7 @@
 const User = require('../models/user');
 const { Op } = require('sequelize');
 const paginate = require('../utils/pagination');
-const { NotFound, BadRequest, Unauthorized } = require('../utils/response');
+const { NotFound, BadRequest, Forbidden } = require('../utils/response');
 const bcrypt = require('bcrypt');
 const config = require('../config/config');
 const logger = require('../utils/logger');
@@ -24,7 +24,7 @@ const getUsers = async (query = {}) => {
 
         const options = {
             where,
-            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'createdAt', 'isEmailVerified'],
+            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'createdAt', 'is_email_verified'],
             order: [[sortBy, order.toUpperCase()]],
             page: parseInt(page, 10),
             limit: parseInt(limit, 10),
@@ -82,12 +82,12 @@ const createUser = async (data) => {
 const getUserById = async (userId, authenticatedUser) => {
     if (authenticatedUser.role !== 'admin' && authenticatedUser.user_id !== userId) {
         logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
-        throw new Unauthorized('Access denied.');
+        throw new Forbidden('Access denied.');
     }
 
     try {
         const user = await User.findByPk(userId, {
-            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified', 'createdAt', 'updatedAt'],
+            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'is_email_verified', 'createdAt', 'updatedAt'],
         });
 
         if (!user) {
@@ -113,12 +113,12 @@ const getUserById = async (userId, authenticatedUser) => {
 const updateUser = async (userId, data, authenticatedUser) => {
     if (authenticatedUser.role !== 'admin' && authenticatedUser.user_id !== userId) {
         logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
-        throw new Unauthorized('Access denied.');
+        throw new Forbidden('Access denied.');
     }
 
     try {
-        const user = await User.findByPk(userId, 
-            { attributes: [ 'user_id', 'nama', 'instansi', 'email', 'username'] }
+        const user = await User.findByPk(userId,
+            { attributes: ['user_id', 'nama', 'instansi', 'email', 'username'] }
         );
         if (!user) {
             logger.warn(`User not found with ID: ${userId}`);
@@ -143,7 +143,7 @@ const updateUser = async (userId, data, authenticatedUser) => {
 const deleteUser = async (userId, authenticatedUser) => {
     if (authenticatedUser.role !== 'admin' && authenticatedUser.user_id !== userId) {
         logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
-        throw new Unauthorized('Access denied.');
+        throw new Forbidden('Access denied.');
     }
 
     try {
@@ -171,19 +171,19 @@ const deleteUser = async (userId, authenticatedUser) => {
 const verifyUserRole = async (userId, role, authenticatedUser) => {
     if (authenticatedUser.role !== 'admin') {
         logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
-        throw new Unauthorized('Access denied.');
+        throw new Forbidden('Access denied.');
     }
 
     try {
         const user = await User.findByPk(userId, {
-            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'isEmailVerified'],
+            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'is_email_verified'],
         });
         if (!user) {
             logger.warn(`User not found with ID: ${userId}`);
             throw new NotFound('User not found.');
         }
 
-        if (!user.isEmailVerified) {
+        if (!user.is_email_verified) {
             logger.warn(`User email not verified for user ID: ${userId}`);
             throw new BadRequest('User email not verified.');
         }
@@ -203,5 +203,5 @@ module.exports = {
     getUserById,
     updateUser,
     deleteUser,
-    verifyUserRole,
+    verifyUserRole
 };
