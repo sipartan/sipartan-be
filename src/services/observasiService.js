@@ -347,7 +347,7 @@ const getObservasiDetailData = async (observasi_id) => {
                         variable: po.penilaian.variable,
                         kategori: po.penilaian.kategori,
                         deskripsi: po.penilaian.deskripsi,
-                        image: po.dokumentasis.map((doc) => `${BASE_URL}/observasi/dokumentasi/${doc.dokumentasi_id}`),
+                        dokumentasi_ids: po.dokumentasis.map((doc) => doc.dokumentasi_id),
                     })),
                 })),
             },
@@ -443,7 +443,7 @@ const editPlotData = async (plot_id, updatedData) => {
 
         // 2. Find the related observasi
         const observasi = await Observasi.findByPk(plot.observasi_id, { transaction });
-        
+
         if (!observasi) {
             logger.warn("Observasi not found for plot", { plot_id });
             throw new NotFound(`Observasi not found for plot with id ${plot_id}`);
