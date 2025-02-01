@@ -55,12 +55,12 @@ const editObservasi = {
         observasi_id: Joi.string().guid({ version: ['uuidv4'] }).required(),
     }).unknown(false),
     body: Joi.object().keys({
-        jenis_karhutla: Joi.string().required(),
-        temperatur: Joi.number().required(),
-        curah_hujan: Joi.number().required(),
-        kelembapan_udara: Joi.number().required(),
-        tanggal_kejadian: Joi.date().iso().required(),
-        tanggal_penilaian: Joi.date().iso().required(),
+        jenis_karhutla: Joi.string().optional(),
+        temperatur: Joi.number().optional(),
+        curah_hujan: Joi.number().optional(),
+        kelembapan_udara: Joi.number().optional(),
+        tanggal_kejadian: Joi.date().iso().optional(),
+        tanggal_penilaian: Joi.date().iso().optional(),
     }).unknown(false),
 };
 

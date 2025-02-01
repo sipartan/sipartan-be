@@ -2,6 +2,7 @@ const { Op } = require("sequelize");
 const { NotFound } = require("../utils/response");
 const { Lahan, LokasiRegion, Observasi } = require("../models");
 const { mapHasilPenilaianToSkor, getHasilFromSkor } = require("../utils/karhutlaPenilaian");
+const { deleteObservasiData } = require("./observasiService");
 const paginate = require("../utils/pagination");
 const turf = require("@turf/turf");
 const logger = require("../utils/logger");
@@ -289,7 +290,7 @@ const editLahanData = async (lahan_id, data) => {
   try {
     logger.info("Editing Lahan data", { lahan_id, data });
 
-    // step 1: Find the existing Lahan
+    // Step 1: Find the existing Lahan including its LokasiRegion
     const lahan = await Lahan.findByPk(lahan_id, {
       include: [
         {
@@ -306,50 +307,54 @@ const editLahanData = async (lahan_id, data) => {
 
     logger.info("Found Lahan", { lahan_id });
 
-    // step 2: Update Lahan data
+    // Step 2: Update Lahan data
     const lahanData = data.lahan || {};
     if (lahanData.coordinates) {
       logger.info("Formatting coordinates to polygon", { coordinates: lahanData.coordinates });
-      // convert coordinates to a Polygon
+
+      // Convert coordinates to a Polygon
       const formattedCoordinates = lahanData.coordinates.map((coord) => [coord[1], coord[0]]);
       lahanData.polygon = { type: "Polygon", coordinates: [formattedCoordinates] };
       const area = turf.area(lahanData.polygon);
       lahanData.luasan_lahan = area / 10000;
-      delete lahanData.coordinates; // remove coordinates to avoid Sequelize error
+      delete lahanData.coordinates; // Remove coordinates to avoid Sequelize error
     }
 
-    
-    // step 3: Update related LokasiRegion if provided
+    let updatedLokasiRegion = lahan.lokasi_region; // Default to the existing region
+
+    // Step 3: Update related LokasiRegion if provided
     if (data.lokasi_region) {
       logger.info("Updating LokasiRegion", { lahan_id, lokasi_region: data.lokasi_region });
-      
-      const existingRegion = lahan.lokasi_region;
 
       const updatedRegion = {
-        provinsi: data.lokasi_region.provinsi || existingRegion.provinsi,
-        kabupaten: data.lokasi_region.kabupaten || existingRegion.kabupaten,
-        kecamatan: data.lokasi_region.kecamatan || existingRegion.kecamatan,
-        desa: data.lokasi_region.desa || existingRegion.desa,
-      }
+        provinsi: data.lokasi_region.provinsi || lahan.lokasi_region?.provinsi,
+        kabupaten: data.lokasi_region.kabupaten || lahan.lokasi_region?.kabupaten,
+        kecamatan: data.lokasi_region.kecamatan || lahan.lokasi_region?.kecamatan,
+        desa: data.lokasi_region.desa || lahan.lokasi_region?.desa,
+      };
 
+      // Find or create new LokasiRegion
       const [lokasiRegion] = await LokasiRegion.findOrCreate({
         where: updatedRegion,
         defaults: updatedRegion,
       });
 
       lahanData.lokasi_region_id = lokasiRegion.lokasi_region_id;
+      updatedLokasiRegion = lokasiRegion; // Use the newly created or found region in the return data
     }
 
+    // Update Lahan in place
     await lahan.update(lahanData);
     logger.info("Updated Lahan data", { lahan_id });
 
     logger.info("Successfully edited Lahan", { lahan_id });
+
     return {
       lokasi_region: {
-        provinsi: lahan.lokasi_region.provinsi,
-        kabupaten: lahan.lokasi_region.kabupaten,
-        kecamatan: lahan.lokasi_region.kecamatan,
-        desa: lahan.lokasi_region.desa,
+        provinsi: updatedLokasiRegion.provinsi,
+        kabupaten: updatedLokasiRegion.kabupaten,
+        kecamatan: updatedLokasiRegion.kecamatan,
+        desa: updatedLokasiRegion.desa,
       },
       lahan: {
         lahan_id: lahan.lahan_id,
@@ -365,7 +370,7 @@ const editLahanData = async (lahan_id, data) => {
         luasan_lahan: lahan.luasan_lahan,
         polygon: lahan.polygon || null,
       },
-    }
+    };
   } catch (error) {
     logger.error("Error updating Lahan", { lahan_id, error: error.message });
     throw error;

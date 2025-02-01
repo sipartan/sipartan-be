@@ -53,28 +53,36 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                let user = await User.findOne({
+                const [user, created] = await User.findOrCreate({
                     where: { google_id: profile.id },
-                    attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'is_email_verified'],
-                });
-
-                if (!user) {
-                    user = await User.create({
+                    defaults: {
                         nama: profile.displayName,
                         username: profile.displayName,
                         email: profile.emails[0].value,
                         google_id: profile.id,
                         is_email_verified: true,
                         role: 'guest',
-                    });
-                }
-                return done(null, user);
+                    },
+                });
+
+                const filteredUser = {
+                    user_id: user.user_id,
+                    nama: user.nama,
+                    instansi: user.instansi,
+                    email: user.email,
+                    username: user.username,
+                    role: user.role,
+                    is_email_verified: user.is_email_verified,
+                };
+
+                return done(null, filteredUser);
             } catch (err) {
                 return done(err, false);
             }
         }
     )
 );
+
 
 
 // Facebook Strategy
@@ -88,21 +96,30 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                let user = await User.findOne({
+                const [user, created] = await User.findOrCreate({
                     where: { facebook_id: profile.id },
-                    attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'is_email_verified'],
-                });
-                if (!user) {
-                    user = await User.create({
+                    defaults: {
                         nama: profile.displayName,
                         username: profile.displayName,
-                        email: profile.emails[0].value,
+                        email: profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null,
                         facebook_id: profile.id,
                         is_email_verified: true,
                         role: 'guest',
-                    });
-                }
-                return done(null, user);
+                    },
+                });
+
+                // Manually filter the attributes before returning
+                const filteredUser = {
+                    user_id: user.user_id,
+                    nama: user.nama,
+                    instansi: user.instansi,
+                    email: user.email,
+                    username: user.username,
+                    role: user.role,
+                    is_email_verified: user.is_email_verified,
+                };
+
+                return done(null, filteredUser);
             } catch (err) {
                 return done(err, false);
             }

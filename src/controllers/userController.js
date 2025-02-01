@@ -70,7 +70,7 @@ const deleteUser = async (req, res, next) => {
  */
 const verifyUserRole = async (req, res, next) => {
   try {
-    const user = await userService.verifyUserRole(req.params.user_id, req.body.role, req.user);
+    const user = await userService.verifyUserRole(req.params.user_id, req.body.role);
     logger.info(`User role verified successfully: ${req.params.user_id}`);
     return res
       .status(200)

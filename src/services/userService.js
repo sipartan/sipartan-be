@@ -117,16 +117,38 @@ const updateUser = async (userId, data, authenticatedUser) => {
     }
 
     try {
-        const user = await User.findByPk(userId,
-            { attributes: ['user_id', 'nama', 'instansi', 'email', 'username'] }
-        );
+        // Fetch existing user
+        const user = await User.findByPk(userId, {
+            attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'is_email_verified']
+        });
+
         if (!user) {
             logger.warn(`User not found with ID: ${userId}`);
             throw new NotFound('User not found.');
         }
 
+        // Check if email or username already exists (excluding the current user)
+        if (data.email) {
+            const existingEmailUser = await User.findOne({ where: { email: data.email, user_id: { [Op.ne]: userId } } });
+            if (existingEmailUser) {
+                logger.warn(`Email already exists: ${data.email}`);
+                throw new BadRequest('Email or username is already in use.');
+            }
+            data.is_email_verified = false; // Reset email verification status
+        }
+
+        if (data.username) {
+            const existingUsernameUser = await User.findOne({ where: { username: data.username, user_id: { [Op.ne]: userId } } });
+            if (existingUsernameUser) {
+                logger.warn(`Username already exists: ${data.username}`);
+                throw new BadRequest('Email or username is already in use.');
+            }
+        }
+
+        // Update the user data
         await user.update(data);
         logger.info(`User updated successfully: ${userId}`);
+
         return user;
     } catch (error) {
         logger.error('An error occurred while updating the user:', error);
@@ -168,12 +190,7 @@ const deleteUser = async (userId, authenticatedUser) => {
  * @param {Object} authenticatedUser - Authenticated user's data.
  * @returns {Promise<Object>} The updated user data.
  */
-const verifyUserRole = async (userId, role, authenticatedUser) => {
-    if (authenticatedUser.role !== 'admin') {
-        logger.warn(`Access denied for user ID: ${authenticatedUser.user_id}`);
-        throw new Forbidden('Access denied.');
-    }
-
+const verifyUserRole = async (userId, role) => {
     try {
         const user = await User.findByPk(userId, {
             attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'is_email_verified'],

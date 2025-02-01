@@ -364,12 +364,20 @@ const editObservasiData = async (observasi_id, updatedData) => {
     const transaction = await db.transaction();
 
     try {
-        logger
         const observasi = await Observasi.findOne({ where: { observasi_id }, transaction });
 
         if (!observasi) {
             logger.warn("Observasi not found", { observasi_id });
             throw new NotFound(`Observasi with ID ${observasi_id} not found`);
+        }
+
+        const tanggalKejadian = new Date(observasi.tanggal_kejadian);
+        const now = new Date();
+        const diffInDays = Math.floor((now - tanggalKejadian) / (1000 * 60 * 60 * 24));
+
+        if (diffInDays > 6) {
+            logger.warn("Edit denied: Observasi is older than 6 days", { observasi_id });
+            throw new BadRequest(`Observasi cannot be edited as more than 6 days have passed since tanggal_kejadian.`);
         }
 
         logger.info("Editing observasi data", { observasi_id });
@@ -435,12 +443,23 @@ const editPlotData = async (plot_id, updatedData) => {
 
         // 2. Find the related observasi
         const observasi = await Observasi.findByPk(plot.observasi_id, { transaction });
+        
         if (!observasi) {
             logger.warn("Observasi not found for plot", { plot_id });
             throw new NotFound(`Observasi not found for plot with id ${plot_id}`);
         }
 
-        // 3. Update the polygon if coordinates are provided
+        // 3. Check if 6 days have passed since tanggal_kejadian
+        const tanggalKejadian = new Date(observasi.tanggal_kejadian);
+        const now = new Date();
+        const diffInDays = Math.floor((now - tanggalKejadian) / (1000 * 60 * 60 * 24));
+
+        if (diffInDays > 6) {
+            logger.warn("Edit denied: Plot is part of an Observasi older than 6 days", { plot_id });
+            throw new BadRequest(`Plot cannot be edited as more than 6 days have passed since tanggal_kejadian.`);
+        }
+
+        // 4. Update the polygon if coordinates are provided
         let totalArea = observasi.luasan_karhutla;
 
         if (coordinates) {
@@ -463,42 +482,42 @@ const editPlotData = async (plot_id, updatedData) => {
             totalArea = allPlots.reduce((sum, p) => sum + (p.luasan_plot || 0), 0);
         }
 
-        // 4. Update or create PenilaianObservasi entries if penilaianList is provided
+        // 5. Update or create PenilaianObservasi entries if penilaianList is provided
         let totalScore = observasi.skor_akhir;
         if (penilaianList) {
             logger.info("Updating penilaian list for plot", { plot_id, penilaianList });
             for (const penilaian of penilaianList) {
-            const { penilaian_observasi_id, penilaian_id } = penilaian;
+                const { penilaian_observasi_id, penilaian_id } = penilaian;
 
-            // Check if penilaian_id exists
-            const penilaianExists = await Penilaian.findByPk(penilaian_id, { transaction });
-            if (!penilaianExists) {
-                logger.warn("Penilaian not found", { penilaian_id });
-                throw new NotFound(`Penilaian with ID ${penilaian_id} not found`);
-            }
-
-            if (penilaian_observasi_id) {
-                // Update existing PenilaianObservasi
-                const existingPenilaianObservasi = await PenilaianObservasi.findOne({
-                where: { penilaian_observasi_id, plot_id },
-                transaction,
-                });
-                if (existingPenilaianObservasi) {
-                await existingPenilaianObservasi.update({ penilaian_id }, { transaction });
-                } else {
-                logger.warn("PenilaianObservasi not found", { penilaian_observasi_id, plot_id });
-                throw new NotFound(`PenilaianObservasi with id ${penilaian_observasi_id} and plot_id ${plot_id} not found`);
+                // Check if penilaian_id exists
+                const penilaianExists = await Penilaian.findByPk(penilaian_id, { transaction });
+                if (!penilaianExists) {
+                    logger.warn("Penilaian not found", { penilaian_id });
+                    throw new NotFound(`Penilaian with ID ${penilaian_id} not found`);
                 }
-            } else {
-                // Create a new PenilaianObservasi if penilaian_observasi_id is not provided
-                await PenilaianObservasi.create(
-                {
-                    plot_id,
-                    penilaian_id,
-                },
-                { transaction }
-                );
-            }
+
+                if (penilaian_observasi_id) {
+                    // Update existing PenilaianObservasi
+                    const existingPenilaianObservasi = await PenilaianObservasi.findOne({
+                        where: { penilaian_observasi_id, plot_id },
+                        transaction,
+                    });
+                    if (existingPenilaianObservasi) {
+                        await existingPenilaianObservasi.update({ penilaian_id }, { transaction });
+                    } else {
+                        logger.warn("PenilaianObservasi not found", { penilaian_observasi_id, plot_id });
+                        throw new NotFound(`PenilaianObservasi with id ${penilaian_observasi_id} and plot_id ${plot_id} not found`);
+                    }
+                } else {
+                    // Create a new PenilaianObservasi if penilaian_observasi_id is not provided
+                    await PenilaianObservasi.create(
+                        {
+                            plot_id,
+                            penilaian_id,
+                        },
+                        { transaction }
+                    );
+                }
             }
 
             // Recalculate the overall score
@@ -507,7 +526,7 @@ const editPlotData = async (plot_id, updatedData) => {
             totalScore = allPlots.reduce((sum, p) => sum + (p.skor || 0), 0) / allPlots.length;
         }
 
-        // 5. Update the observasi with recalculated values (if needed)
+        // 6. Update the observasi with recalculated values (if needed)
         if (coordinates || penilaianList) {
             logger.info("Updating observasi with recalculated values", { observasi_id: observasi.observasi_id, totalScore, totalArea });
             await observasi.update(
