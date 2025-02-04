@@ -3,14 +3,11 @@ const db = require("../config/database");
 const { Op } = require("sequelize");
 const turf = require("@turf/turf");
 const { deleteDokumentasiData } = require("./dokumentasiService");
-const config = require("../config/config");
 const paginate = require("../utils/pagination");
 const { mapHasilPenilaianToSkor, getHasilFromSkor } = require("../utils/karhutlaPenilaian");
 const { NotFound } = require("../utils/response");
 const downloadPDFReport = require("../utils/generateReport/index");
 const logger = require("../utils/logger");
-
-const BASE_URL = config.env.baseUrl;
 
 const createObservasiData = async (newDataObservasi) => {
     const transaction = await db.transaction();
@@ -64,7 +61,7 @@ const createObservasiData = async (newDataObservasi) => {
             const coordinates = plot.coordinates.map((coord) => [coord[1], coord[0]]);
             const polygonGeoJSON = { type: "Polygon", coordinates: [coordinates] };
             const area = turf.area(polygonGeoJSON);
-            const luasan_plot = (area / 10000).toFixed(2);
+            const luasan_plot = parseFloat((area / 10000).toFixed(2));
 
             totalLuasanKarhutla += luasan_plot;
 
@@ -487,7 +484,7 @@ const editPlotData = async (plot_id, updatedData) => {
 
             // Calculate the new area (luasan_plot) in hectares
             const area = turf.area(polygonGeoJSON);
-            const luasan_plot = (area / 10000).toFixed(2);
+            const luasan_plot = parseFloat((area / 10000).toFixed(2));
 
             // Update the plot polygon and area
             await plot.update({ polygon: polygonGeoJSON, luasan_plot }, { transaction });

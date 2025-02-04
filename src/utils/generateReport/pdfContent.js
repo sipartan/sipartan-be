@@ -1,6 +1,3 @@
-// NOTE: No longer needed because we fetch from the new data structure, not from DB
-// const Penilaian = require("../../models/penilaian");
-
 const formatDate = (dateString) => {
     const date = new Date(dateString);
   
@@ -39,8 +36,6 @@ const formatDate = (dateString) => {
       if (pen.kategori === kategoriPenilaian) {
         penilaianVariabel.variable = pen.variable;
         penilaianVariabel.deskripsi = pen.deskripsi || "";
-        // We keep overwriting if multiple match. 
-        // If you want the first match only, you can break here.
       }
     }
   
@@ -59,7 +54,7 @@ const formatDate = (dateString) => {
   const pdfContent = async (data) => {
     /**
      * 1) Convert the new data structure into the old variable names 
-     *    so we can keep the same HTML placeholders.
+     *    so can keep the same HTML placeholders.
      */
     const dataPDF = {};
   
@@ -90,15 +85,11 @@ const formatDate = (dateString) => {
     dataPDF.tutupan_lahan = data.lahan?.tutupan_lahan || "-";
     dataPDF.tinggi_muka_air_gambut = data.lahan?.tinggi_muka_air_gambut || "-";
   
-    // Plots (formerly "single_plot")
     dataPDF.single_plot = (data.observasi?.plots || []).map((plot) => {
       return {
-        // Keep the old "luas_plot" name so the HTML remains unchanged
         luas_plot: plot.luasan_plot,
         skor_plot: plot.skor_plot,
         hasil_plot: plot.hasil_plot,
-        // We'll call the new penilaian array penilaianIdsSinglePlot 
-        // so the HTML that calls findPenilaian(..., plot.penilaianIdsSinglePlot) remains valid
         penilaianIdsSinglePlot: plot.penilaianList || [],
       };
     });
