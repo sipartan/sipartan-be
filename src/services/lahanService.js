@@ -15,11 +15,7 @@ const createLahanData = async (data) => {
       lokasi_region: { provinsi, kabupaten, kecamatan, desa },
       lahan: {
         nama_lahan,
-        tutupan_lahan,
-        jenis_vegetasi,
         jenis_tanah,
-        tinggi_muka_air_gambut,
-        penggunaan_lahan,
         latitude,
         longitude,
         coordinates,
@@ -37,7 +33,7 @@ const createLahanData = async (data) => {
     let luasan_lahan = 0;
     if (coordinates && Array.isArray(coordinates)) {
       logger.info("Formatting coordinates for polygon", { coordinates });
-      // lat, long to long, lat
+      // Convert [lat, long] to [long, lat]
       const formattedCoordinates = coordinates.map((coordinate) => [coordinate[1], coordinate[0]]);
       polygon = { type: "Polygon", coordinates: [formattedCoordinates] };
       const area = turf.area(polygon);
@@ -47,30 +43,21 @@ const createLahanData = async (data) => {
     logger.info("Creating new Lahan record", {
       lokasi_region_id: lokasiRegion.lokasi_region_id,
       nama_lahan,
-      tutupan_lahan,
-      jenis_vegetasi,
       jenis_tanah,
-      tinggi_muka_air_gambut,
-      penggunaan_lahan,
       latitude,
       longitude,
       luasan_lahan,
       polygon,
     });
 
-    // Create Lahan record
     const newLahan = await Lahan.create({
       lokasi_region_id: lokasiRegion.lokasi_region_id,
       nama_lahan,
-      tutupan_lahan,
-      jenis_vegetasi,
       jenis_tanah,
-      tinggi_muka_air_gambut: tinggi_muka_air_gambut || 0,
-      penggunaan_lahan,
       latitude,
       longitude,
       luasan_lahan,
-      ...(polygon && { polygon }), // Add polygon only if it exists
+      ...(polygon && { polygon }),
     });
 
     logger.info("Successfully created Lahan", { lahan_id: newLahan.lahan_id });
@@ -84,11 +71,7 @@ const createLahanData = async (data) => {
       lahan: {
         lahan_id: newLahan.lahan_id,
         nama_lahan: newLahan.nama_lahan,
-        tutupan_lahan: newLahan.tutupan_lahan,
-        jenis_vegetasi: newLahan.jenis_vegetasi,
         jenis_tanah: newLahan.jenis_tanah,
-        tinggi_muka_air_gambut: newLahan.tinggi_muka_air_gambut,
-        penggunaan_lahan: newLahan.penggunaan_lahan,
         latitude: newLahan.latitude,
         longitude: newLahan.longitude,
         luasan_lahan: newLahan.luasan_lahan,
@@ -137,7 +120,7 @@ const getAllLahanData = async (filters) => {
     if (kecamatan) regionWhere.kecamatan = kecamatan;
     if (desa) regionWhere.desa = desa;
 
-    // filtering for Observasi
+    // Filtering for Observasi
     const observasiWhere = {};
     if (skor_min || skor_max) {
       observasiWhere.skor_akhir = {
@@ -192,7 +175,6 @@ const getAllLahanData = async (filters) => {
     logger.info("Executing query with options", { options });
     const result = await paginate(Lahan, options);
 
-    // Transforming the data
     logger.info("Transforming fetched data");
     result.results = result.results.map((lahan) => {
       const latestObservasi = lahan.observasis[0];
@@ -207,27 +189,28 @@ const getAllLahanData = async (filters) => {
         lahan: {
           lahan_id: lahan.lahan_id,
           nama_lahan: lahan.nama_lahan,
-          tutupan_lahan: lahan.tutupan_lahan,
-          jenis_vegetasi: lahan.jenis_vegetasi,
           jenis_tanah: lahan.jenis_tanah,
-          tinggi_muka_air_gambut: lahan.tinggi_muka_air_gambut,
           jenis_karhutla: lahan.jenis_karhutla,
-          penggunaan_lahan: lahan.penggunaan_lahan,
           latitude: lahan.latitude,
           longitude: lahan.longitude,
           luasan_lahan: lahan.luasan_lahan,
           polygon: lahan.polygon || null,
           observasiTerakhir: latestObservasi
             ? {
-              jenis_karhutla: latestObservasi.jenis_karhutla,
-              temperatur: latestObservasi.temperatur,
-              curah_hujan: latestObservasi.curah_hujan,
-              kelembapan_udara: latestObservasi.kelembapan_udara,
-              tanggal_kejadian: latestObservasi.tanggal_kejadian,
-              tanggal_penilaian: latestObservasi.tanggal_penilaian,
-              skor_akhir: latestObservasi.skor_akhir,
-              hasil_penilaian: getHasilFromSkor(latestObservasi.skor_akhir),
-            }
+                luasan_karhutla: latestObservasi.luasan_karhutla,
+                jenis_karhutla: latestObservasi.jenis_karhutla,
+                tinggi_muka_air_gambut: latestObservasi.tinggi_muka_air_gambut,
+                penggunaan_lahan: latestObservasi.penggunaan_lahan,
+                tutupan_lahan: latestObservasi.tutupan_lahan,
+                jenis_vegetasi: latestObservasi.jenis_vegetasi,
+                temperatur: latestObservasi.temperatur,
+                curah_hujan: latestObservasi.curah_hujan,
+                kelembapan_udara: latestObservasi.kelembapan_udara,
+                tanggal_kejadian: latestObservasi.tanggal_kejadian,
+                tanggal_penilaian: latestObservasi.tanggal_penilaian,
+                skor_akhir: latestObservasi.skor_akhir,
+                hasil_penilaian: getHasilFromSkor(latestObservasi.skor_akhir),
+              }
             : null,
         },
       };
@@ -267,20 +250,14 @@ const getDetailLahanData = async (lahan_id) => {
       lahan: {
         lahan_id: lahan.lahan_id,
         nama_lahan: lahan.nama_lahan,
-        tutupan_lahan: lahan.tutupan_lahan,
-        jenis_vegetasi: lahan.jenis_vegetasi,
         jenis_tanah: lahan.jenis_tanah,
-        tinggi_muka_air_gambut: lahan.tinggi_muka_air_gambut,
-        jenis_karhutla: lahan.jenis_karhutla,
-        penggunaan_lahan: lahan.penggunaan_lahan,
         latitude: lahan.latitude,
         longitude: lahan.longitude,
         luasan_lahan: lahan.luasan_lahan,
         polygon: lahan.polygon || null,
       },
     };
-  }
-  catch (error) {
+  } catch (error) {
     logger.error("Error fetching Lahan data", { lahan_id, error: error.message });
     throw error;
   }
@@ -340,7 +317,7 @@ const editLahanData = async (lahan_id, data) => {
       });
 
       lahanData.lokasi_region_id = lokasiRegion.lokasi_region_id;
-      updatedLokasiRegion = lokasiRegion; // Use the newly created or found region in the return data
+      updatedLokasiRegion = lokasiRegion;
     }
 
     // Update Lahan in place
@@ -359,12 +336,7 @@ const editLahanData = async (lahan_id, data) => {
       lahan: {
         lahan_id: lahan.lahan_id,
         nama_lahan: lahan.nama_lahan,
-        tutupan_lahan: lahan.tutupan_lahan,
-        jenis_vegetasi: lahan.jenis_vegetasi,
         jenis_tanah: lahan.jenis_tanah,
-        tinggi_muka_air_gambut: lahan.tinggi_muka_air_gambut,
-        jenis_karhutla: lahan.jenis_karhutla,
-        penggunaan_lahan: lahan.penggunaan_lahan,
         latitude: lahan.latitude,
         longitude: lahan.longitude,
         luasan_lahan: lahan.luasan_lahan,
@@ -381,7 +353,7 @@ const deleteLahanData = async (lahan_id) => {
   try {
     logger.info("Deleting Lahan data", { lahan_id });
 
-    // step 1: find the lahan
+    // Step 1: Find the Lahan
     const lahan = await Lahan.findByPk(lahan_id);
 
     if (!lahan) {
@@ -391,7 +363,7 @@ const deleteLahanData = async (lahan_id) => {
 
     logger.info("Found Lahan", { lahan_id });
 
-    // step 2: find all observasi related to the lahan
+    // Step 2: Find all Observasi related to the Lahan
     const observasiList = await Observasi.findAll({
       where: { lahan_id },
       attributes: ["observasi_id"],
@@ -399,7 +371,7 @@ const deleteLahanData = async (lahan_id) => {
 
     logger.info("Found related Observasi", { lahan_id, observasiCount: observasiList.length });
 
-    // step 3: delete all observasi and related data
+    // Step 3: Delete all Observasi and related data
     await Promise.all(
       observasiList.map(async (observasi) => {
         logger.info("Deleting Observasi", { observasi_id: observasi.observasi_id });
@@ -407,7 +379,7 @@ const deleteLahanData = async (lahan_id) => {
       })
     );
 
-    // step 4: delete the lahan
+    // Step 4: Delete the Lahan
     logger.info("Deleting Lahan", { lahan_id });
     await lahan.destroy();
 

@@ -30,35 +30,7 @@ const Lahan = db.define(
         notEmpty: true,
       },
     },
-    tutupan_lahan: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    jenis_vegetasi: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
     jenis_tanah: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    tinggi_muka_air_gambut: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    penggunaan_lahan: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {

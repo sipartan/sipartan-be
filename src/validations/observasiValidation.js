@@ -9,6 +9,10 @@ const createObservasi = {
         kelembapan_udara: Joi.number().required(),
         tanggal_kejadian: Joi.date().iso().required(),
         tanggal_penilaian: Joi.date().iso().required(),
+        tutupan_lahan: Joi.string().required(),
+        jenis_vegetasi: Joi.string().required(),
+        tinggi_muka_air_gambut: Joi.number().optional(),
+        penggunaan_lahan: Joi.string().required(),
         dataPlot: Joi.array().items(
             Joi.object().keys({
                 coordinates: Joi.array()
@@ -21,7 +25,7 @@ const createObservasi = {
                     .required(),
                 penilaian_id: Joi.array().items(Joi.string().guid({ version: ['uuidv4'] }).required()).required()
             })
-        ).required()
+        ).required(),
     }).unknown(false),
 };
 
@@ -66,6 +70,10 @@ const editObservasi = {
         kelembapan_udara: Joi.number().optional(),
         tanggal_kejadian: Joi.date().iso().optional(),
         tanggal_penilaian: Joi.date().iso().optional(),
+        tutupan_lahan: Joi.string().optional(),
+        jenis_vegetasi: Joi.string().optional(),
+        tinggi_muka_air_gambut: Joi.number().optional(),
+        penggunaan_lahan: Joi.string().optional(),
     }).unknown(false),
 };
 

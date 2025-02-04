@@ -10,11 +10,7 @@ const createLahan = {
         }).required(),
         lahan: Joi.object().keys({
             nama_lahan: Joi.string().required(),
-            tutupan_lahan: Joi.string().required(),
-            jenis_vegetasi: Joi.string().required(),
             jenis_tanah: Joi.string().required(),
-            tinggi_muka_air_gambut: Joi.number().optional(),
-            penggunaan_lahan: Joi.string().required(),
             latitude: Joi.string().required(),
             longitude: Joi.string().required(),
             coordinates: Joi.array()
@@ -67,12 +63,7 @@ const editLahan = {
         }).optional(),
         lahan: Joi.object().keys({
             nama_lahan: Joi.string().optional(),
-            tutupan_lahan: Joi.string().optional(),
-            jenis_vegetasi: Joi.string().optional(),
             jenis_tanah: Joi.string().optional(),
-            tinggi_muka_air_gambut: Joi.number().optional(),
-            jenis_karhutla: Joi.string().optional(),
-            penggunaan_lahan: Joi.string().optional(),
             latitude: Joi.string().optional(),
             longitude: Joi.string().optional(),
             coordinates: Joi.array()

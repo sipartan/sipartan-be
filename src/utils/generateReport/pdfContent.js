@@ -77,14 +77,15 @@ const formatDate = (dateString) => {
     dataPDF.luasan_karhutla = data.observasi?.luasan_karhutla || "-";
     dataPDF.skor = data.observasi?.skor_akhir || "-";
     dataPDF.hasil_penilaian = data.observasi?.hasil_penilaian || "-";
+    dataPDF.jenis_vegetasi = data.observasi?.jenis_vegetasi || "-";
+    dataPDF.penggunaan_lahan = data.observasi?.penggunaan_lahan || "-";
+    dataPDF.tutupan_lahan = data.observasi?.tutupan_lahan || "-";
+    dataPDF.tinggi_muka_air_gambut = data.observasi?.tinggi_muka_air_gambut || "-";
   
     // Lahan-related
     dataPDF.jenis_tanah = data.lahan?.jenis_tanah || "-";
-    dataPDF.jenis_vegetasi = data.lahan?.jenis_vegetasi || "-";
-    dataPDF.penggunaan_lahan = data.lahan?.penggunaan_lahan || "-";
-    dataPDF.tutupan_lahan = data.lahan?.tutupan_lahan || "-";
-    dataPDF.tinggi_muka_air_gambut = data.lahan?.tinggi_muka_air_gambut || "-";
   
+    // Penilaian-related
     dataPDF.single_plot = (data.observasi?.plots || []).map((plot) => {
       return {
         luas_plot: plot.luasan_plot,
@@ -268,7 +269,7 @@ const formatDate = (dateString) => {
           dataPDF.single_plot.map(async (plot, index) => {
             // Determine the correct tanah condition (gambut vs mineral)
             const dataTanah =
-              dataPDF.jenis_tanah === "Gambut"
+              dataPDF.jenis_tanah === "Tanah Gambut"
                 ? await findPenilaian(
                     "Tingkat keparahan kondisi tanah gambut",
                     plot.penilaianIdsSinglePlot
@@ -287,7 +288,7 @@ const formatDate = (dateString) => {
                               <td colspan="2"><strong>Luas Plot</strong></td>
                           </tr>
                           <tr>
-                              <td class="col-6 pt-3 pb-3 ps-2">Luas Plot (m<sup>2</sup>)</td>
+                              <td class="col-6 pt-3 pb-3 ps-2">Luas Plot (hektare)</td>
                               <td class="col-6 pt-3 pb-3">: ${plot.luas_plot ?? "-"}</td>
                           </tr>
                           <tr class="text-center black-border">

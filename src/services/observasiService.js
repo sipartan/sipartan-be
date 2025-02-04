@@ -5,7 +5,7 @@ const turf = require("@turf/turf");
 const { deleteDokumentasiData } = require("./dokumentasiService");
 const paginate = require("../utils/pagination");
 const { mapHasilPenilaianToSkor, getHasilFromSkor } = require("../utils/karhutlaPenilaian");
-const { NotFound } = require("../utils/response");
+const { NotFound, BadRequest } = require("../utils/response");
 const downloadPDFReport = require("../utils/generateReport/index");
 const logger = require("../utils/logger");
 
@@ -23,18 +23,21 @@ const createObservasiData = async (newDataObservasi) => {
             tanggal_kejadian,
             tanggal_penilaian,
             dataPlot,
+            tutupan_lahan,
+            jenis_vegetasi,
+            tinggi_muka_air_gambut,
+            penggunaan_lahan,
         } = newDataObservasi;
 
         logger.info("Creating new observasi data", { lahan_id, user_id, jenis_karhutla });
 
-        // check if lahan_id exists
+        // Check if lahan exists
         const lahan = await Lahan.findByPk(lahan_id, { transaction });
         if (!lahan) {
             logger.warn("Lahan not found", { lahan_id });
             throw new NotFound(`Lahan with ID ${lahan_id} not found`);
         }
 
-        // Create the observation
         const observasi = await Observasi.create(
             {
                 lahan_id,
@@ -47,6 +50,10 @@ const createObservasiData = async (newDataObservasi) => {
                 tanggal_penilaian,
                 skor_akhir: 0,
                 luasan_karhutla: 0,
+                tutupan_lahan,
+                jenis_vegetasi,
+                tinggi_muka_air_gambut: tinggi_muka_air_gambut || 0,
+                penggunaan_lahan,
             },
             { transaction }
         );
@@ -108,7 +115,7 @@ const createObservasiData = async (newDataObservasi) => {
 
         return {
             observasi_id: observasi.observasi_id,
-            finalScore,
+            skor_akhir: finalScore,
             luasan_karhutla: totalLuasanKarhutla,
             plots: plots.map((plot) => ({
                 plot_id: plot.plot_id,
@@ -231,12 +238,7 @@ const getObservasiData = async (filters) => {
             },
             lahan: {
                 nama_lahan: observasi.lahan.nama_lahan,
-                tutupan_lahan: observasi.lahan.tutupan_lahan,
-                jenis_vegetasi: observasi.lahan.jenis_vegetasi,
                 jenis_tanah: observasi.lahan.jenis_tanah,
-                tinggi_muka_air_gambut: observasi.lahan.tinggi_muka_air_gambut,
-                jenis_karhutla: observasi.lahan.jenis_karhutla,
-                penggunaan_lahan: observasi.lahan.penggunaan_lahan,
                 latitude: observasi.lahan.latitude,
                 longitude: observasi.lahan.longitude,
                 luasan_lahan: observasi.lahan.luasan_lahan,
@@ -254,6 +256,10 @@ const getObservasiData = async (filters) => {
                 luasan_karhutla: observasi.luasan_karhutla,
                 skor_plot: observasi.skor_akhir,
                 hasil_penilaian: getHasilFromSkor(observasi.skor_akhir),
+                tutupan_lahan: observasi.tutupan_lahan,
+                jenis_vegetasi: observasi.jenis_vegetasi,
+                tinggi_muka_air_gambut: observasi.tinggi_muka_air_gambut,
+                penggunaan_lahan: observasi.penggunaan_lahan,
             },
         }));
 
@@ -323,12 +329,7 @@ const getObservasiDetailData = async (observasi_id) => {
             },
             lahan: {
                 nama_lahan: observasi.lahan.nama_lahan,
-                tutupan_lahan: observasi.lahan.tutupan_lahan,
-                jenis_vegetasi: observasi.lahan.jenis_vegetasi,
                 jenis_tanah: observasi.lahan.jenis_tanah,
-                tinggi_muka_air_gambut: observasi.lahan.tinggi_muka_air_gambut,
-                jenis_karhutla: observasi.lahan.jenis_karhutla,
-                penggunaan_lahan: observasi.lahan.penggunaan_lahan,
                 latitude: observasi.lahan.latitude,
                 longitude: observasi.lahan.longitude,
                 luasan_lahan: observasi.lahan.luasan_lahan,
@@ -345,6 +346,10 @@ const getObservasiDetailData = async (observasi_id) => {
                 luasan_karhutla: observasi.luasan_karhutla,
                 skor_akhir: observasi.skor_akhir,
                 hasil_penilaian: getHasilFromSkor(observasi.skor_akhir),
+                tutupan_lahan: observasi.tutupan_lahan,
+                jenis_vegetasi: observasi.jenis_vegetasi,
+                tinggi_muka_air_gambut: observasi.tinggi_muka_air_gambut,
+                penggunaan_lahan: observasi.penggunaan_lahan,
                 plots: observasi.plots.map((plot) => ({
                     plot_id: plot.plot_id,
                     luasan_plot: plot.luasan_plot,
@@ -638,7 +643,7 @@ const deletePlotData = async (plot_id, transaction = null) => {
         if (remainingPlots.length > 0) {
             // Calculate total skor_akhir and luasan_karhutla
             skorAkhir = remainingPlots.reduce((acc, plot) => acc + (plot.skor || 0), 0);
-            luasanKarhutla = remainingPlots.reduce((acc, plot) => acc + (plot.luasan || 0), 0);
+            luasanKarhutla = remainingPlots.reduce((acc, plot) => acc + (plot.luasan_plot || 0), 0);
         }
 
         logger.info("Updating Observasi", {
