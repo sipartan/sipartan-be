@@ -64,34 +64,34 @@ const createObservasiData = async (newDataObservasi) => {
             const coordinates = plot.coordinates.map((coord) => [coord[1], coord[0]]);
             const polygonGeoJSON = { type: "Polygon", coordinates: [coordinates] };
             const area = turf.area(polygonGeoJSON);
-            const luasan_plot = area / 10000;
+            const luasan_plot = (area / 10000).toFixed(2);
 
             totalLuasanKarhutla += luasan_plot;
 
             const newPlot = await Plot.create(
-            { observasi_id: observasi.observasi_id, luasan_plot, polygon: polygonGeoJSON },
-            { transaction }
+                { observasi_id: observasi.observasi_id, luasan_plot, polygon: polygonGeoJSON },
+                { transaction }
             );
 
             logger.info("Plot created", { plot_id: newPlot.plot_id });
 
             let penilaianObservasiIds = [];
             if (Array.isArray(plot.penilaian_id)) {
-            penilaianObservasiIds = await Promise.all(
-                plot.penilaian_id.map(async (penilaian_id) => {
-                const penilaian = await Penilaian.findByPk(penilaian_id, { transaction });
-                if (!penilaian) {
-                    logger.warn("Penilaian not found", { penilaian_id });
-                    throw new NotFound(`Penilaian with ID ${penilaian_id} not found`);
-                }
+                penilaianObservasiIds = await Promise.all(
+                    plot.penilaian_id.map(async (penilaian_id) => {
+                        const penilaian = await Penilaian.findByPk(penilaian_id, { transaction });
+                        if (!penilaian) {
+                            logger.warn("Penilaian not found", { penilaian_id });
+                            throw new NotFound(`Penilaian with ID ${penilaian_id} not found`);
+                        }
 
-                const penilaianObservasi = await PenilaianObservasi.create(
-                    { plot_id: newPlot.plot_id, penilaian_id },
-                    { transaction }
+                        const penilaianObservasi = await PenilaianObservasi.create(
+                            { plot_id: newPlot.plot_id, penilaian_id },
+                            { transaction }
+                        );
+                        return { penilaian_observasi_id: penilaianObservasi.penilaian_observasi_id, penilaian_id };
+                    })
                 );
-                return { penilaian_observasi_id: penilaianObservasi.penilaian_observasi_id, penilaian_id };
-                })
-            );
             }
 
             const updatedPlot = await calculateScore(newPlot.plot_id, transaction);
@@ -133,6 +133,11 @@ const getObservasiData = async (filters) => {
         order = "DESC",
         lahan_id,
         user_id,
+        nama_lahan,
+        provinsi,
+        kabupaten,
+        kecamatan,
+        desa,
         hasil_penilaian,
         skor_min,
         skor_max,
@@ -144,10 +149,13 @@ const getObservasiData = async (filters) => {
     } = filters;
 
     const where = {};
+    const lahanWhere = {};
+    const lokasiWhere = {};
 
     try {
         if (lahan_id) where.lahan_id = lahan_id;
         if (user_id) where.user_id = user_id;
+        if (jenis_karhutla) where.jenis_karhutla = jenis_karhutla;
 
         if (hasil_penilaian) {
             const skorRange = await mapHasilPenilaianToSkor(hasil_penilaian);
@@ -177,7 +185,12 @@ const getObservasiData = async (filters) => {
             };
         }
 
-        if (jenis_karhutla) where.jenis_karhutla = jenis_karhutla;
+        if (nama_lahan) lahanWhere.nama_lahan = { [Op.iLike]: `%${nama_lahan}%` };
+
+        if (provinsi) lokasiWhere.provinsi = provinsi;
+        if (kabupaten) lokasiWhere.kabupaten = kabupaten;
+        if (kecamatan) lokasiWhere.kecamatan = kecamatan;
+        if (desa) lokasiWhere.desa = desa;
 
         const options = {
             where,
@@ -188,9 +201,11 @@ const getObservasiData = async (filters) => {
                 },
                 {
                     model: Lahan,
+                    where: lahanWhere,
                     include: [
                         {
                             model: LokasiRegion,
+                            where: lokasiWhere,
                         },
                     ],
                 }
@@ -472,7 +487,7 @@ const editPlotData = async (plot_id, updatedData) => {
 
             // Calculate the new area (luasan_plot) in hectares
             const area = turf.area(polygonGeoJSON);
-            const luasan_plot = area / 10000;
+            const luasan_plot = (area / 10000).toFixed(2);
 
             // Update the plot polygon and area
             await plot.update({ polygon: polygonGeoJSON, luasan_plot }, { transaction });

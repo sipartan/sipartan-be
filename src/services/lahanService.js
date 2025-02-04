@@ -41,7 +41,7 @@ const createLahanData = async (data) => {
       const formattedCoordinates = coordinates.map((coordinate) => [coordinate[1], coordinate[0]]);
       polygon = { type: "Polygon", coordinates: [formattedCoordinates] };
       const area = turf.area(polygon);
-      luasan_lahan = area / 10000;
+      luasan_lahan = (area / 10000).toFixed(2);
     }
 
     logger.info("Creating new Lahan record", {
@@ -316,7 +316,7 @@ const editLahanData = async (lahan_id, data) => {
       const formattedCoordinates = lahanData.coordinates.map((coord) => [coord[1], coord[0]]);
       lahanData.polygon = { type: "Polygon", coordinates: [formattedCoordinates] };
       const area = turf.area(lahanData.polygon);
-      lahanData.luasan_lahan = area / 10000;
+      lahanData.luasan_lahan = (area / 10000).toFixed(2);
       delete lahanData.coordinates; // Remove coordinates to avoid Sequelize error
     }
 

@@ -93,7 +93,7 @@ services:
     networks:
       - default
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider http://localhost:9000/minio/health/ready || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/ready || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

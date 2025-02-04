@@ -100,12 +100,12 @@ const uploadDokumentasi = async (req, res, next) => {
         });
 
         // Wait for all uploads to complete
-        const { imageUrls } = await dokumentasiService.uploadDokumentasiData(files, req.body);
+        const { dokumentasi_ids } = await dokumentasiService.uploadDokumentasiData(files, req.body);
 
         return res.status(201).json({
             status: 200,
             message: 'Successfully created documentation',
-            data: { imageUrls },
+            data: { dokumentasi_ids },
         });
     } catch (error) {
         next(error);
