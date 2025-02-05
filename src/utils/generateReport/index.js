@@ -44,19 +44,20 @@ const downloadPDFReport = async (dataPDF) => {
     } finally {
         if (browser) {
             try {
-                await browser.close();  // Ensure browser is closed
-                logger.info('Browser closed');
+                // Get the underlying browser process
+                const browserProcess = browser.process();
+                await browser.close();  // Close the browser gracefully
+                if (browserProcess) {
+                    // Kill the browser process explicitly to avoid zombie processes
+                    browserProcess.kill('SIGKILL');
+                    logger.info('Browser process killed to prevent zombie processes');
+                }
+                logger.info('Browser closed successfully');
             } catch (closeError) {
-                logger.error('Error closing browser:', closeError);
+                logger.error('Failed to close the browser', { error: closeError.message });
             }
         }
     }
 };
-
-// Kill all orphaned Puppeteer processes on exit
-process.on('exit', () => {
-    logger.info('Exiting process, killing all Puppeteer instances');
-    require('child_process').execSync('pkill -f chrome || true');
-});
 
 module.exports = downloadPDFReport;
