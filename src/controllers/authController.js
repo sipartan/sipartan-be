@@ -78,10 +78,10 @@ const oauthSuccess = async (req, res, next) => {
         logger.info(`OAuth login successful for user: ${user.email}`);
 
         // redirect to frontend with token // TODO: discuss in the future with FE and Mobile dev
-        // const redirectUrl = `${config.urls.frontend}/auth?token=${token}`;
+        // const redirectUrl = `${config.urls.frontend}/auth?token=${token}&user_id=${user.user_id}`;
         // res.redirect(redirectUrl);
 
-        res.status(200).json({ status: 200, message: 'Login successful', data: { user } });
+        res.status(200).json({ status: 200, message: 'Login successful', data: { user }, token });
     } catch (error) {
         logger.error('OAuth login failed:', error);
         next(error);
