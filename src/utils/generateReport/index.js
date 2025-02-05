@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const pdfContent = require('./pdfContent');
 const logger = require('../logger');
+const { execSync } = require('child_process');
 
 const downloadPDFReport = async (dataPDF) => {
     let browser;
@@ -44,20 +45,31 @@ const downloadPDFReport = async (dataPDF) => {
     } finally {
         if (browser) {
             try {
-                // Get the underlying browser process
-                const browserProcess = browser.process();
-                await browser.close();  // Close the browser gracefully
-                if (browserProcess) {
-                    // Kill the browser process explicitly to avoid zombie processes
-                    browserProcess.kill('SIGKILL');
-                    logger.info('Browser process killed to prevent zombie processes');
-                }
-                logger.info('Browser closed successfully');
+                await browser.close();  // Ensure browser is closed
+                logger.info('Browser closed');
             } catch (closeError) {
-                logger.error('Failed to close the browser', { error: closeError.message });
+                logger.error('Error closing browser:', closeError);
             }
         }
     }
 };
+
+// Function to kill orphaned Puppeteer processes
+const killPuppeteerProcesses = () => {
+    try {
+        logger.info('Killing orphaned Puppeteer processes');
+        // Kill any chrome crashpad processes
+        execSync('pkill -f chrome_crashpad || true');
+        // Kill any chromium processes
+        execSync('pkill -f chromium || true');
+    } catch (e) {
+        logger.error('Error killing Puppeteer processes:', e);
+    }
+};
+
+// Listen for process exit and termination signals to cleanup children
+process.on('exit', killPuppeteerProcesses);
+process.on('SIGINT', () => { killPuppeteerProcesses(); process.exit(); });
+process.on('SIGTERM', () => { killPuppeteerProcesses(); process.exit(); });
 
 module.exports = downloadPDFReport;
