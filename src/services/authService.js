@@ -168,7 +168,7 @@ const verifyEmail = async (token) => {
  * Generates a JWT token with customizable payload and token type.
  * @param {Object} payloadData - Data to include in the payload.
  * @param {string} expiresIn - Expiration time for the token.
- * @param {string} tokenType - Jenis token ('login', 'reset', atau 'verify').
+ * @param {string} tokenType - Jenis token ('auth', 'resetPassword', atau 'verifyEmail').
  * @returns {string} JWT token.
  */
 const generateToken = (payloadData = {}, expiresIn, tokenType) => {
