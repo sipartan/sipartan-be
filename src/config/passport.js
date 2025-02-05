@@ -16,6 +16,10 @@ const jwtOpts = {
 passport.use(
     new JwtStrategy(jwtOpts, async (jwt_payload, done) => {
         try {
+            if (jwt_payload.tokenType !== 'auth') {
+                return done(null, false, { message: 'Invalid token type' });
+            }
+
             const user = await User.findByPk(jwt_payload.id,
                 { attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'role', 'is_email_verified'] }
             );

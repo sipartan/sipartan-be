@@ -5,7 +5,8 @@ const User = require('../models/user');
 const { Op } = require('sequelize');
 const config = require('../config/config');
 const logger = require('../utils/logger');
-const { BadRequest, NotFound } = require('../utils/response');
+const { BadRequest, NotFound, Unauthorized } = require('../utils/response');
+const { tokenTypes } = require('../config/tokens');
 
 const SALT_ROUNDS = parseInt(config.jwt.bcryptSaltRounds, 10);
 const SECRET_KEY = config.jwt.secretKey;
@@ -49,7 +50,6 @@ const registerUser = async (data) => {
             password: hashedPassword,
         });
 
-        logger.info(`User registered successfully: ${username}`);
         return { user_id: userCreated.user_id };
     } catch (error) {
         logger.error('An error occurred during registration:', error);
@@ -61,7 +61,7 @@ const registerUser = async (data) => {
  * Authenticates a user and returns a JWT.
  * @param {string} email - User's email.
  * @param {string} password - User's password.
- * @returns {Promise<string>} JWT token.
+ * @returns {Promise<Object>} User data and JWT token.
  */
 const loginUser = async (email, password) => {
     try {
@@ -80,8 +80,7 @@ const loginUser = async (email, password) => {
             throw new BadRequest('Invalid email or password.');
         }
 
-        logger.info(`User logged in successfully: ${email}`);
-        const token = generateToken({ id: user.user_id, email: user.email, role: user.role }, AUTH_TOKEN_EXPIRATION);
+        const token = generateToken({ id: user.user_id, email: user.email, role: user.role }, AUTH_TOKEN_EXPIRATION, tokenTypes.AUTH);
         return {
             user: {
                 user_id: user.user_id,
@@ -109,6 +108,11 @@ const loginUser = async (email, password) => {
 const resetPassword = async (resetPasswordToken, newPassword) => {
     try {
         const decoded = jwt.verify(resetPasswordToken, SECRET_KEY);
+        if (decoded.tokenType !== 'resetPassword') {
+            logger.warn('Reset password failed: Invalid token type.');
+            throw new Unauthorized('Invalid token type.');
+        }
+
         const user = await User.findByPk(decoded.id);
         if (!user) {
             logger.warn('Reset password failed: User not found.');
@@ -121,7 +125,7 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
     } catch (error) {
         if (error.name === 'JsonWebTokenError') {
             logger.warn('Reset password failed: Invalid or expired token.');
-            throw new BadRequest('Invalid or expired token.');
+            throw new Unauthorized('Invalid or expired token.');
         }
         logger.error('An error occurred while resetting the password:', error);
         throw error;
@@ -136,6 +140,11 @@ const resetPassword = async (resetPasswordToken, newPassword) => {
 const verifyEmail = async (token) => {
     try {
         const decoded = jwt.verify(token, SECRET_KEY);
+        if (decoded.tokenType !== 'verifyEmail') {
+            logger.warn('Email verification failed: Invalid token type.');
+            throw new Unauthorized('Invalid token type.');
+        }
+
         const user = await User.findByPk(decoded.id);
         if (!user) {
             logger.warn('Email verification failed: User not found.');
@@ -148,7 +157,7 @@ const verifyEmail = async (token) => {
     } catch (error) {
         if (error.name === 'JsonWebTokenError') {
             logger.warn('Email verification failed: Invalid or expired token.');
-            throw new BadRequest('Invalid or expired token.');
+            throw new Unauthorized('Invalid or expired token.');
         }
         logger.error('An error occurred during email verification:', error);
         throw error;
@@ -156,23 +165,27 @@ const verifyEmail = async (token) => {
 };
 
 /**
- * Generates a JWT token with customizable payload.
+ * Generates a JWT token with customizable payload and token type.
  * @param {Object} payloadData - Data to include in the payload.
  * @param {string} expiresIn - Expiration time for the token.
+ * @param {string} tokenType - Jenis token ('login', 'reset', atau 'verify').
  * @returns {string} JWT token.
  */
-const generateToken = (payloadData = {}, expiresIn) => {
+const generateToken = (payloadData = {}, expiresIn, tokenType) => {
     if (!expiresIn) {
         throw new Error('Expiration time (expiresIn) is required.');
+    }
+    if (!tokenType) {
+        throw new Error('Token type is required.');
     }
 
     const payload = {
         ...payloadData,
+        tokenType, 
     };
 
     return jwt.sign(payload, SECRET_KEY, { expiresIn });
 };
-
 
 /**
  * Fetches a user by their email.
@@ -206,10 +219,9 @@ const forgotPassword = async (email) => {
             return;
         }
 
-        const token = generateToken({ id: user.user_id }, RESET_PASSWORD_TOKEN_EXPIRATION);
+        const token = generateToken({ id: user.user_id }, RESET_PASSWORD_TOKEN_EXPIRATION, tokenTypes.RESET_PASSWORD);
         const forgotPasswordLink = `${config.urls.frontend}/reset-password?token=${token}`;
 
-        // Fire-and-forget the email sending process
         emailService.sendResetPasswordEmail(user, forgotPasswordLink)
             .then(() => {
                 logger.info(`Password reset email sent to: ${email}`);
@@ -227,7 +239,7 @@ const forgotPassword = async (email) => {
 /**
  * Sends an email verification link to the user.
  * @param {string} email - The email address of the user who requested email verification.
- * @returns {Promise<void>} Resolves when the verification email has been sent successfully.
+ * @returns {Promise<Object>} Message indicating the result.
  */
 const sendVerificationEmail = async (email) => {
     try {
@@ -238,10 +250,9 @@ const sendVerificationEmail = async (email) => {
             return { message: 'Email is already verified.' };
         }
 
-        const token = generateToken({ id: user.user_id }, VERIFY_EMAIL_TOKEN_EXPIRATION);
+        const token = generateToken({ id: user.user_id }, VERIFY_EMAIL_TOKEN_EXPIRATION, tokenTypes.VERIFY_EMAIL);
         const verificationLink = `${config.urls.frontend}/verify-email?token=${token}`;
 
-        // Fire-and-forget the email sending process
         emailService.sendVerificationEmail(user, verificationLink)
             .then(() => {
                 logger.info(`Verification email sent to: ${email}`);
@@ -255,7 +266,6 @@ const sendVerificationEmail = async (email) => {
         throw error;
     }
 };
-
 
 module.exports = {
     registerUser,
