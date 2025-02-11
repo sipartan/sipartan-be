@@ -32,7 +32,7 @@ const db = new Sequelize(
     define: {
       schema: process.env.DB_SCHEMA,
     },
-    // logging: false,
+    logging: false,
   }
 );
 
