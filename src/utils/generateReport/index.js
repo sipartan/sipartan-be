@@ -13,7 +13,7 @@ const downloadPDFReport = async (dataPDF) => {
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-gpu',
-                '--disable-dev-shm-usage',  // Prevent crashes in Docker
+                '--disable-dev-shm-usage',  // prevent crashes in Docker
                 '--disable-software-rasterizer',
                 '--disable-crash-reporter',
                 '--disable-breakpad',
@@ -45,7 +45,7 @@ const downloadPDFReport = async (dataPDF) => {
     } finally {
         if (browser) {
             try {
-                await browser.close();  // Ensure browser is closed
+                await browser.close();  // ensure browser is closed
                 logger.info('Browser closed');
             } catch (closeError) {
                 logger.error('Error closing browser:', closeError);
@@ -54,20 +54,20 @@ const downloadPDFReport = async (dataPDF) => {
     }
 };
 
-// Function to kill orphaned Puppeteer processes
+// function to kill orphaned Puppeteer processes
 const killPuppeteerProcesses = () => {
     try {
         logger.info('Killing orphaned Puppeteer processes');
-        // Kill any chrome crashpad processes
+        // kill any chrome crashpad processes
         execSync('pkill -f chrome_crashpad || true');
-        // Kill any chromium processes
+        // kill any chromium processes
         execSync('pkill -f chromium || true');
     } catch (e) {
         logger.error('Error killing Puppeteer processes:', e);
     }
 };
 
-// Listen for process exit and termination signals to cleanup children
+// listen for process exit and termination signals to cleanup children
 process.on('exit', killPuppeteerProcesses);
 process.on('SIGINT', () => { killPuppeteerProcesses(); process.exit(); });
 process.on('SIGTERM', () => { killPuppeteerProcesses(); process.exit(); });

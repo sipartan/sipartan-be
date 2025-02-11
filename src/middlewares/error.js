@@ -15,7 +15,7 @@ const errorHandler = (err, req, res, next) => {
         errors = err.errors; 
     }
 
-    // Convert error object to a readable string
+    // convert error object to a readable string
     const errorDetails = JSON.stringify({
         status: statusCode,
         message: err.message || 'No message provided',
@@ -24,7 +24,7 @@ const errorHandler = (err, req, res, next) => {
         method: req.method,
         path: req.originalUrl,
         ip: req.ip,
-    }, null, 2); // Indented JSON for better readability
+    }, null, 2); // indented JSON for better readability
 
     logger.error(`Error: ${errorDetails}`);
 

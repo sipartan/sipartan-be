@@ -8,7 +8,7 @@ const upload = multer({
     storage,
     limits: {
         fileSize: 10 * 1024 * 1024, // 10 MB per file
-        files: 3, // Maximum of 3 files
+        files: 3, // maximum of 3 file
     },
     fileFilter: (req, file, cb) => {
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
@@ -21,7 +21,7 @@ const upload = multer({
     },
 });
 
-// Error-handling wrapper function
+// error-handling wrapper function
 const uploadHandler = (req, res, next) => {
     upload.array('files', 3)(req, res, (err) => {
         if (err) {

@@ -43,8 +43,8 @@ app.use(express.json());
 app.use(compression());
 app.use(passport.initialize());
 app.use(rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 100,
+  windowMs: 15 * 60 * 1000,  // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
   keyGenerator: (req) => req.ip,
   handler: (req, res) => {
     logger.warn('Rate limit exceeded:', { ip: req.ip });
@@ -53,13 +53,13 @@ app.use(rateLimit({
   skip: (req) => process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development',
 }));
 
-// Database initialization
+// database initialization
 dbGenerate().catch((err) => {
   logger.error('Database connection failed:', { error: err.message });
-  process.exit(1); // Exit app on DB connection failure
+  process.exit(1); // exit app on DB connection failure
 });
 
-// Routes
+// routes
 app.use('/user', userRoute);
 app.use('/lahan', lahanRoute);
 app.use('/observasi', observasiRoute);
@@ -71,16 +71,16 @@ app.get('/ping', (req, res) => {
   res.status(200).json({ message: 'pong', timestamp: new Date().toISOString() });
 });
 
-// Error handler
+// error handler
 app.use(errorHandler);
 
-// Server Initialization
+// server initialization
 const PORT = process.env.PORT || 8081;
 const server = app.listen(PORT, () => {
   logger.info('Server listening', { port: PORT, timestamp: new Date().toISOString() });
 });
 
-// Graceful Shutdown
+// graceful shutdown
 process.on('SIGINT', () => {
   logger.info('Gracefully shutting down...');
   server.close(() => {

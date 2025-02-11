@@ -19,7 +19,7 @@ class ResponseBody {
     }
 }
 
-// Success responses
+// success responses
 class Success extends ResponseBody {
     status = 200;
 }
@@ -36,7 +36,7 @@ class NoContent extends ResponseBody {
     status = 204;
 }
 
-// Client error responses
+// client error responses
 class BadRequest extends CustomError {
     constructor(message, errors = []) {
         super(400, message);
@@ -104,7 +104,7 @@ class TooManyRequests extends CustomError {
     }
 }
 
-// Server error responses
+// server error responses
 class InternalServerError extends CustomError {
     constructor(message) {
         super(500, message);

@@ -8,21 +8,21 @@ const authValidation = require('../validations/authValidation');
 
 const router = express.Router();
 
-// Rate limiting configuration
+// rate limiting configuration
 const emailVerificationLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 3, // Limit each account to 3 requests per windowMs
-    // Limit by account email
+    max: 3, // limit each account to 3 requests per windowMs
+    // limit by account email
     handler: (req, res) => res.status(429).json({
         error: 'Too many verification attempts',
         message: 'Please try again after 15 minutes'
     }),
-    skip: (req) => config.env.nodeEnv === 'test' || config.env.nodeEnv === 'development' // Skip in test or development environment
+    skip: (req) => config.env.nodeEnv === 'test' || config.env.nodeEnv === 'development' // skip in test or development environment
 });
 
 const passwordResetLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 5, // Limit each IP to 5 requests per hour
+    max: 5, // limit each IP to 5 requests per hour
     keyGenerator: (req) => req.ip,
     handler: (req, res) => res.status(429).json({
         status: 429,
@@ -33,7 +33,7 @@ const passwordResetLimiter = rateLimit({
 
 const authAttemptLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // Limit each IP to 10 login attempts
+    max: 10, // limit each IP to 10 login attempts
     keyGenerator: (req) => req.ip,
     handler: (req, res) => res.status(429).json({
         error: 'Too many login attempts',
@@ -42,11 +42,11 @@ const authAttemptLimiter = rateLimit({
     skip: (req) => config.env.nodeEnv === 'test' || config.env.nodeEnv === 'development'
 });
 
-// Authentication routes
+// authentication routes
 router.post('/login', authAttemptLimiter, validate(authValidation.login), authController.login);
 router.post('/register', validate(authValidation.register), authController.register);
 
-// Password reset flow
+// password reset flow
 router.post(
     '/forgot-password',
     passwordResetLimiter,
@@ -61,7 +61,7 @@ router.post(
     authController.resetPassword
 );
 
-// Email verification flow
+// email verification flow
 router.post(
     '/send-verification-email',
     emailVerificationLimiter,
@@ -96,12 +96,12 @@ router.get('/facebook/callback',
     authController.oauthSuccess
 );
 
-// Unified error handling for OAuth
-router.get('/failure', (req, res) => {
-    res.status(401).json({
-        error: 'Authentication failed',
-        message: 'Could not authenticate with the provided credentials'
-    });
-});
+// unified error handling for OAuth
+// router.get('/failure', (req, res) => {
+//     res.status(401).json({
+//         error: 'Authentication failed',
+//         message: 'Could not authenticate with the provided credentials'
+//     });
+// });
 
 module.exports = router;

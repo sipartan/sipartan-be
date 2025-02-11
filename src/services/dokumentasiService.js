@@ -8,7 +8,7 @@ const uploadDokumentasiData = async (files, fields) => {
     try {
         logger.info("Starting upload of dokumentasi data");
 
-        // Check if penilaian_observasi_id exists
+        // check if penilaian_observasi_id exist
         const penilaianObservasi = await PenilaianObservasi.findOne({
             where: { penilaian_observasi_id: fields.penilaian_observasi_id },
         });
@@ -18,7 +18,7 @@ const uploadDokumentasiData = async (files, fields) => {
             throw new NotFound(`Penilaian Observasi with ID ${fields.penilaian_observasi_id} not found`);
         }
 
-        // Count existing dokumentasi for this penilaian_observasi_id
+        // count existing dokumentasi for this penilaian_observasi_id
         const existingDokumentasiCount = await Dokumentasi.count({
             where: { penilaian_observasi_id: fields.penilaian_observasi_id },
         });
@@ -28,7 +28,7 @@ const uploadDokumentasiData = async (files, fields) => {
             throw new BadRequest(`Cannot upload more than 3 dokumentasi for this penilaian observasi.`);
         }
 
-        // Determine how many more can be uploaded
+        // determine how many more can be uploaded
         const remainingSlots = 3 - existingDokumentasiCount;
         if (files.length > remainingSlots) {
             logger.warn(`Upload limit exceeded: Can only upload ${remainingSlots} more dokumentasi.`);
@@ -80,7 +80,7 @@ const getImage = async (dokumentasiId) => {
     try {
         logger.info(`Fetching image for dokumentasi ID: ${dokumentasiId}`);
 
-        // Find the dokumentasi record
+        // find the dokumentasi record
         const dokumentasi = await Dokumentasi.findOne({
             where: { dokumentasi_id: dokumentasiId },
         });
@@ -96,7 +96,7 @@ const getImage = async (dokumentasiId) => {
             Key: s3Key,
         });
 
-        // Fetch image from S3
+        // fetch image from S3
         const { Body } = await s3Client.send(command);
 
         if (!Body) {
@@ -115,7 +115,7 @@ const getImage = async (dokumentasiId) => {
 
 const deleteDokumentasiData = async (dokumentasiId) => {
     logger.info(`Deleting dokumentasi with ID: ${dokumentasiId}`);
-    // Step 1: Find the Dokumentasi record
+    // 1: find the dokumentasi record
     const dokumentasi = await Dokumentasi.findOne({
         where: { dokumentasi_id: dokumentasiId },
     });
@@ -125,7 +125,7 @@ const deleteDokumentasiData = async (dokumentasiId) => {
         throw new NotFound(`Dokumentasi with ID ${dokumentasiId} not found`);
     }
 
-    // Step 2: Delete the file from MinIO (S3)
+    // 2: delete the file from MinIO 
     const command = new DeleteObjectCommand({
         Bucket: bucketName,
         Key: dokumentasi.s3_key,
@@ -139,7 +139,7 @@ const deleteDokumentasiData = async (dokumentasiId) => {
         throw new Error("Failed to delete file from MinIO");
     }
 
-    // Step 3: Delete the Dokumentasi record from the database
+    // 3: delete the dokumentasi record from the database
     await Dokumentasi.destroy({ where: { dokumentasi_id: dokumentasiId } });
     logger.info(`Dokumentasi record deleted successfully with ID: ${dokumentasiId}`);
 };

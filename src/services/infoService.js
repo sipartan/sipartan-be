@@ -158,28 +158,28 @@ const reverseGeocodeGoogle = async (lat, lon) => {
             params: {
                 latlng: `${lat},${lon}`,
                 key: GOOGLE_MAPS_API_KEY,
-                language: 'id',  // Indonesian language for responses
+                language: 'id',  
             },
         });
 
         if (response.status === 200 && response.data.status === 'OK') {
             logger.info(`Google reverse geocoding successful for coordinates: (${lat}, ${lon})`);
 
-            // Extract address components
             const addressComponents = response.data.results[0].address_components;
 
+            // helper function to get component by type
             const getComponent = (type) => {
                 const component = addressComponents.find((comp) => comp.types.includes(type));
                 return component ? component.long_name.toUpperCase() : null;
             };
 
-            // Extract required fields and process kecamatan
             const desa = getComponent('administrative_area_level_4');
             let kecamatan = getComponent('administrative_area_level_3');
             const kabupaten = getComponent('administrative_area_level_2');
             const provinsi = getComponent('administrative_area_level_1');
 
-            // Remove the word 'KECAMATAN' if present and trim the result
+            // remove the word 'KECAMATAN' if present and trim the result, because in api wilayah indonesia that is being used above
+            // the word 'KECAMATAN' is not included in the name
             if (kecamatan) {
                 kecamatan = kecamatan.replace(/\bKECAMATAN\b/gi, '').trim();
             }

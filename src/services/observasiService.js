@@ -31,7 +31,7 @@ const createObservasiData = async (newDataObservasi) => {
 
         logger.info("Creating new observasi data", { lahan_id, user_id, jenis_karhutla });
 
-        // Check if lahan exists
+        // check if lahan exists
         const lahan = await Lahan.findByPk(lahan_id, { transaction });
         if (!lahan) {
             logger.warn("Lahan not found", { lahan_id });
@@ -60,7 +60,7 @@ const createObservasiData = async (newDataObservasi) => {
 
         logger.info("Observasi created", { observasi_id: observasi.observasi_id });
 
-        // Create all plots
+        // create all plots
         const plots = [];
         let totalLuasanKarhutla = 0;
 
@@ -260,6 +260,8 @@ const getObservasiData = async (filters) => {
                 jenis_vegetasi: observasi.jenis_vegetasi,
                 tinggi_muka_air_gambut: observasi.tinggi_muka_air_gambut,
                 penggunaan_lahan: observasi.penggunaan_lahan,
+                createdAt: observasi.createdAt,
+                updatedAt: observasi.updatedAt,
             },
         }));
 
@@ -350,6 +352,8 @@ const getObservasiDetailData = async (observasi_id) => {
                 jenis_vegetasi: observasi.jenis_vegetasi,
                 tinggi_muka_air_gambut: observasi.tinggi_muka_air_gambut,
                 penggunaan_lahan: observasi.penggunaan_lahan,
+                createdAt: observasi.createdAt,
+                updatedAt: observasi.updatedAt,
                 plots: observasi.plots.map((plot) => ({
                     plot_id: plot.plot_id,
                     luasan_plot: plot.luasan_plot,
@@ -451,14 +455,14 @@ const editPlotData = async (plot_id, updatedData) => {
         logger.info("Editing plot data", { plot_id, updatedData });
         const { coordinates, penilaianList } = updatedData;
 
-        // 1. Find the existing plot
+        // 1. find the existing plot
         const plot = await Plot.findByPk(plot_id, { transaction });
         if (!plot) {
             logger.warn("Plot not found", { plot_id });
             throw new NotFound(`Plot with id ${plot_id} not found`);
         }
 
-        // 2. Find the related observasi
+        // 2. find the related observasi
         const observasi = await Observasi.findByPk(plot.observasi_id, { transaction });
 
         if (!observasi) {
@@ -466,7 +470,7 @@ const editPlotData = async (plot_id, updatedData) => {
             throw new NotFound(`Observasi not found for plot with id ${plot_id}`);
         }
 
-        // 3. Check if 6 days have passed since tanggal_kejadian
+        // 3. check if 6 days have passed since tanggal_kejadian
         const tanggalKejadian = new Date(observasi.tanggal_kejadian);
         const now = new Date();
         const diffInDays = Math.floor((now - tanggalKejadian) / (1000 * 60 * 60 * 24));
@@ -476,7 +480,7 @@ const editPlotData = async (plot_id, updatedData) => {
             throw new BadRequest(`Plot cannot be edited as more than 6 days have passed since tanggal_kejadian.`);
         }
 
-        // 4. Update the polygon if coordinates are provided
+        // 4. update the polygon if coordinates are provided
         let totalArea = observasi.luasan_karhutla;
 
         if (coordinates) {
@@ -487,26 +491,26 @@ const editPlotData = async (plot_id, updatedData) => {
                 coordinates: [formattedCoordinates],
             };
 
-            // Calculate the new area (luasan_plot) in hectares
+            // calculate the new area (luasan_plot) in hectares
             const area = turf.area(polygonGeoJSON);
             const luasan_plot = parseFloat((area / 10000).toFixed(2));
 
-            // Update the plot polygon and area
+            // update the plot polygon and area
             await plot.update({ polygon: polygonGeoJSON, luasan_plot }, { transaction });
 
-            // Recalculate total area for the observasi
+            // recalculate total area for the observasi
             const allPlots = await Plot.findAll({ where: { observasi_id: observasi.observasi_id }, transaction });
             totalArea = allPlots.reduce((sum, p) => sum + (p.luasan_plot || 0), 0);
         }
 
-        // 5. Update or create PenilaianObservasi entries if penilaianList is provided
+        // 5. update or create PenilaianObservasi entries if penilaianList is provided
         let totalScore = observasi.skor_akhir;
         if (penilaianList) {
             logger.info("Updating penilaian list for plot", { plot_id, penilaianList });
             for (const penilaian of penilaianList) {
                 const { penilaian_observasi_id, penilaian_id } = penilaian;
 
-                // Check if penilaian_id exists
+                // check if penilaian_id exists
                 const penilaianExists = await Penilaian.findByPk(penilaian_id, { transaction });
                 if (!penilaianExists) {
                     logger.warn("Penilaian not found", { penilaian_id });
@@ -514,7 +518,7 @@ const editPlotData = async (plot_id, updatedData) => {
                 }
 
                 if (penilaian_observasi_id) {
-                    // Update existing PenilaianObservasi
+                    // update existing PenilaianObservasi
                     const existingPenilaianObservasi = await PenilaianObservasi.findOne({
                         where: { penilaian_observasi_id, plot_id },
                         transaction,
@@ -526,7 +530,7 @@ const editPlotData = async (plot_id, updatedData) => {
                         throw new NotFound(`PenilaianObservasi with id ${penilaian_observasi_id} and plot_id ${plot_id} not found`);
                     }
                 } else {
-                    // Create a new PenilaianObservasi if penilaian_observasi_id is not provided
+                    // create a new PenilaianObservasi if penilaian_observasi_id is not provided
                     await PenilaianObservasi.create(
                         {
                             plot_id,
@@ -537,13 +541,13 @@ const editPlotData = async (plot_id, updatedData) => {
                 }
             }
 
-            // Recalculate the overall score
+            // recalculate the overall score
             await calculateScore(plot_id, transaction);
             const allPlots = await Plot.findAll({ where: { observasi_id: observasi.observasi_id }, transaction });
             totalScore = allPlots.reduce((sum, p) => sum + (p.skor || 0), 0) / allPlots.length;
         }
 
-        // 6. Update the observasi with recalculated values (if needed)
+        // 6. update the observasi with recalculated values (if needed)
         if (coordinates || penilaianList) {
             logger.info("Updating observasi with recalculated values", { observasi_id: observasi.observasi_id, totalScore, totalArea });
             await observasi.update(
@@ -555,11 +559,11 @@ const editPlotData = async (plot_id, updatedData) => {
             );
         }
 
-        // Commit the transaction
+        // commit the transaction
         await transaction.commit();
         logger.info("Successfully edited plot data", { plot_id });
 
-        // 7. Return the updated plot details
+        // 7. return the updated plot details
         return {
             plot_id: plot.plot_id,
             luasan_plot: plot.luasan_plot,
@@ -572,7 +576,7 @@ const editPlotData = async (plot_id, updatedData) => {
                 : [],
         };
     } catch (error) {
-        // Rollback the transaction if an error occurs
+        // rollback the transaction if an error happen
         await transaction.rollback();
         logger.error("Error editing plot data", { plot_id, error: error.message });
         throw error;
@@ -628,7 +632,7 @@ const deletePlotData = async (plot_id, transaction = null) => {
         logger.info("Deleting plot record", { plot_id });
         await Plot.destroy({ where: { plot_id }, transaction });
 
-        // Recalculate skor_akhir and luasan_karhutla
+        // recalculate skor_akhir and luasan_karhutla
         logger.info("Recalculating Observasi data", { observasi_id: observasi.observasi_id });
 
         const remainingPlots = await Plot.findAll({
@@ -641,7 +645,7 @@ const deletePlotData = async (plot_id, transaction = null) => {
         let luasanKarhutla = null;
 
         if (remainingPlots.length > 0) {
-            // Calculate total skor_akhir and luasan_karhutla
+            // calculate total skor_akhir and luasan_karhutla
             skorAkhir = remainingPlots.reduce((acc, plot) => acc + (plot.skor || 0), 0);
             luasanKarhutla = remainingPlots.reduce((acc, plot) => acc + (plot.luasan_plot || 0), 0);
         }

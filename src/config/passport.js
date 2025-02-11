@@ -33,7 +33,7 @@ passport.use(
     })
 );
 
-// Middleware to handle unauthorized requests
+// middleware to handle unauthorized requests
 passport.authenticateJwt = (req, res, next) => {
     passport.authenticate('jwt', { session: false }, (err, user, info) => {
         if (err || !user) {
@@ -47,7 +47,7 @@ passport.authenticateJwt = (req, res, next) => {
     })(req, res, next);
 };
 
-// Google Strategy
+// google Strategy
 passport.use(
     new GoogleStrategy(
         {
@@ -89,13 +89,13 @@ passport.use(
 
 
 
-// Facebook Strategy
+// facebook Strategy
 passport.use(
     new FacebookStrategy(
         {
             clientID: config.oauth.facebook.appId,
             clientSecret: config.oauth.facebook.appSecret,
-            callbackURL: `${config.env.baseUrl}/auth/facebook/callback`, // TODO: Change this in the future with the actual baseUrl
+            callbackURL: `${config.env.baseUrl}/auth/facebook/callback`, // TODO: change this in the future with the actual baseUrl
             profileFields: ['id', 'displayName', 'emails'],
         },
         async (accessToken, refreshToken, profile, done) => {
@@ -112,7 +112,6 @@ passport.use(
                     },
                 });
 
-                // Manually filter the attributes before returning
                 const filteredUser = {
                     user_id: user.user_id,
                     nama: user.nama,

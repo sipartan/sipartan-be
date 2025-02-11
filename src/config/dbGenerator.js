@@ -10,16 +10,16 @@ const dbGenerate = async () => {
     await db.authenticate();
     logger.info('Database connected...');
 
-    // Create schema if not exists
+    // create schema if not exists
     await db.query(`CREATE SCHEMA IF NOT EXISTS ${config.database.schema};`);
 
-    // Enable PostGIS extension
+    // enable PostGIS extension
     await db.query('CREATE EXTENSION IF NOT EXISTS postgis;');
     logger.info('PostGIS extension enabled...');
 
-    // Sync models
+    // sync models
     // await db.sync({ force: true }); // delete and create
-    // await db.sync({ alter: true }); // { force: true } is dangerous 
+    // await db.sync({ alter: true }); // { force: true } is dangerous , this should be modify the database but it is not working in postgis
     await db.sync();
     logger.info('Database synchronized...');
 

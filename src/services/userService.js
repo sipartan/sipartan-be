@@ -117,7 +117,7 @@ const updateUser = async (userId, data, authenticatedUser) => {
     }
 
     try {
-        // Fetch existing user
+        // fetch existing user
         const user = await User.findByPk(userId, {
             attributes: ['user_id', 'nama', 'instansi', 'email', 'username', 'is_email_verified']
         });
@@ -127,14 +127,14 @@ const updateUser = async (userId, data, authenticatedUser) => {
             throw new NotFound('User not found.');
         }
 
-        // Check if email or username already exists (excluding the current user)
+        // check if email or username already exists (excluding the current user)
         if (data.email) {
             const existingEmailUser = await User.findOne({ where: { email: data.email, user_id: { [Op.ne]: userId } } });
             if (existingEmailUser) {
                 logger.warn(`Email already exists: ${data.email}`);
                 throw new BadRequest('Email or username is already in use.');
             }
-            data.is_email_verified = false; // Reset email verification status
+            data.is_email_verified = false; // reset email verification status
         }
 
         if (data.username) {
@@ -145,7 +145,7 @@ const updateUser = async (userId, data, authenticatedUser) => {
             }
         }
 
-        // Update the user data
+        // update the user data
         await user.update(data);
         logger.info(`User updated successfully: ${userId}`);
 

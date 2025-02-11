@@ -71,7 +71,7 @@ const deleteObservasi = async (req, res, next) => {
 
 const uploadDokumentasi = async (req, res, next) => {
     try {
-        // Check if files were uploaded
+        // check if files were uploaded
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({
                 status: 400,
@@ -79,7 +79,7 @@ const uploadDokumentasi = async (req, res, next) => {
             });
         }
 
-        // Process each uploaded file
+        // process each uploaded file
         const files = req.files.map((file) => {
             const now = new Date();
             const filenameFormatted = `${now.toISOString().replace(/[:.]/g, '-')}_${nanoid()}`;
@@ -99,7 +99,7 @@ const uploadDokumentasi = async (req, res, next) => {
             };
         });
 
-        // Wait for all uploads to complete
+        // wait for all uploads to complete
         const { dokumentasi_ids } = await dokumentasiService.uploadDokumentasiData(files, req.body);
 
         return res.status(201).json({
@@ -118,7 +118,7 @@ const getDokumentasi = async (req, res, next) => {
 
         const fileStream = await dokumentasiService.getImage(dokumentasi_id);
 
-        // Pipe the file stream directly to the response
+        // pipe the file stream directly to the response
         fileStream.pipe(res);
     } catch (error) {
         next(error);

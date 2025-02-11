@@ -28,12 +28,12 @@ const createLahanData = async (data) => {
       defaults: { provinsi, kabupaten, kecamatan, desa },
     });
 
-    // Prepare polygon if coordinates are provided
+    // prepare polygon if coordinates are provided
     let polygon = null;
     let luasan_lahan = 0;
     if (coordinates && Array.isArray(coordinates)) {
       logger.info("Formatting coordinates for polygon", { coordinates });
-      // Convert [lat, long] to [long, lat]
+      // convert [lat, long] to [long, lat]
       const formattedCoordinates = coordinates.map((coordinate) => [coordinate[1], coordinate[0]]);
       polygon = { type: "Polygon", coordinates: [formattedCoordinates] };
       const area = turf.area(polygon);
@@ -108,31 +108,31 @@ const getAllLahanData = async (filters) => {
       tanggal_kejadian_end,
     } = filters;
 
-    // Filtering for Lahan
+    // filter for Lahan
     const lahanWhere = {};
     if (nama_lahan) lahanWhere.nama_lahan = { [Op.iLike]: `%${nama_lahan}%` };
     if (lahan_id) lahanWhere.lahan_id = lahan_id;
 
-    // Filtering for LokasiRegion
+    // filter for LokasiRegion
     const regionWhere = {};
     if (provinsi) regionWhere.provinsi = provinsi;
     if (kabupaten) regionWhere.kabupaten = kabupaten;
     if (kecamatan) regionWhere.kecamatan = kecamatan;
     if (desa) regionWhere.desa = desa;
 
-    // Filtering for Observasi
+    // filter for Observasi
     const observasiWhere = {};
     if (skor_min || skor_max) {
       observasiWhere.skor_akhir = {
-        ...(skor_min && { [Op.gte]: parseFloat(skor_min) }),
-        ...(skor_max && { [Op.lte]: parseFloat(skor_max) }),
+        ...(skor_min && { [Op.gte]: parseFloat(skor_min) }), // gte = greater than or equal
+        ...(skor_max && { [Op.lte]: parseFloat(skor_max) }), // lte = less than or equal
       };
     }
 
     if (hasil_penilaian) {
       const range = await mapHasilPenilaianToSkor(hasil_penilaian);
       if (range) {
-        observasiWhere.skor_akhir = { [Op.between]: [range.min, range.max] };
+        observasiWhere.skor_akhir = { [Op.between]: [range.min, range.max] }; // between min and max
       }
     }
 
@@ -150,7 +150,7 @@ const getAllLahanData = async (filters) => {
       };
     }
 
-    // Query to fetch data
+    // query to fetch data
     const options = {
       where: lahanWhere,
       include: [
@@ -267,7 +267,7 @@ const editLahanData = async (lahan_id, data) => {
   try {
     logger.info("Editing Lahan data", { lahan_id, data });
 
-    // Step 1: Find the existing Lahan including its LokasiRegion
+    // 1: find the existing Lahan including its LokasiRegion
     const lahan = await Lahan.findByPk(lahan_id, {
       include: [
         {
@@ -284,22 +284,22 @@ const editLahanData = async (lahan_id, data) => {
 
     logger.info("Found Lahan", { lahan_id });
 
-    // Step 2: Update Lahan data
+    // 2: update Lahan data
     const lahanData = data.lahan || {};
     if (lahanData.coordinates) {
       logger.info("Formatting coordinates to polygon", { coordinates: lahanData.coordinates });
 
-      // Convert coordinates to a Polygon
+      // convert coordinates to a Polygon
       const formattedCoordinates = lahanData.coordinates.map((coord) => [coord[1], coord[0]]);
       lahanData.polygon = { type: "Polygon", coordinates: [formattedCoordinates] };
       const area = turf.area(lahanData.polygon);
       lahanData.luasan_lahan = parseFloat((area / 10000).toFixed(2));
-      delete lahanData.coordinates; // Remove coordinates to avoid Sequelize error
+      delete lahanData.coordinates; // remove coordinates to avoid sequelize error
     }
 
-    let updatedLokasiRegion = lahan.lokasi_region; // Default to the existing region
+    let updatedLokasiRegion = lahan.lokasi_region; // default to the existing region
 
-    // Step 3: Update related LokasiRegion if provided
+    // 3: Update related LokasiRegion if provided
     if (data.lokasi_region) {
       logger.info("Updating LokasiRegion", { lahan_id, lokasi_region: data.lokasi_region });
 
@@ -310,7 +310,7 @@ const editLahanData = async (lahan_id, data) => {
         desa: data.lokasi_region.desa || lahan.lokasi_region?.desa,
       };
 
-      // Find or create new LokasiRegion
+      // find or create new LokasiRegion
       const [lokasiRegion] = await LokasiRegion.findOrCreate({
         where: updatedRegion,
         defaults: updatedRegion,
@@ -320,7 +320,7 @@ const editLahanData = async (lahan_id, data) => {
       updatedLokasiRegion = lokasiRegion;
     }
 
-    // Update Lahan in place
+    // update Lahan in place
     await lahan.update(lahanData);
     logger.info("Updated Lahan data", { lahan_id });
 
@@ -353,7 +353,7 @@ const deleteLahanData = async (lahan_id) => {
   try {
     logger.info("Deleting Lahan data", { lahan_id });
 
-    // Step 1: Find the Lahan
+    // 1: find the Lahan
     const lahan = await Lahan.findByPk(lahan_id);
 
     if (!lahan) {
@@ -363,7 +363,7 @@ const deleteLahanData = async (lahan_id) => {
 
     logger.info("Found Lahan", { lahan_id });
 
-    // Step 2: Find all Observasi related to the Lahan
+    // 2: find all Observasi related to the Lahan
     const observasiList = await Observasi.findAll({
       where: { lahan_id },
       attributes: ["observasi_id"],
@@ -371,7 +371,7 @@ const deleteLahanData = async (lahan_id) => {
 
     logger.info("Found related Observasi", { lahan_id, observasiCount: observasiList.length });
 
-    // Step 3: Delete all Observasi and related data
+    // 3: delete all Observasi and related data
     await Promise.all(
       observasiList.map(async (observasi) => {
         logger.info("Deleting Observasi", { observasi_id: observasi.observasi_id });
@@ -379,7 +379,7 @@ const deleteLahanData = async (lahan_id) => {
       })
     );
 
-    // Step 4: Delete the Lahan
+    // 4: delete the Lahan
     logger.info("Deleting Lahan", { lahan_id });
     await lahan.destroy();
 

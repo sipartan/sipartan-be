@@ -151,6 +151,11 @@ const verifyEmail = async (token) => {
             throw new NotFound('User not found.');
         }
 
+        if (user.is_email_verified) {
+            logger.warn('Email verification failed: Email is already verified.');
+            return;
+        }
+
         user.is_email_verified = true;
         await user.save();
         logger.info(`Email verified successfully for user ID: ${user.user_id}`);

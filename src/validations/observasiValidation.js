@@ -68,8 +68,6 @@ const editObservasi = {
         temperatur: Joi.number().optional(),
         curah_hujan: Joi.number().optional(),
         kelembapan_udara: Joi.number().optional(),
-        tanggal_kejadian: Joi.date().iso().optional(),
-        tanggal_penilaian: Joi.date().iso().optional(),
         tutupan_lahan: Joi.string().optional(),
         jenis_vegetasi: Joi.string().optional(),
         tinggi_muka_air_gambut: Joi.number().optional(),

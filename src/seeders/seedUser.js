@@ -31,7 +31,7 @@ const users = [
 
 const seedUsers = async () => {
     try {
-        // Fetch all existing users in one query
+        // fetch all existing users in one query
         const existingUsers = await User.findAll({
             where: {
                 username: users.map((u) => u.username),
@@ -43,7 +43,7 @@ const seedUsers = async () => {
         const existingUsernames = new Set(existingUsers.map((u) => u.username));
         const existingEmails = new Set(existingUsers.map((u) => u.email));
 
-        // Filter out existing users and hash passwords in parallel
+        // filter out existing users and hash passwords in parallel
         const newUsers = users
             .filter((user) => !existingUsernames.has(user.username) && !existingEmails.has(user.email))
             .map(async (user) => {
@@ -51,10 +51,10 @@ const seedUsers = async () => {
                 return user;
             });
 
-        // Wait for password hashing to complete
+        // wait for password hashing to complete
         const usersToCreate = await Promise.all(newUsers);
 
-        // Bulk insert new users
+        // bulk insert new users
         if (usersToCreate.length > 0) {
             await User.bulkCreate(usersToCreate);
             usersToCreate.forEach((user) => logger.info(`${user.role} user seeded successfully`));

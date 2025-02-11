@@ -24,7 +24,7 @@ const User = db.define(
     },
     instansi: {
       type: DataTypes.STRING,
-      allowNull: true, // Allow null for oauth users
+      allowNull: true, // allow null for oauth user
     },
     email: {
       type: DataTypes.STRING,
@@ -45,7 +45,7 @@ const User = db.define(
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: true, // Allow null for OAuth users
+      allowNull: true, // allow null for OAuth user
     },
     is_email_verified: {
       type: DataTypes.BOOLEAN,

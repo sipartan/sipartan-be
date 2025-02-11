@@ -25,8 +25,8 @@ const formatDate = (dateString) => {
   };
   
   /**
-   * Instead of querying the database, this function
-   * will search the local penilaianList array from the new data structure.
+   * instead of querying the database, this function
+   * will search the local penilaianList array.
    */
   const findPenilaian = async (kategoriPenilaian, penilaianList) => {
     let penilaianVariabel = {};
@@ -39,7 +39,7 @@ const formatDate = (dateString) => {
       }
     }
   
-    // Special return for kondisi tanah
+    // special return for kondisi tanah
     if (
       kategoriPenilaian === "Tingkat keparahan kondisi tanah mineral" ||
       kategoriPenilaian === "Tingkat keparahan kondisi tanah gambut"
@@ -47,18 +47,18 @@ const formatDate = (dateString) => {
       return penilaianVariabel;
     }
   
-    // Otherwise return only the 'variable' text
+    // otherwise return only the 'variable' text
     return penilaianVariabel.variable || "";
   };
   
   const pdfContent = async (data) => {
     /**
-     * 1) Convert the new data structure into the old variable names 
+     * 1. convert the new data structure into the old variable names 
      *    so can keep the same HTML placeholders.
      */
     const dataPDF = {};
   
-    // User-related
+    // user-related
     dataPDF.nama_user = data.user?.nama || "-";
     dataPDF.instansi_user = data.user?.instansi || "-";
   
@@ -67,7 +67,7 @@ const formatDate = (dateString) => {
     dataPDF.kecamatan = data.lokasi_region?.kecamatan || "-";
     dataPDF.desa = data.lokasi_region?.desa || "-";
   
-    // Observasi-related
+    // observasi-related
     dataPDF.tanggalKejadian = data.observasi?.tanggal_kejadian || null;
     dataPDF.tanggalPenilaian = data.observasi?.tanggal_penilaian || null;
     dataPDF.temperatur = data.observasi?.temperatur || "-";
@@ -82,10 +82,10 @@ const formatDate = (dateString) => {
     dataPDF.tutupan_lahan = data.observasi?.tutupan_lahan || "-";
     dataPDF.tinggi_muka_air_gambut = data.observasi?.tinggi_muka_air_gambut || "-";
   
-    // Lahan-related
+    // lahan-related
     dataPDF.jenis_tanah = data.lahan?.jenis_tanah || "-";
   
-    // Penilaian-related
+    // penilaian-related
     dataPDF.single_plot = (data.observasi?.plots || []).map((plot) => {
       return {
         luas_plot: plot.luasan_plot,
@@ -96,7 +96,7 @@ const formatDate = (dateString) => {
     });
   
     /**
-     * 2) Return the exact same HTML structure as before,
+     * 2. return the exact same HTML structure as before,
      *    but now it uses data from `dataPDF` adapted above.
      */
     return `
@@ -267,7 +267,7 @@ const formatDate = (dateString) => {
         
         ${await Promise.all(
           dataPDF.single_plot.map(async (plot, index) => {
-            // Determine the correct tanah condition (gambut vs mineral)
+            // determine the correct tanah condition (gambut vs mineral)
             const dataTanah =
               dataPDF.jenis_tanah === "Tanah Gambut"
                 ? await findPenilaian(

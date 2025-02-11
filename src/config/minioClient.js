@@ -19,15 +19,15 @@ const s3Client = new S3Client({
 
 const bucketName = config.minio.bucket;
 
-// Initialize MinIO: Test connection and ensure bucket exists
+// initialize minio: test connection and ensure bucket exists
 const initializeMinIO = async () => {
     try {
-        // Test connection
+        // test connection
         const command = new ListBucketsCommand({});
         const data = await s3Client.send(command);
         logger.info("Connected to MinIO. Buckets:", { buckets: data.Buckets });
 
-        // Ensure the bucket exists
+        // ensure the bucket exist
         try {
             await s3Client.send(new HeadBucketCommand({ Bucket: bucketName }));
             logger.info(`Bucket "${bucketName}" exists.`);
@@ -42,11 +42,11 @@ const initializeMinIO = async () => {
         }
     } catch (error) {
         logger.error("Error initializing MinIO:", error);
-        process.exit(1); // Exit process on failure
+        process.exit(1); // exit process on failure
     }
 };
 
-// Initialize MinIO
+// initialize minio
 initializeMinIO();
 
 module.exports = { s3Client, bucketName };
