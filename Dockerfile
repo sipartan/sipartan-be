@@ -42,4 +42,4 @@ RUN chmod +x /app/wait-for-it.sh
 EXPOSE 9001
 
 # Use the wait-for-it script to wait for the database, then start the app
-CMD ["sh", "-c", "./wait-for-it.sh sipartan-db:5432 -- node src/app.js && pkill -f chrome || true"]
+CMD ["./wait-for-it.sh", "sipartan-db:5432", "--", "node", "src/app.js"]
