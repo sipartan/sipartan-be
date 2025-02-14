@@ -12,7 +12,8 @@ const router = express.Router();
 const emailVerificationLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 3, // limit each account to 3 requests per windowMs
-    // limit by account email
+    keyGenerator: (req) => req.ip, // limit by IP address
+    // limit by account email -> should limit by email in future
     handler: (req, res) => res.status(429).json({
         error: 'Too many verification attempts',
         message: 'Please try again after 15 minutes'

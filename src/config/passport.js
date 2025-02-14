@@ -35,7 +35,7 @@ passport.use(
 
 // middleware to handle unauthorized requests
 passport.authenticateJwt = (req, res, next) => {
-    passport.authenticate('jwt', { session: false }, (err, user, info) => {
+    passport.authenticate('jwt', { session: false }, (err, user, info) => { // session: false to prevent creating session because we are using JWT
         if (err || !user) {
             return res.status(401).json({
                 status: 401,

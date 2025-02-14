@@ -13,8 +13,8 @@ const s3Client = new S3Client({
         accessKeyId: config.minio.rootUser,
         secretAccessKey: config.minio.rootPassword,
     },
-    region: "us-east-1",
-    forcePathStyle: true,
+    region: "ap-southeast-3", // region is required but not used for MinIO
+    forcePathStyle: true, // because MinIO does not support virtual host style, aws does but here we are using MinIO
 });
 
 const bucketName = config.minio.bucket;

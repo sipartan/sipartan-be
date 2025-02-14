@@ -29,12 +29,12 @@ const logger = winston.createLogger({
             format: format.combine(format.colorize(), consoleLogFormat),
         }),
         new DailyRotateFile({
-            filename: path.join('logs', 'app-%DATE%.log'),
+            filename: path.join('logs', 'app-%DATE%.log'), // log file will be created in logs folder
             datePattern: 'YYYY-MM-DD',
-            zippedArchive: true,
-            maxSize: '20m',
-            maxFiles: '14d',
-            level: 'info',
+            zippedArchive: true, // compress rotated files
+            maxSize: '20m', // rotate log file if size exceeds 20mb
+            maxFiles: '14d', // keep logs for 14 days
+            level: 'info', 
             format: format.combine(
                 format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
                 fileFormat

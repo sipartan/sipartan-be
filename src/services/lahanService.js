@@ -1,11 +1,12 @@
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
+const db = require("../config/database");
 const { NotFound } = require("../utils/response");
 const { Lahan, LokasiRegion, Observasi } = require("../models");
 const { mapHasilPenilaianToSkor, getHasilFromSkor } = require("../utils/karhutlaPenilaian");
 const { deleteObservasiData } = require("./observasiService");
 const paginate = require("../utils/pagination");
-const turf = require("@turf/turf");
 const logger = require("../utils/logger");
+const { areaQuery } = require("../utils/postgisQuery");
 
 const createLahanData = async (data) => {
   try {
@@ -13,13 +14,7 @@ const createLahanData = async (data) => {
 
     const {
       lokasi_region: { provinsi, kabupaten, kecamatan, desa },
-      lahan: {
-        nama_lahan,
-        jenis_tanah,
-        latitude,
-        longitude,
-        coordinates,
-      },
+      lahan: { nama_lahan, jenis_tanah, latitude, longitude, coordinates },
     } = data;
 
     logger.info("Finding or creating LokasiRegion", { provinsi, kabupaten, kecamatan, desa });
@@ -31,13 +26,36 @@ const createLahanData = async (data) => {
     // prepare polygon if coordinates are provided
     let polygon = null;
     let luasan_lahan = 0;
+
     if (coordinates && Array.isArray(coordinates)) {
       logger.info("Formatting coordinates for polygon", { coordinates });
+
       // convert [lat, long] to [long, lat]
       const formattedCoordinates = coordinates.map((coordinate) => [coordinate[1], coordinate[0]]);
-      polygon = { type: "Polygon", coordinates: [formattedCoordinates] };
-      const area = turf.area(polygon);
-      luasan_lahan = parseFloat((area / 10000).toFixed(2));
+
+      // ensure first and last coordinates are the same to form a valid polygon
+      if (
+        formattedCoordinates[0][0] !== formattedCoordinates[formattedCoordinates.length - 1][0] ||
+        formattedCoordinates[0][1] !== formattedCoordinates[formattedCoordinates.length - 1][1]
+      ) {
+        formattedCoordinates.push(formattedCoordinates[0]); // close the polygon loop
+      }
+
+      // construct GeoJSON format for PostGIS
+      const geoJsonPolygon = JSON.stringify({ // need to stringify to escape single quotes, the areaQuery expects a string
+        type: "Polygon",
+        coordinates: [formattedCoordinates],
+      });
+
+      // replace :geoJson with actual GeoJSON string
+      // type: Sequelize.QueryTypes.SELECT to return only the first result
+      const [result] = await db.query(areaQuery, {
+        replacements: { geoJson: geoJsonPolygon },
+        type: Sequelize.QueryTypes.SELECT,
+      });
+
+      luasan_lahan = parseFloat(result.area_in_hectares.toFixed(2));
+      polygon = geoJsonPolygon;
     }
 
     logger.info("Creating new Lahan record", {
@@ -57,10 +75,11 @@ const createLahanData = async (data) => {
       latitude,
       longitude,
       luasan_lahan,
-      ...(polygon && { polygon }),
+      polygon: db.literal(`ST_GeomFromGeoJSON('${polygon}')`), // Store as PostGIS geometry
     });
 
     logger.info("Successfully created Lahan", { lahan_id: newLahan.lahan_id });
+
     return {
       lokasi_region: {
         provinsi: lokasiRegion.provinsi,
@@ -197,20 +216,20 @@ const getAllLahanData = async (filters) => {
           polygon: lahan.polygon || null,
           observasiTerakhir: latestObservasi
             ? {
-                luasan_karhutla: latestObservasi.luasan_karhutla,
-                jenis_karhutla: latestObservasi.jenis_karhutla,
-                tinggi_muka_air_gambut: latestObservasi.tinggi_muka_air_gambut,
-                penggunaan_lahan: latestObservasi.penggunaan_lahan,
-                tutupan_lahan: latestObservasi.tutupan_lahan,
-                jenis_vegetasi: latestObservasi.jenis_vegetasi,
-                temperatur: latestObservasi.temperatur,
-                curah_hujan: latestObservasi.curah_hujan,
-                kelembapan_udara: latestObservasi.kelembapan_udara,
-                tanggal_kejadian: latestObservasi.tanggal_kejadian,
-                tanggal_penilaian: latestObservasi.tanggal_penilaian,
-                skor_akhir: latestObservasi.skor_akhir,
-                hasil_penilaian: getHasilFromSkor(latestObservasi.skor_akhir),
-              }
+              luasan_karhutla: latestObservasi.luasan_karhutla,
+              jenis_karhutla: latestObservasi.jenis_karhutla,
+              tinggi_muka_air_gambut: latestObservasi.tinggi_muka_air_gambut,
+              penggunaan_lahan: latestObservasi.penggunaan_lahan,
+              tutupan_lahan: latestObservasi.tutupan_lahan,
+              jenis_vegetasi: latestObservasi.jenis_vegetasi,
+              temperatur: latestObservasi.temperatur,
+              curah_hujan: latestObservasi.curah_hujan,
+              kelembapan_udara: latestObservasi.kelembapan_udara,
+              tanggal_kejadian: latestObservasi.tanggal_kejadian,
+              tanggal_penilaian: latestObservasi.tanggal_penilaian,
+              skor_akhir: latestObservasi.skor_akhir,
+              hasil_penilaian: getHasilFromSkor(latestObservasi.skor_akhir),
+            }
             : null,
         },
       };
@@ -286,20 +305,43 @@ const editLahanData = async (lahan_id, data) => {
 
     // 2: update Lahan data
     const lahanData = data.lahan || {};
-    if (lahanData.coordinates) {
+    let polygon = null;
+    let luasan_lahan = 0;
+
+    if (lahanData.coordinates && Array.isArray(lahanData.coordinates)) {
       logger.info("Formatting coordinates to polygon", { coordinates: lahanData.coordinates });
 
-      // convert coordinates to a Polygon
+      // convert [lat, long] to [long, lat]
       const formattedCoordinates = lahanData.coordinates.map((coord) => [coord[1], coord[0]]);
-      lahanData.polygon = { type: "Polygon", coordinates: [formattedCoordinates] };
-      const area = turf.area(lahanData.polygon);
-      lahanData.luasan_lahan = parseFloat((area / 10000).toFixed(2));
-      delete lahanData.coordinates; // remove coordinates to avoid sequelize error
+
+      // ensure first and last coordinates are the same to form a valid polygon
+      if (
+        formattedCoordinates[0][0] !== formattedCoordinates[formattedCoordinates.length - 1][0] ||
+        formattedCoordinates[0][1] !== formattedCoordinates[formattedCoordinates.length - 1][1]
+      ) {
+        formattedCoordinates.push(formattedCoordinates[0]); // Close the polygon loop
+      }
+
+      // construct GeoJSON and stringify it for PostGIS
+      const geoJsonPolygon = JSON.stringify({
+        type: "Polygon",
+        coordinates: [formattedCoordinates],
+      });
+
+      // calculate area using PostGIS
+      const [result] = await db.query(areaQuery, { // result only expected to have 1 row, the first row
+        replacements: { geoJson: geoJsonPolygon },
+        type: Sequelize.QueryTypes.SELECT,
+      });
+
+      luasan_lahan = parseFloat(result.area_in_hectares.toFixed(2));
+      polygon = geoJsonPolygon;
+      delete lahanData.coordinates; // remove raw coordinates
     }
 
     let updatedLokasiRegion = lahan.lokasi_region; // default to the existing region
 
-    // 3: Update related LokasiRegion if provided
+    // 3: update related LokasiRegion if provided
     if (data.lokasi_region) {
       logger.info("Updating LokasiRegion", { lahan_id, lokasi_region: data.lokasi_region });
 
@@ -321,8 +363,13 @@ const editLahanData = async (lahan_id, data) => {
     }
 
     // update Lahan in place
-    await lahan.update(lahanData);
-    logger.info("Updated Lahan data", { lahan_id });
+    await lahan.update({
+      ...lahanData,
+      luasan_lahan: luasan_lahan ? luasan_lahan : lahan.luasan_lahan,
+      polygon: polygon ? db.literal(`ST_GeomFromGeoJSON('${polygon}')`) : lahan.polygon,
+    });
+
+    const newLahan = await Lahan.findByPk(lahan_id);
 
     logger.info("Successfully edited Lahan", { lahan_id });
 
@@ -334,13 +381,13 @@ const editLahanData = async (lahan_id, data) => {
         desa: updatedLokasiRegion.desa,
       },
       lahan: {
-        lahan_id: lahan.lahan_id,
-        nama_lahan: lahan.nama_lahan,
-        jenis_tanah: lahan.jenis_tanah,
-        latitude: lahan.latitude,
-        longitude: lahan.longitude,
-        luasan_lahan: lahan.luasan_lahan,
-        polygon: lahan.polygon || null,
+        lahan_id: newLahan.lahan_id,
+        nama_lahan: newLahan.nama_lahan,
+        jenis_tanah: newLahan.jenis_tanah,
+        latitude: newLahan.latitude,
+        longitude: newLahan.longitude,
+        luasan_lahan: newLahan.luasan_lahan,
+        polygon: newLahan.polygon || null,
       },
     };
   } catch (error) {

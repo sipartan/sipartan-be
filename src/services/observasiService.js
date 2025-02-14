@@ -1,7 +1,7 @@
 const { User, Lahan, Observasi, Penilaian, Dokumentasi, Plot, PenilaianObservasi, LokasiRegion } = require("../models");
 const db = require("../config/database");
-const { Op } = require("sequelize");
-const turf = require("@turf/turf");
+const { Op, Sequelize } = require("sequelize");
+const { areaQuery } = require("../utils/postgisQuery");
 const { deleteDokumentasiData } = require("./dokumentasiService");
 const paginate = require("../utils/pagination");
 const { mapHasilPenilaianToSkor, getHasilFromSkor } = require("../utils/karhutlaPenilaian");
@@ -66,14 +66,29 @@ const createObservasiData = async (newDataObservasi) => {
 
         for (const plot of dataPlot) {
             const coordinates = plot.coordinates.map((coord) => [coord[1], coord[0]]);
-            const polygonGeoJSON = { type: "Polygon", coordinates: [coordinates] };
-            const area = turf.area(polygonGeoJSON);
-            const luasan_plot = parseFloat((area / 10000).toFixed(2));
+            if (
+                coordinates[0][0] !== coordinates[coordinates.length - 1][0] ||
+                coordinates[0][1] !== coordinates[coordinates.length - 1][1]
+            ) {
+                coordinates.push(coordinates[0]);
+            }
 
+            const geoJsonPolygon = JSON.stringify({
+                type: "Polygon",
+                coordinates: [coordinates],
+            });
+
+            const [result] = await db.query(areaQuery, {
+                replacements: { geoJson: geoJsonPolygon },
+                type: Sequelize.QueryTypes.SELECT,
+                transaction,
+            });
+
+            const luasan_plot = parseFloat(result.area_in_hectares.toFixed(2));
             totalLuasanKarhutla += luasan_plot;
 
             const newPlot = await Plot.create(
-                { observasi_id: observasi.observasi_id, luasan_plot, polygon: polygonGeoJSON },
+                { observasi_id: observasi.observasi_id, luasan_plot, polygon: db.literal(`ST_GeomFromGeoJSON('${geoJsonPolygon}')`) },
                 { transaction }
             );
 
@@ -486,17 +501,29 @@ const editPlotData = async (plot_id, updatedData) => {
         if (coordinates) {
             logger.info("Updating plot coordinates", { plot_id, coordinates });
             const formattedCoordinates = coordinates.map((coord) => [coord[1], coord[0]]);
-            const polygonGeoJSON = {
+
+            if (
+                formattedCoordinates[0][0] !== formattedCoordinates[formattedCoordinates.length - 1][0] ||
+                formattedCoordinates[0][1] !== formattedCoordinates[formattedCoordinates.length - 1][1]
+            ) {
+                formattedCoordinates.push(formattedCoordinates[0]);
+            }
+
+            const geoJsonPolygon = JSON.stringify({
                 type: "Polygon",
                 coordinates: [formattedCoordinates],
-            };
+            });
 
-            // calculate the new area (luasan_plot) in hectares
-            const area = turf.area(polygonGeoJSON);
-            const luasan_plot = parseFloat((area / 10000).toFixed(2));
+            const [result] = await db.query(areaQuery, {
+                replacements: { geoJson: geoJsonPolygon },
+                type: Sequelize.QueryTypes.SELECT,
+                transaction,
+            });
+
+            const luasan_plot = parseFloat(result.area_in_hectares.toFixed(2));
 
             // update the plot polygon and area
-            await plot.update({ polygon: polygonGeoJSON, luasan_plot }, { transaction });
+            await plot.update({ polygon: db.literal(`ST_GeomFromGeoJSON('${geoJsonPolygon}')`), luasan_plot }, { transaction });
 
             // recalculate total area for the observasi
             const allPlots = await Plot.findAll({ where: { observasi_id: observasi.observasi_id }, transaction });
@@ -563,18 +590,40 @@ const editPlotData = async (plot_id, updatedData) => {
         await transaction.commit();
         logger.info("Successfully edited plot data", { plot_id });
 
+        const updatedPlotData = await Plot.findByPk(plot_id, {
+            include: [
+                {
+                    model: PenilaianObservasi,
+                    include: [
+                        {
+                            model: Penilaian,
+                        },
+                        {
+                            model: Dokumentasi,
+                        },
+                    ],
+                },
+            ],
+        });
+
         // 7. return the updated plot details
         return {
-            plot_id: plot.plot_id,
-            luasan_plot: plot.luasan_plot,
-            polygon: plot.polygon,
-            penilaianList: penilaianList
-                ? penilaianList.map((p) => ({
-                    penilaian_observasi_id: p.penilaian_observasi_id,
-                    penilaian_id: p.penilaian_id,
-                }))
-                : [],
-        };
+            plot_id: updatedPlotData.plot_id,
+            luasan_plot: updatedPlotData.luasan_plot,
+            polygon: updatedPlotData.polygon,
+            kondisi_vegetasi: updatedPlotData.kondisi_vegetasi,
+            kondisi_tanah: updatedPlotData.kondisi_tanah,
+            skor_plot: updatedPlotData.skor,
+            hasil_plot: getHasilFromSkor(updatedPlotData.skor),
+            penilaianList: updatedPlotData.penilaian_observasis.map((po) => ({
+                penilaian_observasi_id: po.penilaian_observasi_id,
+                penilaian_id: po.penilaian_id,
+                variable: po.penilaian.variable,
+                kategori: po.penilaian.kategori,
+                deskripsi: po.penilaian.deskripsi,
+                dokumentasi_ids: po.dokumentasis.map((doc) => doc.dokumentasi_id),
+            })),
+        }
     } catch (error) {
         // rollback the transaction if an error happen
         await transaction.rollback();

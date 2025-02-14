@@ -20,7 +20,7 @@ async function paginate(model, options) {
         limit,
     } = options;
 
-    const offset = (page - 1) * limit;
+    const offset = (page - 1) * limit; // offset is for skipping the previous page
 
     const { count, rows } = await model.findAndCountAll({
         where,
@@ -31,10 +31,10 @@ async function paginate(model, options) {
         offset,
     });
 
-    const totalPages = Math.ceil(count / limit) || 1;
+    const totalPages = Math.ceil(count / limit) || 1; // ceil is for rounding up to the nearest integer
 
     return {
-        results: rows,
+        results: rows, // rows is the array of paginated results
         page,
         limit,
         totalPages,
