@@ -82,8 +82,26 @@ const uploadDokumentasi = async (req, res, next) => {
         // process each uploaded file
         const files = req.files.map((file) => {
             const now = new Date();
-            const filenameFormatted = `${now.toISOString().replace(/[:.]/g, '-')}_${nanoid()}`;
-            const s3Key = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${req.body.provinsi}/${req.body.kabupaten}/${req.body.kecamatan}/${req.body.desa}/${req.body.tipe}/${req.body.kategori}/${filenameFormatted}`;
+            
+            // extract file extension
+            const fileExtension = file.originalname.includes('.') 
+                ? file.originalname.split('.').pop().toLowerCase() 
+                : '';
+
+            const filenameFormatted = `${now.toISOString().replace(/[:.]/g, '-')}_${nanoid()}${fileExtension ? '.' + fileExtension : ''}`;
+
+            // construct S3 key
+            const s3Key = [
+                now.getFullYear(),
+                String(now.getMonth() + 1).padStart(2, '0'),
+                req.body.provinsi,
+                req.body.kabupaten,
+                req.body.kecamatan,
+                req.body.desa,
+                req.body.tipe,
+                req.body.kategori,
+                filenameFormatted
+            ].join('/');
 
             return {
                 uploadPromise: new Upload({
