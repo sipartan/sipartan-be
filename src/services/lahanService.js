@@ -50,8 +50,8 @@ const createLahanData = async (data) => {
       // replace :geoJson with actual GeoJSON string
       // type: Sequelize.QueryTypes.SELECT to return only the first result
       const [result] = await db.query(areaQuery, {
-        replacements: { geoJson: geoJsonPolygon },
-        type: Sequelize.QueryTypes.SELECT,
+        replacements: { geoJson: geoJsonPolygon }, // replace :geoJson with actual GeoJSON string
+        type: Sequelize.QueryTypes.SELECT, // query type to return only the first result, select is used to return all results
       });
 
       luasan_lahan = parseFloat(result.area_in_hectares.toFixed(2));

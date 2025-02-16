@@ -4,6 +4,8 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 const logger = require('./utils/logger');
+const db = require('./config/database');
+const { s3Client } = require('./config/minioClient');
 const dbGenerate = require('./config/dbGenerator');
 const errorHandler = require('./middlewares/error');
 const userRoute = require('./routes/userRoute');
@@ -26,6 +28,7 @@ app.use(
       status: tokens.status(req, res),
       response_time: `${tokens['response-time'](req, res)} ms`,
       user_agent: tokens['user-agent'](req, res),
+      ip: req.ip,
     });
   }, {
     stream: {
@@ -37,11 +40,6 @@ app.use(
   })
 );
 
-app.use(cors());
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-app.use(compression());
-app.use(passport.initialize());
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,  // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
@@ -52,6 +50,13 @@ app.use(rateLimit({
   },
   skip: (req) => process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development',
 }));
+
+app.use(cors());
+app.use(compression()); // Moved before JSON parsing for efficiency
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+app.use(passport.initialize());
 
 // database initialization
 dbGenerate().catch((err) => {
@@ -81,12 +86,21 @@ const server = app.listen(PORT, () => {
 });
 
 // graceful shutdown
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   logger.info('Gracefully shutting down...');
+  try {
+    await db.close(); // close DB connection properly
+    logger.info('Database connection closed.');
+    await s3Client.destroy(); // close MinIO connection properly
+    logger.info('MinIO connection closed.');
+  } catch (err) {
+    logger.error('Error closing connections:', err);
+  }
   server.close(() => {
     logger.info('HTTP server closed.');
     process.exit(0);
   });
 });
+
 
 module.exports = app;
