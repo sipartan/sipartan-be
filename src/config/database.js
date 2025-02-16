@@ -39,7 +39,7 @@ const db = new Sequelize(
       idle: 10000, // time (ms) before an idle connection is released
       evict: 1000, // time (ms) to check for idle connections to release
     },
-    // logging: false, 
+    logging: false, 
   }
 );
 
