@@ -28,7 +28,7 @@ app.use(
       status: tokens.status(req, res),
       response_time: `${tokens['response-time'](req, res)} ms`,
       user_agent: tokens['user-agent'](req, res),
-      ip: req.ip,
+      ip: req.headers['x-forwarded-for'] || req.ip,
     });
   }, {
     stream: {
