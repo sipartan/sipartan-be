@@ -18,9 +18,11 @@ const createLahan = {
                 .items(
                     Joi.array()
                         .length(2)
-                        .items(Joi.number().required())
-                )
-                .optional(),
+                        .items(
+                            Joi.number().min(-90).max(90).required(), 
+                            Joi.number().min(-180).max(180).required() 
+                        )
+                ).optional(),
         }).required(),
     }).unknown(false),
 };
@@ -71,9 +73,11 @@ const editLahan = {
                 .items(
                     Joi.array()
                         .length(2)
-                        .items(Joi.number().required())
-                )
-                .optional(),
+                        .items(
+                            Joi.number().min(-90).max(90).required(), 
+                            Joi.number().min(-180).max(180).required() 
+                        )
+                ).optional(),
         }).optional(),
     }).unknown(false),
 };

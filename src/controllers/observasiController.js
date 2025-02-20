@@ -100,6 +100,7 @@ const uploadDokumentasi = async (req, res, next) => {
                 req.body.desa,
                 req.body.tipe,
                 req.body.kategori,
+                req.body.variable,
                 filenameFormatted
             ].join('/');
 

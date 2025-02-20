@@ -20,9 +20,11 @@ const createObservasi = {
                     .items(
                         Joi.array()
                             .length(2)
-                            .items(Joi.number().required())
-                    )
-                    .required(),
+                            .items(
+                                Joi.number().min(-90).max(90).required(),
+                                Joi.number().min(-180).max(180).required()
+                            )
+                    ).required(),
                 penilaian_id: Joi.array().items(Joi.string().guid({ version: ['uuidv4'] }).required()).required()
             })
         ).required(),
@@ -90,12 +92,13 @@ const convertToPDF = {
 const uploadDokumentasi = {
     body: Joi.object().keys({
         penilaian_observasi_id: Joi.string().guid({ version: ['uuidv4'] }).required(),
-        tipe: Joi.string().required(),
         provinsi: Joi.string().required(),
         kabupaten: Joi.string().required(),
         kecamatan: Joi.string().required(),
         desa: Joi.string().required(),
+        tipe: Joi.string().required(),
         kategori: Joi.string().required(),
+        variable: Joi.string().required(),
     }).unknown(false),
 };
 
@@ -121,9 +124,11 @@ const editPlot = {
             .items(
                 Joi.array()
                     .length(2)
-                    .items(Joi.number().required())
-            )
-            .optional(),
+                    .items(
+                        Joi.number().min(-90).max(90).required(),
+                        Joi.number().min(-180).max(180).required()
+                    )
+            ).optional(),
 
         penilaianList: Joi.array()
             .items(

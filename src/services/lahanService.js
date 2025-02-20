@@ -9,6 +9,7 @@ const logger = require("../utils/logger");
 const { areaQuery } = require("../utils/postgisQuery");
 
 const createLahanData = async (data) => {
+  const transaction = await db.transaction();
   try {
     logger.info("Creating Lahan data", { data });
 
@@ -21,6 +22,7 @@ const createLahanData = async (data) => {
     const [lokasiRegion] = await LokasiRegion.findOrCreate({
       where: { provinsi, kabupaten, kecamatan, desa },
       defaults: { provinsi, kabupaten, kecamatan, desa },
+      transaction,
     });
 
     // prepare polygon if coordinates are provided
@@ -75,8 +77,10 @@ const createLahanData = async (data) => {
       latitude,
       longitude,
       luasan_lahan,
-      polygon: db.literal(`ST_GeomFromGeoJSON('${polygon}')`), // Store as PostGIS geometry
-    });
+      polygon: polygon ? db.literal(`ST_GeomFromGeoJSON('${polygon}')`) : null, // convert GeoJSON to PostGIS geometry
+    }, { transaction });
+
+    await transaction.commit();
 
     logger.info("Successfully created Lahan", { lahan_id: newLahan.lahan_id });
 
@@ -98,6 +102,7 @@ const createLahanData = async (data) => {
       },
     };
   } catch (error) {
+    await transaction.rollback();
     logger.error("Error creating Lahan", { error: error.message });
     throw error;
   }
@@ -283,6 +288,7 @@ const getDetailLahanData = async (lahan_id) => {
 };
 
 const editLahanData = async (lahan_id, data) => {
+  const transaction = await db.transaction();
   try {
     logger.info("Editing Lahan data", { lahan_id, data });
 
@@ -294,6 +300,7 @@ const editLahanData = async (lahan_id, data) => {
           attributes: ["lokasi_region_id", "provinsi", "kabupaten", "kecamatan", "desa"],
         },
       ],
+      transaction,
     });
 
     if (!lahan) {
@@ -332,6 +339,7 @@ const editLahanData = async (lahan_id, data) => {
       const [result] = await db.query(areaQuery, { // result only expected to have 1 row, the first row
         replacements: { geoJson: geoJsonPolygon },
         type: Sequelize.QueryTypes.SELECT,
+        transaction,
       });
 
       luasan_lahan = parseFloat(result.area_in_hectares.toFixed(2));
@@ -356,6 +364,7 @@ const editLahanData = async (lahan_id, data) => {
       const [lokasiRegion] = await LokasiRegion.findOrCreate({
         where: updatedRegion,
         defaults: updatedRegion,
+        transaction,
       });
 
       lahanData.lokasi_region_id = lokasiRegion.lokasi_region_id;
@@ -367,7 +376,9 @@ const editLahanData = async (lahan_id, data) => {
       ...lahanData,
       luasan_lahan: luasan_lahan ? luasan_lahan : lahan.luasan_lahan,
       polygon: polygon ? db.literal(`ST_GeomFromGeoJSON('${polygon}')`) : lahan.polygon,
-    });
+    }, { transaction });
+
+    await transaction.commit();
 
     const newLahan = await Lahan.findByPk(lahan_id);
 
@@ -391,12 +402,15 @@ const editLahanData = async (lahan_id, data) => {
       },
     };
   } catch (error) {
+    await transaction.rollback();
     logger.error("Error updating Lahan", { lahan_id, error: error.message });
     throw error;
   }
 };
 
 const deleteLahanData = async (lahan_id) => {
+  const transaction = await db.transaction();
+  
   try {
     logger.info("Deleting Lahan data", { lahan_id });
 
@@ -414,6 +428,7 @@ const deleteLahanData = async (lahan_id) => {
     const observasiList = await Observasi.findAll({
       where: { lahan_id },
       attributes: ["observasi_id"],
+      transaction
     });
 
     logger.info("Found related Observasi", { lahan_id, observasiCount: observasiList.length });
@@ -422,16 +437,19 @@ const deleteLahanData = async (lahan_id) => {
     await Promise.all(
       observasiList.map(async (observasi) => {
         logger.info("Deleting Observasi", { observasi_id: observasi.observasi_id });
-        await deleteObservasiData(observasi.observasi_id);
+        await deleteObservasiData(observasi.observasi_id, transaction);
       })
     );
 
     // 4: delete the Lahan
     logger.info("Deleting Lahan", { lahan_id });
-    await lahan.destroy();
+    await lahan.destroy({ transaction });
 
-    logger.info("Successfully deleted Lahan", { lahan_id });
+    await transaction.commit();
+    logger.info("Successfully deleted Lahan and all related data", { lahan_id });
+
   } catch (error) {
+    await transaction.rollback();
     logger.error("Error deleting Lahan", { lahan_id, error: error.message });
     throw error;
   }

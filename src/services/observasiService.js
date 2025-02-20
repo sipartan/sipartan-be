@@ -429,8 +429,8 @@ const editObservasiData = async (observasi_id, updatedData) => {
     }
 };
 
-const deleteObservasiData = async (observasi_id) => {
-    const transaction = await db.transaction();
+const deleteObservasiData = async (observasi_id, providedTransaction = null) => {
+    transaction = providedTransaction || (await db.transaction());
 
     try {
         logger.info("Fetching observasi for deletion, ID:", { observasi_id });
@@ -454,10 +454,10 @@ const deleteObservasiData = async (observasi_id) => {
         logger.info("Deleting observasi record, ID:", { observasi_id });
         await Observasi.destroy({ where: { observasi_id }, transaction });
 
-        await transaction.commit();
+        if (!providedTransaction) await transaction.commit();
         logger.info("Successfully deleted observasi and associated data, ID:", { observasi_id });
     } catch (error) {
-        await transaction.rollback();
+        if (!providedTransaction) await transaction.rollback();
         logger.error("Error deleting observasi data", { observasi_id, error: error.message });
         throw error;
     }
@@ -626,13 +626,15 @@ const editPlotData = async (plot_id, updatedData) => {
         }
     } catch (error) {
         // rollback the transaction if an error happen
-        await transaction.rollback();
+        if (transaction) await transaction.rollback();
         logger.error("Error editing plot data", { plot_id, error: error.message });
         throw error;
     }
 };
 
-const deletePlotData = async (plot_id, transaction = null) => {
+const deletePlotData = async (plot_id, providedTransaction = null) => {
+    transaction = providedTransaction || (await db.transaction());
+
     try {
         logger.info("Deleting plot data", { plot_id });
 
@@ -710,9 +712,11 @@ const deletePlotData = async (plot_id, transaction = null) => {
             { where: { observasi_id: observasi.observasi_id }, transaction }
         );
 
+        if (!providedTransaction) await transaction.commit();
         logger.info("Successfully deleted plot data and recalculated observasi", { plot_id });
 
     } catch (error) {
+        if (!providedTransaction) await transaction.rollback();
         logger.error("Error deleting plot data", { plot_id, error: error.message });
         throw error;
     }
