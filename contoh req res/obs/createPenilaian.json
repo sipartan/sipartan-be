@@ -1,8 +1,0 @@
-{
-    "variable": "Tinggi",
-    "type": "Kondisi Tanah",
-    "kategori": "Tingkat Keparahan Kondisi Tanah Gambut",
-    "deskripsi": "Bila lapisan gambut yang terbakar sampai kedalaman lebih dari 50 cm",
-    "bobot": 30,
-    "nilai": 3
-}
