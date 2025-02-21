@@ -704,12 +704,12 @@ const deletePlotData = async (plot_id, providedTransaction = null) => {
             transaction,
         });
 
-        let skorAkhir = null;
-        let luasanKarhutla = null;
+        let skorAkhir = 0;
+        let luasanKarhutla = 0;
 
         if (remainingPlots.length > 0) {
             // calculate total skor_akhir and luasan_karhutla
-            skorAkhir = remainingPlots.reduce((acc, plot) => acc + (plot.skor || 0), 0);
+            skorAkhir = remainingPlots.reduce((acc, plot) => acc + (plot.skor || 0), 0) / remainingPlots.length;
             luasanKarhutla = remainingPlots.reduce((acc, plot) => acc + (plot.luasan_plot || 0), 0);
         }
 

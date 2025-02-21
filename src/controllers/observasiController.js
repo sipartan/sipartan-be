@@ -188,7 +188,7 @@ const createPenilaian = async (req, res, next) => {
         const result = await penilaianService.createPenilaianData(newData);
         return res
             .status(201)
-            .json({ status: 200, message: "Berhasil create penilaian", data: result });
+            .json({ status: 201, message: "Berhasil create penilaian", data: result });
     }
     catch (error) {
         return next(error);
