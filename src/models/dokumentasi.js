@@ -1,6 +1,5 @@
 const { Sequelize } = require("sequelize");
 const db = require("../config/database.js");
-const Plot = require('./plot.js')
 
 const { DataTypes } = Sequelize;
 
@@ -16,23 +15,15 @@ const Dokumentasi = db.define(
         notEmpty: true,
       },
     },
-    plot_id: {
-      type: DataTypes.STRING,
-      defaultValue: undefined,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    nama: {
+    penilaian_observasi_id: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    type: {
-      type: DataTypes.STRING,
+    s3_key: {
+      type: DataTypes.STRING(500), 
       allowNull: false,
       validate: {
         notEmpty: true,
@@ -44,12 +35,5 @@ const Dokumentasi = db.define(
     timestamps: true,
   }
 );
-
-Plot.hasMany(Dokumentasi, {
-  foreignKey: "plot_id",
-});
-Dokumentasi.belongsTo(Plot, {
-  foreignKey: "plot_id",
-});
 
 module.exports = Dokumentasi;

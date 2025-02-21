@@ -1,7 +1,5 @@
 const { Sequelize } = require("sequelize");
 const db = require("../config/database.js");
-const Observasi = require('./observasi.js')
-
 const { DataTypes } = Sequelize;
 
 const Plot = db.define(
@@ -16,9 +14,8 @@ const Plot = db.define(
         notEmpty: true,
       },
     },
-    observation_id: {
+    observasi_id: {
       type: DataTypes.STRING,
-      defaultValue: undefined,
       allowNull: false,
       validate: {
         notEmpty: true,
@@ -31,18 +28,33 @@ const Plot = db.define(
         notEmpty: true,
       },
     },
+    polygon: {
+      type: DataTypes.GEOMETRY("POLYGON"),
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    kondisi_vegetasi: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    kondisi_tanah: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    skor: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      defaultValue: 0,
+    },
   },
   {
     freezeTableName: true,
     timestamps: true,
   }
 );
-
-Observasi.hasMany(Plot, {
-  foreignKey: "observation_id",
-});
-Plot.belongsTo(Observasi, {
-  foreignKey: "observation_id",
-});
 
 module.exports = Plot;

@@ -1,24 +1,99 @@
 const express = require("express");
-const { verifyToken } = require("../middleware/authMiddleware");
-const { setMulter } = require("../middleware/multer");
-const ObservasiController = require("../controllers/observasiController");
+const passport = require('../config/passport');
+const { authorizeRoles } = require("../middlewares/auth");
+const { uploadFiles } = require("../middlewares/multer");
+const observasiController = require("../controllers/observasiController");
+const observasiValidation = require("../validations/observasiValidation");
+const validate = require("../middlewares/validate");
 
 const router = express.Router();
-const observasiController = new ObservasiController();
 
-// Note yang dicomment ini sebenernya ga dipake frontend or mobile, tapi lebih ke testing API
-// router.post("/observasi", verifyToken, observasiController.createObservation); // mark
-// router.post("/plot", verifyToken, observasiController.createPlot); // mark
-router.post("/observasi/penilaian", verifyToken, observasiController.createPenilaian);
-// router.post("/penilaian-observasi", verifyToken, observasiController.createPenilaianObservasi); // mark
-// router.post("/hasil", verifyToken, observasiController.createHasil); // mark
-router.post("/observasi/dokumentasi", verifyToken, setMulter(), observasiController.createDokumentasi);
-router.post("/observasi", verifyToken, observasiController.createKarhutla);
+router.route("/")
+    .post(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.createObservasi),
+        observasiController.createObservasi
+    )
+    .get(
+        validate(observasiValidation.getObservasi),
+        observasiController.getObservasi
+    );
 
-router.get("/observasi/penilaian", verifyToken, observasiController.getPenilaian);
-router.get("/observasi/dokumentasi/:fileName", observasiController.getImage);
-router.get("/observasi/dokumentasiName", verifyToken, observasiController.getImageName);
+router.route("/penilaian")
+    .post(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.createPenilaian),
+        observasiController.createPenilaian
+    )
+    .get(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        observasiController.getAllPenilaian
+    );
 
-router.delete("/penilaian/:id", verifyToken, observasiController.deletePenilaian);
+router.route("/dokumentasi")
+    .post(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        uploadFiles,
+        validate(observasiValidation.uploadDokumentasi),
+        observasiController.uploadDokumentasi
+    );
+
+router.route("/dokumentasi/:dokumentasi_id")
+    .get(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.getDokumentasi),
+        observasiController.getDokumentasi
+    )
+    .delete(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.deleteDokumentasi),
+        observasiController.deleteDokumentasi
+    );
+
+router.route("/plot/:plot_id")
+    .patch(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.editPlot),
+        observasiController.editPlot
+    )
+    .delete(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.deletePlot),
+        observasiController.deletePlot
+    );
+
+router.route("/:observasi_id")
+    .get(
+        validate(observasiValidation.getObservasiDetail),
+        observasiController.getObservasiDetail
+    )
+    .patch(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.editObservasi),
+        observasiController.editObservasi
+    )
+    .delete(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.deleteObservasi),
+        observasiController.deleteObservasi
+    );
+
+router.route("/:observasi_id/pdf")
+    .get(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(observasiValidation.convertToPDF),
+        observasiController.convertToPDF
+    );
 
 module.exports = router;

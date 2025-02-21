@@ -1,21 +1,40 @@
 const express = require("express");
-const LahanController = require("../controllers/lahanController");
-const { verifyToken } = require("../middleware/authMiddleware");
+const passport = require('../config/passport');
+const { authorizeRoles } = require("../middlewares/auth");
+const lahanController = require("../controllers/lahanController");
+const lahanValidation = require("../validations/lahanValidation");
+const validate = require("../middlewares/validate");
 
 const router = express.Router();
-const lahanController = new LahanController();
 
-// ntr masukin verifyToken kalo udh mau di aktifin lagi authnya
-// router.post("/lokasi-region", verifyToken, lahanController.createLokasiRegion); // mark
-// router.post("/data-lahan", verifyToken, lahanController.createDataUmumLahan); // mark
-router.post("/lahan-karhutla", verifyToken, lahanController.createLahanKarhutla);
+router.route("/")
+    .post(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(lahanValidation.createLahan),
+        lahanController.createLahan
+    )
+    .get(
+        validate(lahanValidation.getAllLahan),
+        lahanController.getAllLahan
+    );
 
-router.get("/lahan-karhutla/:id/:obsId", lahanController.getSingleResult);
-router.get("/lahan-karhutla", lahanController.getResults);
-router.get("/lahan-karhutla/downloadPDF/:id/:obsId", verifyToken, lahanController.downloadPDF);
-
-router.put("/lahan-karhutla/:id/:obsId", verifyToken, lahanController.editKarhutla);
-
-router.delete("/lahan-karhutla/:id", verifyToken, lahanController.deleteKarhutla);
+router.route("/:lahan_id")
+    .get(
+        validate(lahanValidation.getDetailLahan),
+        lahanController.getDetailLahan
+    )
+    .patch(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(lahanValidation.editLahan),
+        lahanController.editLahan
+    )
+    .delete(
+        passport.authenticateJwt,
+        authorizeRoles("penilai", "admin"),
+        validate(lahanValidation.deleteLahan),
+        lahanController.deleteLahan
+    );
 
 module.exports = router;

@@ -28,7 +28,18 @@ const db = new Sequelize(
   {
     host: process.env.DB_HOST,
     dialect: "postgres",
-    port: process.env.DB_PORT
+    port: process.env.DB_PORT,
+    define: {
+      schema: process.env.DB_SCHEMA,
+    },
+    pool: {
+      max: 10, // maximum number of connections (adjust based on server capacity)
+      min: 2, // minimum number of connections
+      acquire: 30000, // maximum time (ms) to get a connection before throwing an error
+      idle: 10000, // time (ms) before an idle connection is released
+      evict: 1000, // time (ms) to check for idle connections to release
+    },
+    logging: false, 
   }
 );
 

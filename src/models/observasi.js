@@ -1,14 +1,12 @@
 const { Sequelize } = require("sequelize");
 const db = require("../config/database.js");
-const User = require("./user.js");
-const LokasiRegion = require("./lokasiRegion.js");
 
 const { DataTypes } = Sequelize;
 
-const DataUmumLahan = db.define(
-  "data_umum_lahan",
+const Observasi = db.define(
+  "observasi",
   {
-    data_lahan_id: {
+    observasi_id: {
       type: DataTypes.STRING,
       defaultValue: Sequelize.literal("gen_random_uuid()"),
       allowNull: false,
@@ -25,9 +23,48 @@ const DataUmumLahan = db.define(
         notEmpty: true,
       },
     },
-    region_location_id: {
+    lahan_id: {
       type: DataTypes.STRING,
       defaultValue: undefined,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    tanggal_kejadian: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    tanggal_penilaian: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    luasan_karhutla: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    jenis_karhutla: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    tinggi_muka_air_gambut: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    penggunaan_lahan: {
+      type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
@@ -47,75 +84,30 @@ const DataUmumLahan = db.define(
         notEmpty: true,
       },
     },
-    luasan_karhutla: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    jenis_tanah: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    tinggi_muka_air_gambut: {
+    temperatur: {
       type: DataTypes.FLOAT,
       allowNull: true,
       validate: {
         notEmpty: true,
       },
     },
-    jenis_karhutla: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    penggunaan_lahan: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    latitude: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    longitude: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    temperatur: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
     curah_hujan: {
       type: DataTypes.FLOAT,
-      allowNull: false,
+      allowNull: true,
       validate: {
         notEmpty: true,
       },
     },
-    kelembaban_udara: {
+    kelembapan_udara: {
       type: DataTypes.FLOAT,
-      allowNull: false,
+      allowNull: true,
       validate: {
         notEmpty: true,
       },
+    },
+    skor_akhir: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
     },
   },
   {
@@ -124,18 +116,4 @@ const DataUmumLahan = db.define(
   }
 );
 
-User.hasMany(DataUmumLahan, {
-  foreignKey: "user_id",
-});
-DataUmumLahan.belongsTo(User, {
-  foreignKey: "user_id",
-});
-
-LokasiRegion.hasMany(DataUmumLahan, {
-  foreignKey: "region_location_id",
-});
-DataUmumLahan.belongsTo(LokasiRegion, {
-  foreignKey: "region_location_id",
-});
-
-module.exports = DataUmumLahan;
+module.exports = Observasi;

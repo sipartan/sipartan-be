@@ -1,87 +1,107 @@
-const User = require("../model/user");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const userService = require('../services/userService');
+const logger = require('../utils/logger');
 
-require("dotenv").config();
-const secretKey = process.env.SECRETKEY;
-
-class UserController {
-  isValidEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
+/**
+ * Retrieves all users with pagination and filtering.
+ */
+const getAllUsers = async (req, res, next) => {
+  try {
+    const users = await userService.getUsers(req.query);
+    logger.info('Users retrieved successfully', { query: req.query });
+    return res
+      .status(200)
+      .json({ status: 200, message: 'Users retrieved successfully', data: users });
+  } catch (error) {
+    logger.error('Failed to retrieve users:', error);
+    return next(error);
   }
+};
 
-  createUser = async (req, res) => {
-    try {
-      const { nama, instansi, email, username, password } = req.body;
-      const requiredFields = ["nama", "instansi", "email", "username", "password"];
-      const missingFields = requiredFields.filter((field) => !req.body.hasOwnProperty(field));
+/**
+ * Retrieves a single user by ID.
+ */
+const getUser = async (req, res, next) => {
+  try {
+    const user = await userService.getUserById(req.params.user_id, req.user);
+    logger.info(`User retrieved successfully: ${req.params.user_id}`);
+    return res
+      .status(200)
+      .json({ status: 200, message: 'User retrieved successfully', data: user });
+  } catch (error) {
+    logger.error(`Failed to retrieve user: ${req.params.user_id}`, error);
+    return next(error);
+  }
+};
 
-      if (missingFields.length > 0) {
-        res
-          .status(400)
-          .json({ msg: `Data belum lengkap, field yang kurang: ${missingFields.join(", ")}` });
-      } else {
-        if (!this.isValidEmail(email)) {
-          res.status(400).json({ msg: `Format email salah` });
-        } else {
-          const salt = bcrypt.genSaltSync(10);
-          const hashedPassword = await bcrypt.hashSync(password, salt);
+/**
+ * Updates a user by ID.
+ */
+const updateUser = async (req, res, next) => {
+  try {
+    const user = await userService.updateUser(req.params.user_id, req.body, req.user);
+    logger.info(`User updated successfully: ${req.params.user_id}`);
+    return res
+      .status(200)
+      .json({ status: 200, message: 'User updated successfully', data: user });
+  } catch (error) {
+    logger.error(`Failed to update user: ${req.params.user_id}`, error);
+    return next(error);
+  }
+};
 
-          const userCreated = await User.create({
-            nama: nama,
-            instansi: instansi,
-            email: email,
-            username: username,
-            password: hashedPassword,
-          });
+/**
+ * Deletes a user by ID.
+ */
+const deleteUser = async (req, res, next) => {
+  try {
+    await userService.deleteUser(req.params.user_id, req.user);
+    logger.info(`User deleted successfully: ${req.params.user_id}`);
+    return res
+      .status(200)
+      .json({ status: 200, message: 'User deleted successfully' });
+  } catch (error) {
+    logger.error(`Failed to delete user: ${req.params.user_id}`, error);
+    return next(error);
+  }
+};
 
-          res.status(201).json({ msg: "Register User Berhasil", userCreated });
-        }
-      }
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
-    }
-  };
+/**
+ * Verifies a user's role (e.g., promoting from 'guest' to 'penilai').
+ */
+const verifyUserRole = async (req, res, next) => {
+  try {
+    const user = await userService.verifyUserRole(req.params.user_id, req.body.role);
+    logger.info(`User role verified successfully: ${req.params.user_id}`);
+    return res
+      .status(200)
+      .json({ status: 200, message: 'User role verified successfully', data: user });
+  } catch (error) {
+    logger.error(`Failed to verify user role: ${req.params.user_id}`, error);
+    return next(error);
+  }
+};
 
-  login = async (req, res) => {
-    try {
-      const { email, password } = req.body;
-
-      const foundUser = await User.findOne({
-        where: {
-          email: email,
-        },
-      });
-      if (!foundUser) return res.status(400).json({ msg: "Email atau Password salah" });
-
-      const match = bcrypt.compareSync(password, foundUser.password);
-      if (!match) return res.status(400).json({ msg: "Email atau Password salah" });
-
-      const token = jwt.sign({ email, id: foundUser.user_id, nama: foundUser.nama }, secretKey, {
-        expiresIn: "1d",
-      });
-
-      res.status(200).json({ msg: "Berhasil login", token });
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
-    }
-  };
-
-  getUser = async (req, res) => {
-    try {
-      const foundUser = await User.findAll({
-        attributes: ["user_id", "nama", "instansi", "email", "username"],
-        where: {
-          user_id: req.user.id,
-        },
-      });
-
-      res.status(200).json({ msg: "Berhasil Get User", foundUser });
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
-    }
-  };
+/**
+ * Get user profile
+ */
+const getProfile = async (req, res, next) => {
+  try {
+    const user = await userService.getUserById(req.user.user_id, req.user);
+    logger.info(`User profile retrieved successfully: ${req.user.user_id}`);
+    return res
+      .status(200)
+      .json({ status: 200, message: 'User profile retrieved successfully', data: user });
+  } catch (error) {
+    logger.error(`Failed to retrieve user profile: ${req.user.user_id}`, error);
+    return next(error);
+  }
 }
 
-module.exports = UserController;
+module.exports = {
+  getAllUsers,
+  getUser,
+  updateUser,
+  deleteUser,
+  verifyUserRole,
+  getProfile
+};

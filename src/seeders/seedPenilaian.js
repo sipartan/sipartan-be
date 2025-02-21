@@ -1,4 +1,5 @@
-const Penilaian = require('../model/penilaian'); 
+const Penilaian = require('../models/penilaian');
+const logger = require('../utils/logger');
 
 const dataPenilaian = [
     {
@@ -277,11 +278,19 @@ const dataPenilaian = [
 
 async function seedPenilaian() {
     try {
-        await Penilaian.bulkCreate(dataPenilaian);
+        const penilaianCount = await Penilaian.count();
 
-        console.log("Seeding penilaian completed!");
+        if (penilaianCount === 0) {
+            logger.info("Database appears to be newly created. Seeding penilaian data...");
+            await Penilaian.bulkCreate(dataPenilaian);
+            logger.info("Penilaian data seeding completed.");
+        } else {
+            logger.info("Database already exists and contains data penilaian.");
+        }
+
+        logger.info("Seeding penilaian completed!");
     } catch (error) {
-        console.error("Error seeding penilaian data:", error);
+        logger.error("Error seeding penilaian data:", error);
     }
 }
 

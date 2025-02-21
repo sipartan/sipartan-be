@@ -1,35 +1,36 @@
 const db = require('./database');
-const User = require("../model/user");
-const DataUmumLahan = require("../model/dataUmum");
-const LokasiRegion = require("../model/lokasiRegion");
-const Observasi = require("../model/observasi");
-const PenilaianObservasi = require("../model/penilaianObservasi");
-const Penilaian = require("../model/penilaian");
-const Hasil = require("../model/hasil");
-const Dokumentasi = require("../model/dokumentasi");
-const Plot = require("../model/plot");
-
-const seedPenilaian = require('../seeders/seedPenilaian'); 
+const { User, LokasiRegion, Lahan, Observasi, Plot, Penilaian, PenilaianObservasi } = require('../models');
+const seedUser = require('../seeders/seedUser');
+const seedPenilaian = require('../seeders/seedPenilaian');
+const logger = require('../utils/logger');
+const config = require('../config/config');
 
 const dbGenerate = async () => {
   try {
+    await db.authenticate();
+    logger.info('Database connected...');
+
+    // create schema if not exists
+    await db.query(`CREATE SCHEMA IF NOT EXISTS ${config.database.schema};`);
+
+    // enable PostGIS extension
+    await db.query('CREATE EXTENSION IF NOT EXISTS postgis;');
+    logger.info('PostGIS extension enabled...');
+
+    // sync models
+    // await db.sync({ force: true }); // delete and create
+    // await db.sync({ alter: true }); // { force: true } is dangerous , this should be modify the database but it is not working in postgis
     await db.sync();
-    console.log("Database synchronized successfully.");
+    logger.info('Database synchronized...');
 
-    const penilaianCount = await Penilaian.count();
+    await seedPenilaian();
+    logger.info('Penilaian seeded successfully...');
 
-    if (penilaianCount === 0) {
-      console.log("Database appears to be newly created. Seeding Ppenilaian data...");
-
-      await seedPenilaian();
-      console.log("Penilaian data seeding completed.");
-    } else {
-      console.log("Database already exists and contains data penilaian.");
-    }
-
+    await seedUser();
+    logger.info('User seeded successfully...');
     
   } catch (error) {
-    console.error("Unable to generate the database:", error);
+    logger.error("Unable to generate the database:", error);
   }
 };
 

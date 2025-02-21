@@ -1,0 +1,95 @@
+services:
+  app:
+    container_name: "sipartan-be"
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - BASE_URL=${BASE_URL}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - PENILAI_USERNAME=${PENILAI_USERNAME}
+      - PENILAI_PASSWORD=${PENILAI_PASSWORD}
+      - PENILAI_EMAIL=${PENILAI_EMAIL}
+      - GUEST_USERNAME=${GUEST_USERNAME}
+      - GUEST_PASSWORD=${GUEST_PASSWORD}
+      - GUEST_EMAIL=${GUEST_EMAIL}
+      - SECRETKEY=${SECRETKEY}
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+      - DB_SCHEMA=${DB_SCHEMA}
+      - PORT=${PORT}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - BCRYPT_SALT_ROUNDS=${BCRYPT_SALT_ROUNDS}
+      - AUTH_TOKEN_EXPIRATION=${AUTH_TOKEN_EXPIRATION}
+      - RESET_PASSWORD_TOKEN_EXPIRATION=${RESET_PASSWORD_TOKEN_EXPIRATION}
+      - VERIFY_EMAIL_TOKEN_EXPIRATION=${VERIFY_EMAIL_TOKEN_EXPIRATION}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - FACEBOOK_APP_ID=${FACEBOOK_APP_ID}
+      - FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+      - GEOCODING_API_KEY=${GEOCODING_API_KEY}
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+    ports:
+      - "9001:9001"
+    depends_on:
+      - db
+      - minio
+    networks:
+      - default
+    command: ["./wait-for-it.sh", "sipartan-db:5432", "--", "npm", "start"]
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  db:
+    image: postgis/postgis
+    container_name: "sipartan-db"
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata-postgis:/var/lib/postgresql/data
+    networks:
+      - default
+
+  minio:
+    image: minio/minio
+    container_name: "sipartan-minio"
+    restart: always
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9002"
+    ports:
+      - "9000:9000" # S3 API
+      - "9002:9002" # MinIO Console
+    volumes:
+      - miniodata:/data
+    networks:
+      - default
+
+networks:
+  default:
+
+volumes:
+  pgdata-postgis:
+  miniodata:

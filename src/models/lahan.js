@@ -1,13 +1,12 @@
 const { Sequelize } = require("sequelize");
 const db = require("../config/database.js");
-const DataUmumLahan = require('./dataUmum.js')
 
 const { DataTypes } = Sequelize;
 
-const Observasi = db.define(
-  "observasi",
+const Lahan = db.define(
+  "lahan",
   {
-    observation_id: {
+    lahan_id: {
       type: DataTypes.STRING,
       defaultValue: Sequelize.literal("gen_random_uuid()"),
       allowNull: false,
@@ -16,7 +15,7 @@ const Observasi = db.define(
         notEmpty: true,
       },
     },
-    data_lahan_id: {
+    lokasi_region_id: {
       type: DataTypes.STRING,
       defaultValue: undefined,
       allowNull: false,
@@ -24,26 +23,41 @@ const Observasi = db.define(
         notEmpty: true,
       },
     },
-    tanggal_kejadian: {
-      type: DataTypes.DATE,
+    nama_lahan: {
+      type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    tanggal_penilaian: {
-      type: DataTypes.DATE,
+    jenis_tanah: {
+      type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    skor_akhir: {
+    latitude: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    longitude: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    luasan_lahan: {
       type: DataTypes.FLOAT,
       allowNull: true,
-      validate: {
-        notEmpty: true,
-      },
+    },
+    polygon: {
+      type: DataTypes.GEOMETRY("POLYGON"),
+      allowNull: true,
     },
   },
   {
@@ -52,11 +66,4 @@ const Observasi = db.define(
   }
 );
 
-DataUmumLahan.hasMany(Observasi, {
-  foreignKey: "data_lahan_id",
-});
-Observasi.belongsTo(DataUmumLahan, {
-  foreignKey: "data_lahan_id",
-});
-
-module.exports = Observasi;
+module.exports = Lahan;

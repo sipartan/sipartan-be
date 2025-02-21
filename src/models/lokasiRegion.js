@@ -1,13 +1,12 @@
 const { Sequelize } = require("sequelize");
 const db = require("../config/database.js");
-const Plot = require('./plot.js')
 
 const { DataTypes } = Sequelize;
 
-const Hasil = db.define(
-  "hasil",
+const LokasiRegion = db.define(
+  "lokasi_region",
   {
-    hasil_id: {
+    lokasi_region_id: {
       type: DataTypes.STRING,
       defaultValue: Sequelize.literal("gen_random_uuid()"),
       allowNull: false,
@@ -16,31 +15,30 @@ const Hasil = db.define(
         notEmpty: true,
       },
     },
-    plot_id: {
+    provinsi: {
       type: DataTypes.STRING,
-      defaultValue: undefined,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    kondisi_vegetasi: {
-      type: DataTypes.FLOAT,
+    kabupaten: {
+      type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    kondisi_tanah: {
-      type: DataTypes.FLOAT,
+    kecamatan: {
+      type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    skor: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
+    desa: {
+      type: DataTypes.STRING,
+      allowNull: false,
       validate: {
         notEmpty: true,
       },
@@ -52,12 +50,4 @@ const Hasil = db.define(
   }
 );
 
-// TODO: di dbeaver ini one to many, seharusnya dia itu one to one
-Plot.hasOne(Hasil, {
-  foreignKey: "plot_id",
-});
-Hasil.belongsTo(Plot, {
-  foreignKey: "plot_id",
-});
-
-module.exports = Hasil;
+module.exports = LokasiRegion;
