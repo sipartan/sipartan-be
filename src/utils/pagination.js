@@ -20,14 +20,14 @@ async function paginate(model, options) {
         limit,
     } = options;
 
-    const offset = (page - 1) * limit; // offset is for skipping the previous page
+    const offset = limit ? (page - 1) * limit : 0; // offset is for skipping the previous page
 
     const { count, rows } = await model.findAndCountAll({
         where,
         attributes,
         include,
         order,
-        limit,
+        limit: limit || null, // if limit is null, it returns all results
         offset,
     });
 

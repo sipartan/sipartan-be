@@ -114,7 +114,7 @@ const getAllLahanData = async (filters) => {
 
     const {
       page = 1,
-      limit = 10,
+      limit = null,
       sortBy = "createdAt",
       order = "DESC",
       lahan_id,

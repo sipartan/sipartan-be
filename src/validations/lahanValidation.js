@@ -11,8 +11,8 @@ const createLahan = {
         lahan: Joi.object().keys({
             nama_lahan: Joi.string().required(),
             jenis_tanah: Joi.string().required(),
-            latitude: Joi.string().required(),
-            longitude: Joi.string().required(),
+            latitude: Joi.number().min(-90).max(90).required(),
+            longitude: Joi.number().min(-180).max(180).required(),
             coordinates: Joi.array()
                 .min(4)
                 .items(
@@ -31,10 +31,11 @@ const getAllLahan = {
     query: Joi.object().keys({
         page: Joi.number().min(1).default(1),
         limit: Joi.number().allow(null).default(null),
-        sortBy: Joi.string().default("createdAt"),
+        sortBy: Joi.string().valid("createdAt", "updatedAt", "nama_lahan", "luasan_lahan", "jenis_tanah").default("createdAt"),
         order: Joi.string().valid("ASC", "DESC").default("DESC"),
         lahan_id: Joi.string().guid({ version: ['uuidv4'] }).optional(),
         nama_lahan: Joi.string().optional(),
+        jenis_tanah: Joi.string().optional(),
         provinsi: Joi.string().optional(),
         kabupaten: Joi.string().optional(),
         kecamatan: Joi.string().optional(),
@@ -66,8 +67,8 @@ const editLahan = {
         lahan: Joi.object().keys({
             nama_lahan: Joi.string().optional(),
             jenis_tanah: Joi.string().optional(),
-            latitude: Joi.string().optional(),
-            longitude: Joi.string().optional(),
+            latitude: Joi.number().min(-90).max(90).optional(),
+            longitude: Joi.number().min(-180).max(180).optional(),
             coordinates: Joi.array()
                 .min(4)
                 .items(

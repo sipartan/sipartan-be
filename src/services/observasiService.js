@@ -96,6 +96,12 @@ const createObservasiData = async (newDataObservasi) => {
 
             let penilaianObservasiIds = [];
             if (Array.isArray(plot.penilaian_id)) {
+                if (plot.penilaian_id.length !== 9) {
+                    logger.warn("Invalid number of penilaian IDs", { penilaian_id: plot.penilaian_id });
+                    throw new BadRequest("penilaian_id array must contain exactly 9 items");
+                }
+            
+                const penilaianCategories = new Set();
                 penilaianObservasiIds = await Promise.all(
                     plot.penilaian_id.map(async (penilaian_id) => {
                         const penilaian = await Penilaian.findByPk(penilaian_id, { transaction });
@@ -103,7 +109,13 @@ const createObservasiData = async (newDataObservasi) => {
                             logger.warn("Penilaian not found", { penilaian_id });
                             throw new NotFound(`Penilaian with ID ${penilaian_id} not found`);
                         }
-
+            
+                        if (penilaianCategories.has(penilaian.kategori)) {
+                            logger.warn("Duplicate penilaian category found", { penilaian_id, kategori: penilaian.kategori });
+                            throw new BadRequest(`Duplicate penilaian category found: ${penilaian.kategori}`);
+                        }
+                        penilaianCategories.add(penilaian.kategori);
+            
                         const penilaianObservasi = await PenilaianObservasi.create(
                             { plot_id: newPlot.plot_id, penilaian_id },
                             { transaction }

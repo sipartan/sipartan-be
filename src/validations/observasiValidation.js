@@ -35,11 +35,27 @@ const getObservasi = {
     query: Joi.object().keys({
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).default(10),
-        sortBy: Joi.string().default('createdAt'),
+        sortBy: Joi.string().valid(
+            'tanggal_kejadian',
+            'tanggal_penilaian',
+            'luasan_karhutla',
+            'jenis_karhutla',
+            'tinggi_muka_air_gambut',
+            'penggunaan_lahan',
+            'tutupan_lahan',
+            'jenis_vegetasi',
+            'temperatur',
+            'curah_hujan',
+            'kelembapan_udara',
+            'skor_akhir',
+            'createdAt',
+            'updatedAt'
+        ).default('createdAt'),
         order: Joi.string().valid('ASC', 'DESC').default('DESC'),
         lahan_id: Joi.string().guid({ version: ['uuidv4'] }).optional(),
         user_id: Joi.string().guid({ version: ['uuidv4'] }).optional(),
         nama_lahan: Joi.string().optional(),
+        jenis_karhutla: Joi.string().optional(),
         provinsi: Joi.string().optional(),
         kabupaten: Joi.string().optional(),
         kecamatan: Joi.string().optional(),
@@ -51,7 +67,6 @@ const getObservasi = {
         tanggal_kejadian_end: Joi.date().iso().optional(),
         tanggal_penilaian_start: Joi.date().iso().optional(),
         tanggal_penilaian_end: Joi.date().iso().optional(),
-        jenis_karhutla: Joi.string().optional(),
     }).unknown(false),
 };
 
