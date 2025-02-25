@@ -97,7 +97,7 @@ The API documentation can be found in the [SIPARTAN.postman_collection](./SIPART
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/andyanamafaza/sipartan-be.git
+   git clone https://github.com/sipartan/sipartan-be.git
    cd sipartan-be
    ```
 
@@ -131,7 +131,7 @@ The API documentation can be found in the [SIPARTAN.postman_collection](./SIPART
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/andyanamafaza/sipartan-be.git
+   git clone https://github.com/sipartan/sipartan-be.git
    cd sipartan-be
    ```
 
