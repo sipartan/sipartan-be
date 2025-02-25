@@ -190,6 +190,7 @@ const getAllLahanData = async (filters) => {
           model: Observasi,
           where: observasiWhere,
           required: hasObservasiFilter, // based on wether there is a filter for observasi
+          separate: false, // enforcing an INNER JOIN instead of LEFT JOIN to ensure a true JOIN instead of post-query filtering
           limit: 1,
           order: [["tanggal_penilaian", "DESC"]],
         },
