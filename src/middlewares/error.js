@@ -23,7 +23,7 @@ const errorHandler = (err, req, res, next) => {
         errors: err.errors || 'No additional errors',
         method: req.method,
         path: req.originalUrl,
-        ip: req.ip,
+        ip: req.headers['x-forwarded-for'] || req.ip,
     }, null, 2); // indented JSON for better readability
 
     logger.error(`Error: ${errorDetails}`);

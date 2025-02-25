@@ -8,8 +8,8 @@ const axiosClient = axios.create({
 });
 
 axiosClient.interceptors.response.use(
-    (response) => response,
-    (error) => Promise.reject(error)
+    (response) => response, // return a successful response back to the calling function
+    (error) => Promise.reject(error) // return an error to the calling function
 );
 
 module.exports = axiosClient;

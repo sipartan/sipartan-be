@@ -13,6 +13,6 @@ router.route('/:user_id')
     .get(passport.authenticateJwt, validate(userValidation.getUser), userController.getUser)
     .patch(passport.authenticateJwt, validate(userValidation.updateUser), userController.updateUser)
     .delete(passport.authenticateJwt, validate(userValidation.deleteUser), userController.deleteUser);
-router.put('/:user_id/verify-role', passport.authenticateJwt, authorizeRoles('admin'), validate(userValidation.verifyUserRole), userController.verifyUserRole);
+router.patch('/:user_id/verify-role', passport.authenticateJwt, authorizeRoles('admin'), validate(userValidation.verifyUserRole), userController.verifyUserRole);
 
 module.exports = router;

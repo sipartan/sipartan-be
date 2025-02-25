@@ -174,6 +174,9 @@ const getAllLahanData = async (filters) => {
       };
     }
 
+    // check if there are Observasi filters, if there is then the value will become true
+    const hasObservasiFilter = Object.keys(observasiWhere).length > 0;
+
     // query to fetch data
     const options = {
       where: lahanWhere,
@@ -186,7 +189,8 @@ const getAllLahanData = async (filters) => {
         {
           model: Observasi,
           where: observasiWhere,
-          required: false,
+          required: hasObservasiFilter, // based on wether there is a filter for observasi
+          separate: false, // enforcing an INNER JOIN instead of LEFT JOIN to ensure a true JOIN instead of post-query filtering
           limit: 1,
           order: [["tanggal_penilaian", "DESC"]],
         },
