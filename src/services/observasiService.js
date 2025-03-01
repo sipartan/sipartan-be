@@ -132,7 +132,7 @@ const createObservasiData = async (newDataObservasi) => {
         const totalScore = plots.reduce((sum, plot) => sum + (plot.skor || 0), 0);
         const finalScore = plots.length ? totalScore / plots.length : 0;
 
-        observasi.skor_akhir = finalScore;
+        observasi.skor_akhir = finalScore.toFixed(2);
         observasi.luasan_karhutla = totalLuasanKarhutla;
         await observasi.save({ transaction });
 
@@ -421,7 +421,7 @@ const editObservasiData = async (observasi_id, updatedData) => {
 
         const tanggalKejadian = new Date(observasi.tanggal_kejadian);
         const now = new Date();
-        const diffInDays = Math.floor((now - tanggalKejadian) / (1000 * 60 * 60 * 24));
+        const diffInDays = Math.floor((now - tanggalKejadian) / (1000 * 60 * 60 * 24)); // 1000 ms * 60 s * 60 m * 24 h = 1 day, gives the number of milliseconds in one day (86,400,000 milliseconds), math.floor rounds down to the nearest whole number
 
         if (diffInDays > 6) {
             logger.warn("Edit denied: Observasi is older than 6 days", { observasi_id });
@@ -442,7 +442,7 @@ const editObservasiData = async (observasi_id, updatedData) => {
 };
 
 const deleteObservasiData = async (observasi_id, providedTransaction = null) => {
-    transaction = providedTransaction || (await db.transaction());
+    const transaction = providedTransaction || (await db.transaction());
 
     try {
         logger.info("Fetching observasi for deletion, ID:", { observasi_id });
@@ -543,7 +543,7 @@ const editPlotData = async (plot_id, updatedData) => {
         }
 
         // 5. update or create PenilaianObservasi entries if penilaianList is provided
-        let totalScore = observasi.skor_akhir;
+        let totalScore = observasi.skor_akhir.toFixed(2);
         if (penilaianList) {
             logger.info("Updating penilaian list for plot", { plot_id, penilaianList });
             for (const penilaian of penilaianList) {
@@ -583,7 +583,7 @@ const editPlotData = async (plot_id, updatedData) => {
             // recalculate the overall score
             await calculateScore(plot_id, transaction);
             const allPlots = await Plot.findAll({ where: { observasi_id: observasi.observasi_id }, transaction });
-            totalScore = allPlots.reduce((sum, p) => sum + (p.skor || 0), 0) / allPlots.length;
+            totalScore = (allPlots.reduce((sum, p) => sum + (p.skor || 0), 0) / allPlots.length).toFixed(2);
         }
 
         // 6. update the observasi with recalculated values (if needed)
@@ -645,7 +645,7 @@ const editPlotData = async (plot_id, updatedData) => {
 };
 
 const deletePlotData = async (plot_id, providedTransaction = null) => {
-    transaction = providedTransaction || (await db.transaction());
+    const transaction = providedTransaction || (await db.transaction());
 
     try {
         logger.info("Deleting plot data", { plot_id });
@@ -709,7 +709,7 @@ const deletePlotData = async (plot_id, providedTransaction = null) => {
 
         if (remainingPlots.length > 0) {
             // calculate total skor_akhir and luasan_karhutla
-            skorAkhir = remainingPlots.reduce((acc, plot) => acc + (plot.skor || 0), 0) / remainingPlots.length;
+            skorAkhir = (remainingPlots.reduce((acc, plot) => acc + (plot.skor || 0), 0) / remainingPlots.length).toFixed(2);
             luasanKarhutla = remainingPlots.reduce((acc, plot) => acc + (plot.luasan_plot || 0), 0);
         }
 
@@ -758,11 +758,11 @@ const calculateScore = async (plot_id, transaction = null) => {
 
         logger.info("Fetching associated penilaian items", { plot_id, penilaianIds });
         const [vegetasiItems, tanahItems] = await Promise.all([
-            Penilaian.findAll({ where: { penilaian_id: { [Op.in]: penilaianIds }, type: "Kondisi Vegetasi" }, transaction }),
+            Penilaian.findAll({ where: { penilaian_id: { [Op.in]: penilaianIds }, type: "Kondisi Vegetasi" }, transaction }), // op.in is used to find all penilaian items with penilaian_id in the penilaianIds array
             Penilaian.findAll({ where: { penilaian_id: { [Op.in]: penilaianIds }, type: "Kondisi Tanah" }, transaction }),
         ]);
 
-        const sumVegetasi = vegetasiItems.reduce((acc, item) => acc + (item.bobot || 0), 0);
+        const sumVegetasi = vegetasiItems.reduce((acc, item) => acc + (item.bobot || 0), 0); // reduce is used to sum all the bobot values in the array
         const sumTanah = tanahItems.reduce((acc, item) => acc + (item.bobot || 0), 0);
         const newSkor = sumVegetasi + sumTanah;
 
