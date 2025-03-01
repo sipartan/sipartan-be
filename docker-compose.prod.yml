@@ -78,7 +78,7 @@ services:
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    command: server /data --console-address ":9002"
+    command: server /data --console-address ":9002" # MinIO console
     ports:
       - "9000:9000" # S3 API
       - "9002:9002" # MinIO Console

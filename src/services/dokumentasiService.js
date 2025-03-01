@@ -36,9 +36,9 @@ const uploadDokumentasiData = async (files, fields) => {
         }
 
         const uploadResults = await Promise.all(
-            files.map(async ({ uploadPromise, s3Key }) => {
+            files.map(async ({ uploadPromise, s3Key }) => { // destructuring the object, so we can use uploadPromise and s3Key directly, instead of file.uploadPromise and file.s3Key
                 try {
-                    await uploadPromise;
+                    await uploadPromise; // wait for the upload to complete
                     logger.info(`File uploaded successfully: ${s3Key}`);
                     return { s3Key, success: true };
                 } catch (err) {
@@ -48,14 +48,14 @@ const uploadDokumentasiData = async (files, fields) => {
             })
         );
 
-        const failed = uploadResults.filter((r) => !r.success);
+        const failed = uploadResults.filter((r) => !r.success); // filter out the successful uploads
         if (failed.length > 0) {
             logger.error("Some files failed to upload", failed);
             throw new Error('Some files failed to upload');
         }
 
         const dokumentasiIds = [];
-        for (const { s3Key } of uploadResults) {
+        for (const { s3Key } of uploadResults) { // only create dokumentasi records for successful uploads
             const doc = await Dokumentasi.create({
                 penilaian_observasi_id: fields.penilaian_observasi_id,
                 s3_key: s3Key,

@@ -134,7 +134,7 @@ const getAllLahanData = async (filters) => {
 
     // filter for Lahan
     const lahanWhere = {};
-    if (nama_lahan) lahanWhere.nama_lahan = { [Op.iLike]: `%${nama_lahan}%` };
+    if (nama_lahan) lahanWhere.nama_lahan = { [Op.iLike]: `%${nama_lahan}%` }; // case-insensitive search
     if (lahan_id) lahanWhere.lahan_id = lahan_id;
 
     // filter for LokasiRegion
@@ -330,7 +330,7 @@ const editLahanData = async (lahan_id, data) => {
         formattedCoordinates[0][0] !== formattedCoordinates[formattedCoordinates.length - 1][0] ||
         formattedCoordinates[0][1] !== formattedCoordinates[formattedCoordinates.length - 1][1]
       ) {
-        formattedCoordinates.push(formattedCoordinates[0]); // Close the polygon loop
+        formattedCoordinates.push(formattedCoordinates[0]); // close the polygon loop
       }
 
       // construct GeoJSON and stringify it for PostGIS
